@@ -6,7 +6,7 @@ import json
 from datetime import datetime
 
 import telegram
-from telegram import Update, User, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove
+from telegram import Update, User, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     ApplicationBuilder,
     ConversationHandler,
@@ -212,64 +212,50 @@ async def show_top_up(update: Update, context: CallbackContext):
     query = update.callback_query
     await query.answer()
 
-    # reply_markup = InlineKeyboardMarkup([
-    #     [
-    #         InlineKeyboardButton("$1", callback_data="top_up|1"),
-    #         InlineKeyboardButton("$10", callback_data="top_up|10"),
-    #         InlineKeyboardButton("$100", callback_data="top_up|100"),
-    #     ]
-    # ])
-
-    # await query.edit_message_text(
-    #     "Enter top up amount",
-    #     parse_mode=ParseMode.HTML,
-    #     reply_markup=reply_markup,
-    # )
-
-    reply_keyboard = [["1", "10", "100"]]
-
-    reply_markup = ReplyKeyboardMarkup(
-        reply_keyboard, 
-        one_time_keyboard=True, 
-        input_field_placeholder="1 ~ 100"
-    )
-
-    await context.bot.send_message(chat_id=query.message.chat_id, 
-                             text="Enter top up amount",
-                             reply_markup=reply_markup,)
-
-    return TOP_UP
-
-async def show_invoice(update: Update, context: CallbackContext):
-    await register_user_if_not_exists(update.callback_query, context, update.callback_query.from_user)
-
-    query = update.callback_query
-    await query.answer()
-    amount = query.data.split("|")[1]
-
     reply_markup = InlineKeyboardMarkup([
-        [InlineKeyboardButton(f"Pay ${amount}", url="https://www.google.com")]
+        [
+            InlineKeyboardButton("$10", callback_data="top_up|10"),
+            InlineKeyboardButton("$50", callback_data="top_up|50"),
+            InlineKeyboardButton("$100", callback_data="top_up|100"),
+        ]
     ])
+
     await query.edit_message_text(
-        "Your invoice",
-        parse_mode=ParseMode.HTML,
-        reply_markup=reply_markup
-    )
-
-    return ConversationHandler.END
-
-async def show_invoice2(update: Update, context: CallbackContext):
-    reply_markup = InlineKeyboardMarkup([
-        [InlineKeyboardButton(f"Pay ${update.message.text}", url="https://www.google.com")]
-    ])
-
-    msg = await update.message.reply_text(
-        update.message.text,
+        "Select or enter the amount",
         parse_mode=ParseMode.HTML,
         reply_markup=reply_markup,
     )
 
-    # await context.bot.editMessageReplyMarkup(update.message.chat_id, msg.message_id, reply_markup=reply_markup)
+    return TOP_UP
+
+async def show_invoice(update: Update, context: CallbackContext):
+    if update.message:
+        await register_user_if_not_exists(update, context, update.message.from_user)
+        amount = update.message.text
+    else:
+        await register_user_if_not_exists(update.callback_query, context, update.callback_query.from_user)
+        query = update.callback_query
+        await query.answer()
+        amount = query.data.split("|")[1]
+
+    reply_markup = InlineKeyboardMarkup([
+        [InlineKeyboardButton(f"Pay ${amount}", url="https://www.google.com")]
+    ])
+
+    text = "Your invoice"
+
+    if update.message:
+        await update.message.reply_text(
+            text,
+            parse_mode=ParseMode.HTML,
+            reply_markup=reply_markup
+        )
+    else:
+        await query.edit_message_text(
+            text,
+            parse_mode=ParseMode.HTML,
+            reply_markup=reply_markup
+        )
 
     return ConversationHandler.END
 
@@ -326,8 +312,7 @@ def run_bot() -> None:
         states={
             TOP_UP: [
                 CallbackQueryHandler(show_invoice, pattern="^top_up\|(\d)+"),
-                # MessageHandler(filters.Regex("^(\d)+$") & user_filter, show_invoice2)
-                MessageHandler(filters.TEXT & ~filters.COMMAND & user_filter, show_invoice2)
+                MessageHandler(filters.TEXT & ~filters.COMMAND & user_filter, show_invoice)
             ],
             CHATGPT: [
             ],
