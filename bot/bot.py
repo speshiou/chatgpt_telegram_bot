@@ -6,9 +6,10 @@ import json
 from datetime import datetime
 
 import telegram
-from telegram import Update, User, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, User, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import (
     ApplicationBuilder,
+    ConversationHandler,
     CallbackContext,
     CommandHandler,
     MessageHandler,
@@ -25,6 +26,8 @@ import chatgpt
 # setup
 db = database.Database()
 logger = logging.getLogger(__name__)
+
+CHATGPT, TOP_UP = range(2)
 
 HELP_MESSAGE = """Commands:
 ⚪ /retry – Regenerate last bot answer
@@ -199,8 +202,76 @@ async def show_balance_handle(update: Update, context: CallbackContext):
     text = f"You spent <b>{n_spent_dollars:.03f}$</b>\n"
     text += f"You used <b>{n_used_tokens}</b> tokens <i>(price: 0.02$ per 1000 tokens)</i>\n"
 
-    await update.message.reply_text(text, parse_mode=ParseMode.HTML)
+    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("Top up", callback_data="top_up")]])
 
+    await update.message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=reply_markup)
+
+async def show_top_up(update: Update, context: CallbackContext):
+    await register_user_if_not_exists(update.callback_query, context, update.callback_query.from_user)
+
+    query = update.callback_query
+    await query.answer()
+
+    # reply_markup = InlineKeyboardMarkup([
+    #     [
+    #         InlineKeyboardButton("$1", callback_data="top_up|1"),
+    #         InlineKeyboardButton("$10", callback_data="top_up|10"),
+    #         InlineKeyboardButton("$100", callback_data="top_up|100"),
+    #     ]
+    # ])
+
+    # await query.edit_message_text(
+    #     "Enter top up amount",
+    #     parse_mode=ParseMode.HTML,
+    #     reply_markup=reply_markup,
+    # )
+
+    reply_keyboard = [["1", "10", "100"]]
+
+    reply_markup = ReplyKeyboardMarkup(
+        reply_keyboard, 
+        one_time_keyboard=True, 
+        input_field_placeholder="1 ~ 100"
+    )
+
+    await context.bot.send_message(chat_id=query.message.chat_id, 
+                             text="Enter top up amount",
+                             reply_markup=reply_markup,)
+
+    return TOP_UP
+
+async def show_invoice(update: Update, context: CallbackContext):
+    await register_user_if_not_exists(update.callback_query, context, update.callback_query.from_user)
+
+    query = update.callback_query
+    await query.answer()
+    amount = query.data.split("|")[1]
+
+    reply_markup = InlineKeyboardMarkup([
+        [InlineKeyboardButton(f"Pay ${amount}", url="https://www.google.com")]
+    ])
+    await query.edit_message_text(
+        "Your invoice",
+        parse_mode=ParseMode.HTML,
+        reply_markup=reply_markup
+    )
+
+    return ConversationHandler.END
+
+async def show_invoice2(update: Update, context: CallbackContext):
+    reply_markup = InlineKeyboardMarkup([
+        [InlineKeyboardButton(f"Pay ${update.message.text}", url="https://www.google.com")]
+    ])
+
+    msg = await update.message.reply_text(
+        update.message.text,
+        parse_mode=ParseMode.HTML,
+        reply_markup=reply_markup,
+    )
+
+    # await context.bot.editMessageReplyMarkup(update.message.chat_id, msg.message_id, reply_markup=reply_markup)
+
+    return ConversationHandler.END
 
 async def edited_message_handle(update: Update, context: CallbackContext):
     text = "🥲 Unfortunately, message <b>editing</b> is not supported"
@@ -223,6 +294,8 @@ async def error_handle(update: Update, context: CallbackContext) -> None:
 
     await context.bot.send_message(update.effective_chat.id, message, parse_mode=ParseMode.HTML)
 
+async def cancel(update: Update, context: CallbackContext):
+    return ConversationHandler.END
 
 def run_bot() -> None:
     application = (
@@ -239,16 +312,31 @@ def run_bot() -> None:
 
     application.add_handler(CommandHandler("start", start_handle, filters=user_filter))
     application.add_handler(CommandHandler("help", help_handle, filters=user_filter))
-
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & user_filter, message_handle))
     application.add_handler(CommandHandler("retry", retry_handle, filters=user_filter))
     application.add_handler(CommandHandler("new", new_dialog_handle, filters=user_filter))
-    
     application.add_handler(CommandHandler("mode", show_chat_modes_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(set_chat_mode_handle, pattern="^set_chat_mode"))
-
     application.add_handler(CommandHandler("balance", show_balance_handle, filters=user_filter))
-    
+
+    # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
+    conv_handler = ConversationHandler(
+        entry_points=[
+            CallbackQueryHandler(show_top_up, pattern="^top_up$"),
+        ],
+        states={
+            TOP_UP: [
+                CallbackQueryHandler(show_invoice, pattern="^top_up\|(\d)+"),
+                # MessageHandler(filters.Regex("^(\d)+$") & user_filter, show_invoice2)
+                MessageHandler(filters.TEXT & ~filters.COMMAND & user_filter, show_invoice2)
+            ],
+            CHATGPT: [
+            ],
+        },
+        fallbacks=[CommandHandler("cancel", cancel)],
+    )
+
+    application.add_handler(conv_handler)
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & user_filter, message_handle))
     application.add_error_handler(error_handle)
     
     # start the bot
