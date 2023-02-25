@@ -46,7 +46,8 @@ class Database:
             "current_dialog_id": None,
             "current_chat_mode": "assistant",
 
-            "n_used_tokens": 0
+            "n_used_tokens": 0,
+            "total_tokens": config.free_quota,
         }
 
         if not self.check_if_user_exists(user_id):

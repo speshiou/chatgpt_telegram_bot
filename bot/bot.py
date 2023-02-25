@@ -106,6 +106,13 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     # send typing action
     await update.message.chat.send_action(action="typing")
 
+    used_tokens = db.get_user_attribute(user_id, "n_used_tokens")
+    total_tokens = db.get_user_attribute(user_id, "total_tokens")
+
+    if used_tokens >= total_tokens:
+        await update.message.reply_text(f"Insufficient tokens: {total_tokens - used_tokens}", parse_mode=ParseMode.HTML)
+        return
+
     try:
         message = message or update.message.text
 
