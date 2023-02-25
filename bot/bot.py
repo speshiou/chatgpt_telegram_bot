@@ -21,6 +21,7 @@ from telegram.constants import ParseMode, ChatAction
 import config
 import database
 import chatgpt
+import orders
 
 
 # setup
@@ -231,18 +232,27 @@ async def show_top_up(update: Update, context: CallbackContext):
 async def show_invoice(update: Update, context: CallbackContext):
     if update.message:
         await register_user_if_not_exists(update, context, update.message.from_user)
+        user_id = update.message.from_user.id
         amount = update.message.text
     else:
         await register_user_if_not_exists(update.callback_query, context, update.callback_query.from_user)
         query = update.callback_query
         await query.answer()
+        user_id = query.from_user.id
         amount = query.data.split("|")[1]
 
-    reply_markup = InlineKeyboardMarkup([
-        [InlineKeyboardButton(f"Pay ${amount}", url="https://www.google.com")]
-    ])
+    amount = int(amount)
+    token_amount = amount / 0.02 * 1000
+    result = orders.create(user_id, amount, token_amount)
 
-    text = "Your invoice"
+    if result["status"] == "OK":
+        text = "Your invoice"
+        reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton(f"Pay ${amount}", url=result["url"])]
+        ])
+    else:
+        text = "Error: %s" % (result["error"])
+        reply_markup = None
 
     if update.message:
         await update.message.reply_text(
