@@ -241,12 +241,12 @@ async def show_invoice(update: Update, context: CallbackContext):
         user_id = query.from_user.id
         amount = query.data.split("|")[1]
 
-    amount = int(amount)
-    token_amount = amount / 0.02 * 1000
+    amount = float(amount)
+    token_amount = int(amount / 0.02 * 1000)
     result = orders.create(user_id, amount, token_amount)
 
     if result["status"] == "OK":
-        text = "Your invoice"
+        text = f"Your invoice: \n ${amount} = {token_amount} tokens"
         reply_markup = InlineKeyboardMarkup([
             [InlineKeyboardButton(f"Pay ${amount}", url=result["url"])]
         ])

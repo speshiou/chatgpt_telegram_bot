@@ -22,7 +22,7 @@ def create(user_id, price, token_amount):
         raise Exception("PAYMENT_ENDPOINT not set")
     params = {
         'tg_user_id': user_id,
-        'price': price,
+        'payment_amount': price,
         'token_amount': token_amount,
         'create_time': int(time.time()),
     }
