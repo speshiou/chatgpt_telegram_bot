@@ -12,7 +12,7 @@ services:
     # TODO: add auth
 
   chatgpt_telegram_bot:
-    container_name: chatgpt_telegram_bot
+    container_name: chatgpt-telegram-bot
     environment:
       - PAYMENT_ENDPOINT=${PAYMENT_ENDPOINT}
     command: python3 bot/bot.py
