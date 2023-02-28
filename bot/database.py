@@ -9,7 +9,7 @@ import config
 
 class Database:
     def __init__(self):
-        self.client = pymongo.MongoClient(config.mongodb_uri)
+        self.client = pymongo.MongoClient(config.MONGODB_URI)
         self.db = self.client["chatgpt_telegram_bot"]
 
         self.user_collection = self.db["users"]
@@ -47,7 +47,7 @@ class Database:
             "current_chat_mode": "assistant",
 
             "n_used_tokens": 0,
-            "total_tokens": config.free_quota,
+            "total_tokens": config.FREE_QUOTA,
         }
 
         if not self.check_if_user_exists(user_id):

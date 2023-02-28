@@ -12,14 +12,11 @@ def hash_query(params):
         data_check_arr.append(f'{key}={value}')
     data_check_arr.sort()
     data_check_string = '\n'.join(data_check_arr)
-    secret_key = hashlib.sha256(config.telegram_token.encode()).digest()
+    secret_key = hashlib.sha256(config.TELEGRAM_BOT_TOKEN.encode()).digest()
     hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
     return hash
 
 def create(user_id, payment_method, price, token_amount):
-    url = os.getenv('PAYMENT_ENDPOINT')
-    if not url:
-        raise Exception("PAYMENT_ENDPOINT not set")
     params = {
         'tg_user_id': user_id,
         'payment_method': payment_method,
@@ -33,7 +30,7 @@ def create(user_id, payment_method, price, token_amount):
     for key, value in params.items():
         query_params += f'{key}={value}&'
     query_params = query_params[:-1] # Remove the last '&'
-    full_url = f'{url}?{query_params}'
+    full_url = f'{config.PAYMENT_ENDPOINT}?{query_params}'
     response = requests.get(full_url)
     try:
         return response.json()

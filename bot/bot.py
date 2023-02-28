@@ -112,7 +112,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
     # new dialog timeout
     if use_new_dialog_timeout:
-        if (datetime.now() - db.get_user_attribute(user_id, "last_interaction")).seconds > config.new_dialog_timeout:
+        if (datetime.now() - db.get_user_attribute(user_id, "last_interaction")).seconds > config.NEW_DIALOG_TIMEOUT:
             db.start_new_dialog(user_id)
             await update.message.reply_text("Starting new dialog due to timeout ✅")
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
@@ -347,15 +347,15 @@ async def cancel(update: Update, context: CallbackContext):
 def run_bot() -> None:
     application = (
         ApplicationBuilder()
-        .token(config.telegram_token)
+        .token(config.TELEGRAM_BOT_TOKEN)
         .build()
     )
 
     # add handlers
-    if len(config.allowed_telegram_usernames) == 0:
+    if not config.ALLOWED_TELEGRAM_USERNAMES or len(config.ALLOWED_TELEGRAM_USERNAMES) == 0:
         user_filter = filters.ALL
     else:
-        user_filter = filters.User(username=config.allowed_telegram_usernames)
+        user_filter = filters.User(username=config.ALLOWED_TELEGRAM_USERNAMES)
 
     application.add_handler(CommandHandler("start", start_handle, filters=user_filter))
     application.add_handler(CommandHandler("help", help_handle, filters=user_filter))
