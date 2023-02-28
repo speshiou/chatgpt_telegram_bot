@@ -12,8 +12,8 @@ class Database:
         self.client = pymongo.MongoClient(config.mongodb_uri)
         self.db = self.client["chatgpt_telegram_bot"]
 
-        self.user_collection = self.db["user"]
-        self.dialog_collection = self.db["dialog"]
+        self.user_collection = self.db["users"]
+        self.dialog_collection = self.db["dialogs"]
 
     def check_if_user_exists(self, user_id: int, raise_exception: bool = False):
         if self.user_collection.count_documents({"_id": user_id}) > 0:
