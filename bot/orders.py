@@ -16,12 +16,13 @@ def hash_query(params):
     hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
     return hash
 
-def create(user_id, price, token_amount):
+def create(user_id, payment_method, price, token_amount):
     url = os.getenv('PAYMENT_ENDPOINT')
     if not url:
         raise Exception("PAYMENT_ENDPOINT not set")
     params = {
         'tg_user_id': user_id,
+        'payment_method': payment_method,
         'payment_amount': price,
         'token_amount': token_amount,
         'create_time': int(time.time()),
@@ -34,4 +35,9 @@ def create(user_id, price, token_amount):
     query_params = query_params[:-1] # Remove the last '&'
     full_url = f'{url}?{query_params}'
     response = requests.get(full_url)
-    return response.json()
+    try:
+        return response.json()
+    except Exception as e:
+        print(response)
+        print(e)
+    return None

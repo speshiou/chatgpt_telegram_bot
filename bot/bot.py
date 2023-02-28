@@ -28,7 +28,7 @@ import orders
 db = database.Database()
 logger = logging.getLogger(__name__)
 
-CHATGPT, TOP_UP = range(2)
+CHATGPT, TOP_UP, PAYMENT = range(3)
 
 HELP_MESSAGE = """Commands:
 ⚪ /retry – Regenerate last bot answer
@@ -48,6 +48,20 @@ async def register_user_if_not_exists(update: Update, context: CallbackContext, 
             last_name= user.last_name
         )
 
+async def reply_or_edit_text(update: Update, text: str, parse_mode: ParseMode = ParseMode.HTML, reply_markup = None):
+    if update.message:
+        await update.message.reply_text(
+            text,
+            parse_mode=parse_mode,
+            reply_markup=reply_markup
+        )
+    else:
+        query = update.callback_query
+        await query.edit_message_text(
+            text,
+            parse_mode=ParseMode.HTML,
+            reply_markup=reply_markup
+        )
 
 async def start_handle(update: Update, context: CallbackContext):
     await register_user_if_not_exists(update, context, update.message.from_user)
@@ -236,30 +250,32 @@ async def show_top_up(update: Update, context: CallbackContext):
 
     return TOP_UP
 
-async def show_invoice(update: Update, context: CallbackContext):
+async def show_payment_methods(update: Update, context: CallbackContext):
     if update.message:
         await register_user_if_not_exists(update, context, update.message.from_user)
-        user_id = update.message.from_user.id
         amount = update.message.text
     else:
         await register_user_if_not_exists(update.callback_query, context, update.callback_query.from_user)
         query = update.callback_query
         await query.answer()
-        user_id = query.from_user.id
         amount = query.data.split("|")[1]
 
+    text_not_in_range = "💡 Only accept number between 0.1 to 100"
+    if not amount.replace('.', '', 1).isdigit():
+        await reply_or_edit_text(update, text_not_in_range)
+        return TOP_UP
+    
     amount = float(amount)
-    token_amount = int(amount / 0.02 * 1000)
-    result = orders.create(user_id, amount, token_amount)
 
-    if result["status"] == "OK":
-        text = f"Your invoice: \n ${amount} = {token_amount} tokens"
-        reply_markup = InlineKeyboardMarkup([
-            [InlineKeyboardButton(f"Pay ${amount}", url=result["url"])]
-        ])
-    else:
-        text = "Error: %s" % (result["error"])
-        reply_markup = None
+    if amount > 100 or amount < 0.1:
+        await reply_or_edit_text(update, text_not_in_range)
+        return TOP_UP
+
+    text = "Choose preferred payment method"
+    reply_markup = InlineKeyboardMarkup([
+        [InlineKeyboardButton("Paypal", callback_data=f"payment|paypal|{amount}")],
+        [InlineKeyboardButton("Crypto", callback_data=f"payment|crypto|{amount}")]
+    ])
 
     if update.message:
         await update.message.reply_text(
@@ -274,7 +290,35 @@ async def show_invoice(update: Update, context: CallbackContext):
             reply_markup=reply_markup
         )
 
-    return ConversationHandler.END
+    return PAYMENT
+
+async def show_invoice(update: Update, context: CallbackContext):
+    await register_user_if_not_exists(update.callback_query, context, update.callback_query.from_user)
+    query = update.callback_query
+    await query.answer()
+    user_id = query.from_user.id
+    _, method, amount = query.data.split("|")
+
+    amount = float(amount)
+    token_amount = int(amount / 0.02 * 1000)
+    result = orders.create(user_id, method, amount, token_amount)
+
+    if result and result["status"] == "OK":
+        text = f"Your invoice: \n ${amount} = {token_amount} tokens"
+        reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton(f"Pay with ${method}", url=result["url"])]
+        ])
+    else:
+        text = "Failed to create an invoice"
+        reply_markup = None
+
+    await query.edit_message_text(
+        text,
+        parse_mode=ParseMode.HTML,
+        reply_markup=reply_markup
+    )
+
+    ConversationHandler.END
 
 async def edited_message_handle(update: Update, context: CallbackContext):
     text = "🥲 Unfortunately, message <b>editing</b> is not supported"
@@ -328,13 +372,17 @@ def run_bot() -> None:
         ],
         states={
             TOP_UP: [
-                CallbackQueryHandler(show_invoice, pattern="^top_up\|(\d)+"),
-                MessageHandler(filters.TEXT & ~filters.COMMAND & user_filter, show_invoice)
+                CallbackQueryHandler(show_payment_methods, pattern="^top_up\|(\d)+"),
+                MessageHandler(filters.TEXT & ~filters.COMMAND & user_filter, show_payment_methods)
+            ],
+            PAYMENT: [
+                CallbackQueryHandler(show_invoice, pattern="^payment\|"),
             ],
             CHATGPT: [
             ],
         },
         fallbacks=[CommandHandler("cancel", cancel)],
+        allow_reentry=True,
     )
 
     application.add_handler(conv_handler)
