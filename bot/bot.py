@@ -1,4 +1,3 @@
-import os
 import logging
 import traceback
 import html
@@ -6,8 +5,9 @@ import json
 from datetime import datetime
 
 import telegram
-from telegram import Update, User, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import BotCommand, Update, User, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
+    Application,
     ApplicationBuilder,
     ConversationHandler,
     CallbackContext,
@@ -30,12 +30,11 @@ logger = logging.getLogger(__name__)
 
 CHATGPT, TOP_UP, PAYMENT = range(3)
 
-HELP_MESSAGE = """Commands:
-⚪ /retry – Regenerate last bot answer
-⚪ /new – Start new dialog
-⚪ /mode – Select chat mode
-⚪ /balance – Show balance
-⚪ /help – Show help
+HELP_MESSAGE = """<b>Commands</b>**:
+/new – Start new dialog
+/mode – Select chat mode
+/balance – Show balance
+/retry – Regenerate last bot answer
 """
 
 async def register_user_if_not_exists(update: Update, context: CallbackContext, user: User):
@@ -76,14 +75,6 @@ async def start_handle(update: Update, context: CallbackContext):
     reply_text += "\nAnd now... ask me anything!"
     
     await update.message.reply_text(reply_text, parse_mode=ParseMode.HTML)
-
-
-async def help_handle(update: Update, context: CallbackContext):
-    await register_user_if_not_exists(update, context, update.message.from_user)
-    user_id = update.message.from_user.id
-    db.set_user_attribute(user_id, "last_interaction", datetime.now())
-    await update.message.reply_text(HELP_MESSAGE, parse_mode=ParseMode.HTML)
-
 
 async def retry_handle(update: Update, context: CallbackContext):
     await register_user_if_not_exists(update, context, update.message.from_user)
@@ -344,10 +335,20 @@ async def error_handle(update: Update, context: CallbackContext) -> None:
 async def cancel(update: Update, context: CallbackContext):
     return ConversationHandler.END
 
+async def app_post_init(application: Application):
+    # setup bot commands
+    await application.bot.set_my_commands([
+        BotCommand("new", "Start new dialog"),
+        BotCommand("mode", "Select chat mode"),
+        BotCommand("balance", "Show balance"),
+        BotCommand("retry", "Regenerate last bot answer"),
+    ])
+
 def run_bot() -> None:
     application = (
         ApplicationBuilder()
         .token(config.TELEGRAM_BOT_TOKEN)
+        .post_init(app_post_init)
         .build()
     )
 
@@ -358,7 +359,6 @@ def run_bot() -> None:
         user_filter = filters.User(username=config.ALLOWED_TELEGRAM_USERNAMES)
 
     application.add_handler(CommandHandler("start", start_handle, filters=user_filter))
-    application.add_handler(CommandHandler("help", help_handle, filters=user_filter))
     application.add_handler(CommandHandler("retry", retry_handle, filters=user_filter))
     application.add_handler(CommandHandler("new", new_dialog_handle, filters=user_filter))
     application.add_handler(CommandHandler("mode", show_chat_modes_handle, filters=user_filter))
