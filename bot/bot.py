@@ -5,7 +5,7 @@ import json
 from datetime import datetime
 
 import telegram
-from telegram import BotCommand, Update, User, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import BotCommand, Update, User, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import (
     Application,
     ApplicationBuilder,
@@ -85,6 +85,7 @@ async def start_handle(update: Update, context: CallbackContext):
     await update.message.reply_text(
         reply_text, 
         parse_mode=ParseMode.HTML,
+        reply_markup=ReplyKeyboardRemove()
         )
 
 async def retry_handle(update: Update, context: CallbackContext):
