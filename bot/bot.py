@@ -22,7 +22,7 @@ import config
 import database
 import chatgpt
 import orders
-
+import i18n
 
 # setup
 db = database.Database()
@@ -30,12 +30,12 @@ logger = logging.getLogger(__name__)
 
 CHATGPT, TOP_UP, PAYMENT = range(3)
 
-HELP_MESSAGE = """<b>Commands</b>**:
-/new – Start new dialog
-/mode – Select chat mode
-/balance – Show balance
-/retry – Regenerate last bot answer
-"""
+COMMANDS = [
+    BotCommand("new", "Start new dialog"),
+    BotCommand("mode", "Select chat mode"),
+    BotCommand("balance", "Show balance"),
+    BotCommand("retry", "Regenerate last bot answer"),
+]
 
 async def register_user_if_not_exists(update: Update, context: CallbackContext, user: User):
     if not db.check_if_user_exists(user.id):
@@ -65,16 +65,27 @@ async def reply_or_edit_text(update: Update, text: str, parse_mode: ParseMode = 
 async def start_handle(update: Update, context: CallbackContext):
     await register_user_if_not_exists(update, context, update.message.from_user)
     user_id = update.message.from_user.id
+    print(f"language code={update.message.from_user.language_code}")
     
+    _ = i18n.get_text_func(update.message.from_user.language_code)
+
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
     db.start_new_dialog(user_id)
     
-    reply_text = "Hi! I'm <b>ChatGPT</b> bot implemented with GPT-3.5 OpenAI API 🤖\n\n"
-    reply_text += HELP_MESSAGE
+    commands_text = "".join([f"/{c.command} - {c.description}\n" for c in COMMANDS])
 
-    reply_text += "\nAnd now... ask me anything!"
+    reply_text = _("Hi! I'm <b>ChatGPT</b> bot powered by OpenAI GPT-3.5 API 🤖")
+    reply_text += "\n\n"
+    reply_text += _("<b>Commands</b>")
+    reply_text += "\n"
+    reply_text += commands_text
+    reply_text += "\n\n"
+    reply_text += _("And now... ask me anything ...")
     
-    await update.message.reply_text(reply_text, parse_mode=ParseMode.HTML)
+    await update.message.reply_text(
+        reply_text, 
+        parse_mode=ParseMode.HTML,
+        )
 
 async def retry_handle(update: Update, context: CallbackContext):
     await register_user_if_not_exists(update, context, update.message.from_user)
@@ -337,12 +348,7 @@ async def cancel(update: Update, context: CallbackContext):
 
 async def app_post_init(application: Application):
     # setup bot commands
-    await application.bot.set_my_commands([
-        BotCommand("new", "Start new dialog"),
-        BotCommand("mode", "Select chat mode"),
-        BotCommand("balance", "Show balance"),
-        BotCommand("retry", "Regenerate last bot answer"),
-    ])
+    await application.bot.set_my_commands(COMMANDS)
 
 def run_bot() -> None:
     application = (
