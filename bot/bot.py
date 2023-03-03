@@ -30,14 +30,16 @@ logger = logging.getLogger(__name__)
 
 CHATGPT, TOP_UP, PAYMENT = range(3)
 
-COMMANDS = [
-    BotCommand("new", "Start a new dialog"),
-    BotCommand("retry", "Regenerate last answer"),
-    # BotCommand("mode", "Select chat mode"),
-    BotCommand("balance", "show balance"),
-    BotCommand("topup", "top-up tokens"),
-    BotCommand("language", "set preferred language for UI"),
-]
+def get_commands(lang=i18n.DEFAULT_LOCALE):
+    _ = i18n.get_text_func(lang)
+    return [
+        BotCommand("new", _("start a new dialog")),
+        BotCommand("retry", _("regenerate last answer")),
+        # BotCommand("mode", _("select chat mode")),
+        BotCommand("balance", _("show balance")),
+        BotCommand("topup", _("top-up tokens")),
+        BotCommand("language", _("set UI language")),
+    ]
 
 async def register_user_if_not_exists(update: Update, context: CallbackContext):
     user = None
@@ -86,10 +88,10 @@ def get_chat_id(update: Update):
 
 async def send_greeting(update: Update, context: CallbackContext, is_new_user=False):
     user = await register_user_if_not_exists(update, context)
-    
-    _ = i18n.get_text_func(db.get_user_preferred_language(user.id) or user.language_code)
+    lang = db.get_user_preferred_language(user.id) or user.language_code
+    _ = i18n.get_text_func(lang)
 
-    commands_text = "".join([f"/{c.command} - {c.description}\n" for c in COMMANDS])
+    commands_text = "".join([f"/{c.command} - {c.description}\n" for c in get_commands(lang)])
 
     reply_text = _("🤖 Hi! I'm <b>ChatGPT</b> bot powered by OpenAI GPT-3.5 API")
     reply_text += "\n\n"
@@ -446,7 +448,7 @@ async def cancel(update: Update, context: CallbackContext):
 
 async def app_post_init(application: Application):
     # setup bot commands
-    await application.bot.set_my_commands(COMMANDS)
+    await application.bot.set_my_commands(get_commands())
 
 def run_bot() -> None:
     application = (
