@@ -176,7 +176,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         await update.message.reply_text(text, parse_mode=ParseMode.HTML)
 
     try:
-        await update.message.reply_text(answer, parse_mode=ParseMode.HTML)
+        await update.message.reply_text(answer, parse_mode=ParseMode.MARKDOWN)
     except telegram.error.BadRequest:
         # answer has invalid characters, so we send it without parse_mode
         await update.message.reply_text(answer)
