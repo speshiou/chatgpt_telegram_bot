@@ -158,7 +158,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     if use_new_dialog_timeout:
         if (datetime.now() - db.get_user_attribute(user_id, "last_interaction")).seconds > config.NEW_DIALOG_TIMEOUT:
             db.start_new_dialog(user_id)
-            await update.message.reply_text("💬 Starting new dialog due to timeout")
+            await update.message.reply_text("💬 Starting a new dialog due to timeout")
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
     # send typing action
@@ -218,8 +218,8 @@ async def new_dialog_handle(update: Update, context: CallbackContext):
     db.start_new_dialog(user_id)
     await update.message.reply_text("💬 Starting new dialog")
 
-    chat_mode = db.get_user_attribute(user_id, "current_chat_mode")
-    await update.message.reply_text(f"{chatgpt.CHAT_MODES[chat_mode]['welcome_message']}", parse_mode=ParseMode.HTML)
+    # chat_mode = db.get_user_attribute(user_id, "current_chat_mode")
+    # await update.message.reply_text(f"{chatgpt.CHAT_MODES[chat_mode]['welcome_message']}", parse_mode=ParseMode.HTML)
 
 
 async def show_chat_modes_handle(update: Update, context: CallbackContext):
