@@ -237,8 +237,8 @@ async def show_balance_handle(update: Update, context: CallbackContext):
     n_spent_dollars = used_tokens * (config.TOKEN_PRICE / 1000)
 
     text = f"👛 <b>Balance</b>\n\n"
-    text += f"<b>{db.get_user_remaining_tokens(user_id)}</b> tokens\n"
-    text += f"<i>You used <b>{used_tokens}</b> tokens</i>"
+    text += "<b>{:,}</b> tokens\n".format(db.get_user_remaining_tokens(user_id))
+    text += "<i>You used <b>{:,}</b> tokens</i>".format(used_tokens)
     # text += f"You spent <b>{n_spent_dollars:.03f}$</b>\n"
     # text += f"You used <b>{used_tokens}</b> tokens <i>(price: ${config.TOKEN_PRICE} per 1000 tokens)</i>\n"
 
@@ -257,19 +257,19 @@ async def show_top_up(update: Update, context: CallbackContext):
 
     reply_markup = InlineKeyboardMarkup([
         [
-            InlineKeyboardButton(f"$10 for {price_to_tokens(10)} tokens", callback_data="top_up|10"),
+            InlineKeyboardButton("{:,} tokens - $1".format(price_to_tokens(1)), callback_data="top_up|1"),
         ],
         [
-            InlineKeyboardButton(f"$50 for {price_to_tokens(50)} tokens", callback_data="top_up|50"),
+            InlineKeyboardButton("{:,} tokens - $5".format(price_to_tokens(5)), callback_data="top_up|5"),
         ],
         [
-            InlineKeyboardButton(f"$100 for {price_to_tokens(100)} tokens", callback_data="top_up|100"),
+            InlineKeyboardButton("{:,} tokens - $10".format(price_to_tokens(10)), callback_data="top_up|10"),
         ]
     ])
 
     await reply_or_edit_text(
         update,
-        "💡 Select or enter the payment amount",
+        "💡 Select a token package",
         parse_mode=ParseMode.HTML,
         reply_markup=reply_markup,
     )
@@ -336,7 +336,7 @@ async def show_invoice(update: Update, context: CallbackContext):
 
     if result and result["status"] == "OK":
         text = f"📋 <b>Your invoice</b>:\n\n"
-        text += f"{token_amount} tokens\n"
+        text += "{:,} tokens\n".format(token_amount)
         text += "------------------\n"
         text += f"${amount}\n\n"
         text += "<i>Your tokens will be credited within 10 minutes of payment.</i>"
@@ -419,7 +419,7 @@ def run_bot() -> None:
         states={
             TOP_UP: [
                 CallbackQueryHandler(show_payment_methods, pattern="^top_up\|(\d)+"),
-                MessageHandler(filters.TEXT & ~filters.COMMAND & user_filter, show_payment_methods)
+                # MessageHandler(filters.TEXT & ~filters.COMMAND & user_filter, show_payment_methods)
             ],
             PAYMENT: [
                 CallbackQueryHandler(show_invoice, pattern="^payment\|"),
