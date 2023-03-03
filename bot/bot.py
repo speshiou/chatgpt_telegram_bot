@@ -309,7 +309,7 @@ async def show_payment_methods(update: Update, context: CallbackContext):
     text = "💡 Choose preferred payment method"
     reply_markup = InlineKeyboardMarkup([
         [InlineKeyboardButton("💳 Paypal", callback_data=f"payment|paypal|{amount}")],
-        [InlineKeyboardButton("🪙 Crypto", callback_data=f"payment|crypto|{amount}")]
+        [InlineKeyboardButton("💎 Crypto", callback_data=f"payment|crypto|{amount}")]
     ])
 
     if update.message:
@@ -355,7 +355,7 @@ async def show_invoice(update: Update, context: CallbackContext):
         if method == "paypal":
             button_text = "💳 Pay with Paypal"
         elif method == "crypto":
-            button_text = "🪙 Pay with Crypto"
+            button_text = "💎 Pay with Crypto"
         reply_markup = InlineKeyboardMarkup([
             [InlineKeyboardButton(button_text, url=result["url"])]
         ])
