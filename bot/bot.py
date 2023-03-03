@@ -76,8 +76,11 @@ async def reply_or_edit_text(update: Update, text: str, parse_mode: ParseMode = 
         )
 
 async def start_handle(update: Update, context: CallbackContext):
-    await register_user_if_not_exists(update, context)
     user_id = update.message.from_user.id
+    is_new_user = not db.check_if_user_exists(user_id)
+
+    await register_user_if_not_exists(update, context)
+    
     print(f"language code={update.message.from_user.language_code}")
     
     _ = i18n.get_text_func(update.message.from_user.language_code)
@@ -100,6 +103,13 @@ async def start_handle(update: Update, context: CallbackContext):
         parse_mode=ParseMode.HTML,
         reply_markup=ReplyKeyboardRemove()
         )
+    
+    if is_new_user:
+        await update.message.reply_text(
+            "✅ {:,} free tokens have been credited, check /balance".format(config.FREE_QUOTA), 
+            parse_mode=ParseMode.HTML,
+            reply_markup=ReplyKeyboardRemove()
+            )
 
 async def retry_handle(update: Update, context: CallbackContext):
     await register_user_if_not_exists(update, context)
