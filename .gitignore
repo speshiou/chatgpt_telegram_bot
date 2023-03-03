@@ -136,3 +136,6 @@ docker-compose.dev.yml
 
 # Debug db
 mongodb
+
+# System
+.DS_Store
