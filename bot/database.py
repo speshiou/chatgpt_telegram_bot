@@ -46,7 +46,7 @@ class Database:
             "current_dialog_id": None,
             "current_chat_mode": "assistant",
 
-            "n_used_tokens": 0,
+            "used_tokens": 0,
             "total_tokens": config.FREE_QUOTA,
         }
 
@@ -80,12 +80,26 @@ class Database:
 
     def get_user_attribute(self, user_id: int, key: str):
         self.check_if_user_exists(user_id, raise_exception=True)
+        return self.get_user_attributes(user_id, [key])[0]
+    
+    def get_user_attributes(self, user_id: int, keys: list):
+        self.check_if_user_exists(user_id, raise_exception=True)
         user_dict = self.user_collection.find_one({"_id": user_id})
 
-        if key not in user_dict:
-            raise ValueError(f"User {user_id} does not have a value for {key}")
+        ret = []
+        for key in keys:
+            if key not in user_dict:
+                raise ValueError(f"User {user_id} does not have a value for {key}")
+            ret.append(user_dict[key])
 
-        return user_dict[key]
+        return ret
+    
+    def get_user_remaining_tokens(self, user_id: int):
+        total_tokens, used_tokens = self.get_user_attributes(user_id, ['total_tokens', 'used_tokens'])
+        return total_tokens - used_tokens
+
+    def inc_user_used_tokens(self, user_id: int, used_token: int):
+        self.user_collection.update_one({"_id": user_id}, {"$inc": { 'used_tokens': used_token}})
 
     def set_user_attribute(self, user_id: int, key: str, value: Any):
         self.check_if_user_exists(user_id, raise_exception=True)

@@ -50,7 +50,7 @@ class ChatGPT:
                 answer = r.choices[0].text
                 answer = self._postprocess_answer(answer)
 
-                n_used_tokens = r.usage.total_tokens
+                used_tokens = r.usage.total_tokens
 
             except openai.error.InvalidRequestError as e:  # too many tokens
                 if len(dialog_messages) == 0:
@@ -61,7 +61,7 @@ class ChatGPT:
 
         n_first_dialog_messages_removed = n_dialog_messages_before - len(dialog_messages)
 
-        return answer, prompt, n_used_tokens, n_first_dialog_messages_removed
+        return answer, prompt, used_tokens, n_first_dialog_messages_removed
 
     def _generate_prompt(self, message, dialog_messages, chat_mode):
         prompt = CHAT_MODES[chat_mode]["prompt_start"]

@@ -31,21 +31,34 @@ logger = logging.getLogger(__name__)
 CHATGPT, TOP_UP, PAYMENT = range(3)
 
 COMMANDS = [
-    BotCommand("new", "Start new dialog"),
-    BotCommand("mode", "Select chat mode"),
-    BotCommand("balance", "Show balance"),
-    BotCommand("retry", "Regenerate last bot answer"),
+    BotCommand("new", "Start a new dialog"),
+    BotCommand("retry", "Regenerate last answer"),
+    # BotCommand("mode", "Select chat mode"),
+    BotCommand("balance", "show balance"),
+    BotCommand("topup", "top-up tokens"),
 ]
 
-async def register_user_if_not_exists(update: Update, context: CallbackContext, user: User):
+async def register_user_if_not_exists(update: Update, context: CallbackContext):
+    user = None
+    if update.message:
+        user = update.message.from_user
+        chat_id = update.message.chat_id
+    elif update.callback_query:
+        user = update.callback_query.from_user
+        chat_id = update.effective_chat.id
+    if not user or not chat_id:
+        print(f"Unknown callback event: {update}")
+        return
+    
     if not db.check_if_user_exists(user.id):
         db.add_new_user(
             user.id,
-            update.message.chat_id,
+            chat_id,
             username=user.username,
             first_name=user.first_name,
             last_name= user.last_name
         )
+    return user
 
 async def reply_or_edit_text(update: Update, text: str, parse_mode: ParseMode = ParseMode.HTML, reply_markup = None):
     if update.message:
@@ -63,7 +76,7 @@ async def reply_or_edit_text(update: Update, text: str, parse_mode: ParseMode = 
         )
 
 async def start_handle(update: Update, context: CallbackContext):
-    await register_user_if_not_exists(update, context, update.message.from_user)
+    await register_user_if_not_exists(update, context)
     user_id = update.message.from_user.id
     print(f"language code={update.message.from_user.language_code}")
     
@@ -74,7 +87,7 @@ async def start_handle(update: Update, context: CallbackContext):
     
     commands_text = "".join([f"/{c.command} - {c.description}\n" for c in COMMANDS])
 
-    reply_text = _("Hi! I'm <b>ChatGPT</b> bot powered by OpenAI GPT-3.5 API 🤖")
+    reply_text = _("🤖 Hi! I'm <b>ChatGPT</b> bot powered by OpenAI GPT-3.5 API")
     reply_text += "\n\n"
     reply_text += _("<b>Commands</b>")
     reply_text += "\n"
@@ -89,13 +102,13 @@ async def start_handle(update: Update, context: CallbackContext):
         )
 
 async def retry_handle(update: Update, context: CallbackContext):
-    await register_user_if_not_exists(update, context, update.message.from_user)
+    await register_user_if_not_exists(update, context)
     user_id = update.message.from_user.id
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
     dialog_messages = db.get_dialog_messages(user_id, dialog_id=None)
     if len(dialog_messages) == 0:
-        await update.message.reply_text("No message to retry 🤷‍♂️")
+        await update.message.reply_text("🤷‍♂️ No messages to retry")
         return
 
     last_dialog_message = dialog_messages.pop()
@@ -110,30 +123,29 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         await edited_message_handle(update, context)
         return
         
-    await register_user_if_not_exists(update, context, update.message.from_user)
+    await register_user_if_not_exists(update, context)
     user_id = update.message.from_user.id
 
     # new dialog timeout
     if use_new_dialog_timeout:
         if (datetime.now() - db.get_user_attribute(user_id, "last_interaction")).seconds > config.NEW_DIALOG_TIMEOUT:
             db.start_new_dialog(user_id)
-            await update.message.reply_text("Starting new dialog due to timeout ✅")
+            await update.message.reply_text("💬 Starting new dialog due to timeout")
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
     # send typing action
     await update.message.chat.send_action(action="typing")
 
-    used_tokens = db.get_user_attribute(user_id, "n_used_tokens")
-    total_tokens = db.get_user_attribute(user_id, "total_tokens")
+    remaining_tokens = db.get_user_remaining_tokens(user_id)
 
-    if used_tokens >= total_tokens:
-        await update.message.reply_text(f"Insufficient tokens: {total_tokens - used_tokens}", parse_mode=ParseMode.HTML)
+    if remaining_tokens < 0:
+        await update.message.reply_text(f"⚠️ Insufficient tokens, check /balance", parse_mode=ParseMode.HTML)
         return
 
     try:
         message = message or update.message.text
 
-        answer, prompt, n_used_tokens, n_first_dialog_messages_removed = chatgpt.ChatGPT().send_message(
+        answer, prompt, used_tokens, n_first_dialog_messages_removed = chatgpt.ChatGPT().send_message(
             message,
             dialog_messages=db.get_dialog_messages(user_id, dialog_id=None),
             chat_mode=db.get_user_attribute(user_id, "current_chat_mode"),
@@ -147,7 +159,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             dialog_id=None
         )
 
-        db.set_user_attribute(user_id, "n_used_tokens", n_used_tokens + db.get_user_attribute(user_id, "n_used_tokens"))
+        db.inc_user_used_tokens(user_id, used_tokens)
 
     except Exception as e:
         error_text = f"Something went wrong during completion. Reason: {e}"
@@ -171,19 +183,19 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
 
 async def new_dialog_handle(update: Update, context: CallbackContext):
-    await register_user_if_not_exists(update, context, update.message.from_user)
+    await register_user_if_not_exists(update, context)
     user_id = update.message.from_user.id
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
     db.start_new_dialog(user_id)
-    await update.message.reply_text("Starting new dialog ✅")
+    await update.message.reply_text("💬 Starting new dialog")
 
     chat_mode = db.get_user_attribute(user_id, "current_chat_mode")
     await update.message.reply_text(f"{chatgpt.CHAT_MODES[chat_mode]['welcome_message']}", parse_mode=ParseMode.HTML)
 
 
 async def show_chat_modes_handle(update: Update, context: CallbackContext):
-    await register_user_if_not_exists(update, context, update.message.from_user)
+    await register_user_if_not_exists(update, context)
     user_id = update.message.from_user.id
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
@@ -196,7 +208,7 @@ async def show_chat_modes_handle(update: Update, context: CallbackContext):
 
 
 async def set_chat_mode_handle(update: Update, context: CallbackContext):
-    await register_user_if_not_exists(update.callback_query, context, update.callback_query.from_user)
+    await register_user_if_not_exists(update, context)
     user_id = update.callback_query.from_user.id
 
     query = update.callback_query
@@ -216,26 +228,29 @@ async def set_chat_mode_handle(update: Update, context: CallbackContext):
 
 
 async def show_balance_handle(update: Update, context: CallbackContext):
-    await register_user_if_not_exists(update, context, update.message.from_user)
+    await register_user_if_not_exists(update, context)
 
     user_id = update.message.from_user.id
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
-    n_used_tokens = db.get_user_attribute(user_id, "n_used_tokens")
-    n_spent_dollars = n_used_tokens * (0.02 / 1000)
+    used_tokens = db.get_user_attribute(user_id, "used_tokens")
+    n_spent_dollars = used_tokens * (config.TOKEN_PRICE / 1000)
 
-    text = f"You spent <b>{n_spent_dollars:.03f}$</b>\n"
-    text += f"You used <b>{n_used_tokens}</b> tokens <i>(price: 0.02$ per 1000 tokens)</i>\n"
+    text = f"👛 <b>Balance</b>\n\n"
+    text += f"<b>{db.get_user_remaining_tokens(user_id)}</b> tokens\n"
+    text += f"<i>You used <b>{used_tokens}</b> tokens</i>"
+    # text += f"You spent <b>{n_spent_dollars:.03f}$</b>\n"
+    # text += f"You used <b>{used_tokens}</b> tokens <i>(price: ${config.TOKEN_PRICE} per 1000 tokens)</i>\n"
 
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("Top up", callback_data="top_up")]])
 
     await update.message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=reply_markup)
 
 async def show_top_up(update: Update, context: CallbackContext):
-    await register_user_if_not_exists(update.callback_query, context, update.callback_query.from_user)
+    await register_user_if_not_exists(update, context)
 
-    query = update.callback_query
-    await query.answer()
+    if update.callback_query:
+        await update.callback_query.answer()
 
     reply_markup = InlineKeyboardMarkup([
         [
@@ -245,7 +260,8 @@ async def show_top_up(update: Update, context: CallbackContext):
         ]
     ])
 
-    await query.edit_message_text(
+    await reply_or_edit_text(
+        update,
         "Select or enter the amount",
         parse_mode=ParseMode.HTML,
         reply_markup=reply_markup,
@@ -254,16 +270,15 @@ async def show_top_up(update: Update, context: CallbackContext):
     return TOP_UP
 
 async def show_payment_methods(update: Update, context: CallbackContext):
+    await register_user_if_not_exists(update, context)
     if update.message:
-        await register_user_if_not_exists(update, context, update.message.from_user)
         amount = update.message.text
     else:
-        await register_user_if_not_exists(update.callback_query, context, update.callback_query.from_user)
         query = update.callback_query
         await query.answer()
         amount = query.data.split("|")[1]
 
-    text_not_in_range = "💡 Only accept number between 0.1 to 100"
+    text_not_in_range = "💡 Only accept number between 0.1 to 100, or /cancel top-up"
     if not amount.replace('.', '', 1).isdigit():
         await reply_or_edit_text(update, text_not_in_range)
         return TOP_UP
@@ -296,14 +311,14 @@ async def show_payment_methods(update: Update, context: CallbackContext):
     return PAYMENT
 
 async def show_invoice(update: Update, context: CallbackContext):
-    await register_user_if_not_exists(update.callback_query, context, update.callback_query.from_user)
+    await register_user_if_not_exists(update, context)
     query = update.callback_query
     await query.answer()
     user_id = query.from_user.id
     _, method, amount = query.data.split("|")
 
     amount = float(amount)
-    token_amount = int(amount / 0.02 * 1000)
+    token_amount = int(amount / config.TOKEN_PRICE * 1000)
     result = orders.create(user_id, method, amount, token_amount)
 
     if result and result["status"] == "OK":
@@ -368,13 +383,14 @@ def run_bot() -> None:
     application.add_handler(CommandHandler("start", start_handle, filters=user_filter))
     application.add_handler(CommandHandler("retry", retry_handle, filters=user_filter))
     application.add_handler(CommandHandler("new", new_dialog_handle, filters=user_filter))
-    application.add_handler(CommandHandler("mode", show_chat_modes_handle, filters=user_filter))
+    # application.add_handler(CommandHandler("mode", show_chat_modes_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(set_chat_mode_handle, pattern="^set_chat_mode"))
     application.add_handler(CommandHandler("balance", show_balance_handle, filters=user_filter))
 
     # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
     conv_handler = ConversationHandler(
         entry_points=[
+            CommandHandler("topup", show_top_up, filters=user_filter),
             CallbackQueryHandler(show_top_up, pattern="^top_up$"),
         ],
         states={
