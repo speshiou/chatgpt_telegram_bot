@@ -7,7 +7,7 @@ def _env_parse_int(name, default_value = None):
             return int(value)
         else:
             raise Exception(f"{name} isn't an integer")
-    return value
+    return value if value else default_value
 
 def _env_parse_float(name, default_value = None):
     value = os.getenv(name, default_value)
@@ -16,7 +16,7 @@ def _env_parse_float(name, default_value = None):
             return float(value)
         else:
             raise Exception(f"{name} isn't an number")
-    return value
+    return value if value else default_value
 
 def _env_parse_str_array(name, default_value = None):
     value = os.getenv(name, default_value)
@@ -28,7 +28,8 @@ MONGODB_PORT = os.getenv('MONGODB_PORT', 27017)
 MONGODB_URI = f"mongodb://mongo:{MONGODB_PORT}"
 
 FREE_QUOTA = _env_parse_int('FREE_QUOTA', 10000)
-TOKEN_PRICE = _env_parse_float('TOKEN_PRICE', 0.005)
+# default price for gpt-3.5-turbo
+TOKEN_PRICE = _env_parse_float('TOKEN_PRICE', 0.002)
 
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
