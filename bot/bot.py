@@ -36,6 +36,7 @@ COMMANDS = [
     # BotCommand("mode", "Select chat mode"),
     BotCommand("balance", "show balance"),
     BotCommand("topup", "top-up tokens"),
+    BotCommand("language", "set preferred language for UI"),
 ]
 
 async def register_user_if_not_exists(update: Update, context: CallbackContext):
@@ -75,19 +76,19 @@ async def reply_or_edit_text(update: Update, text: str, parse_mode: ParseMode = 
             reply_markup=reply_markup
         )
 
-async def start_handle(update: Update, context: CallbackContext):
-    user_id = update.message.from_user.id
-    is_new_user = not db.check_if_user_exists(user_id)
+def get_chat_id(update: Update):
+    chat_id = None
+    if update.message:
+        chat_id = update.message.chat_id
+    elif update.callback_query:
+        chat_id = update.effective_chat.id
+    return chat_id
 
-    await register_user_if_not_exists(update, context)
+async def send_greeting(update: Update, context: CallbackContext, is_new_user=False):
+    user = await register_user_if_not_exists(update, context)
     
-    print(f"language code={update.message.from_user.language_code}")
-    
-    _ = i18n.get_text_func(update.message.from_user.language_code)
+    _ = i18n.get_text_func(db.get_user_preferred_language(user.id) or user.language_code)
 
-    db.set_user_attribute(user_id, "last_interaction", datetime.now())
-    db.start_new_dialog(user_id)
-    
     commands_text = "".join([f"/{c.command} - {c.description}\n" for c in COMMANDS])
 
     reply_text = _("🤖 Hi! I'm <b>ChatGPT</b> bot powered by OpenAI GPT-3.5 API")
@@ -95,21 +96,34 @@ async def start_handle(update: Update, context: CallbackContext):
     reply_text += _("<b>Commands</b>")
     reply_text += "\n"
     reply_text += commands_text
-    reply_text += "\n\n"
-    reply_text += _("And now... ask me anything ...")
     
-    await update.message.reply_text(
+    await reply_or_edit_text(
+        update,
         reply_text, 
         parse_mode=ParseMode.HTML,
-        reply_markup=ReplyKeyboardRemove()
         )
     
-    if is_new_user:
+    if is_new_user and update.message:
         await update.message.reply_text(
             "✅ {:,} free tokens have been credited, check /balance".format(config.FREE_QUOTA), 
             parse_mode=ParseMode.HTML,
-            reply_markup=ReplyKeyboardRemove()
             )
+    chat_id = get_chat_id(update)
+    if chat_id:
+        await context.bot.send_message(chat_id, _("now you can ask me anything ..."))
+
+async def start_handle(update: Update, context: CallbackContext):
+    user_id = update.message.from_user.id
+    is_new_user = not db.check_if_user_exists(user_id)
+
+    user = await register_user_if_not_exists(update, context)
+    
+    _ = i18n.get_text_func(user.language_code)
+
+    db.set_user_attribute(user_id, "last_interaction", datetime.now())
+    db.start_new_dialog(user_id)
+    
+    await send_greeting(update, context, is_new_user=is_new_user)
 
 async def retry_handle(update: Update, context: CallbackContext):
     await register_user_if_not_exists(update, context)
@@ -133,7 +147,9 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         await edited_message_handle(update, context)
         return
         
-    await register_user_if_not_exists(update, context)
+    user = await register_user_if_not_exists(update, context)
+    _ = i18n.get_text_func(user.language_code)
+
     user_id = update.message.from_user.id
 
     # new dialog timeout
@@ -149,7 +165,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     remaining_tokens = db.get_user_remaining_tokens(user_id)
 
     if remaining_tokens < 0:
-        await update.message.reply_text(f"⚠️ Insufficient tokens, check /balance", parse_mode=ParseMode.HTML)
+        await update.message.reply_text(_("⚠️ Insufficient tokens, check /balance"), parse_mode=ParseMode.HTML)
         return
 
     try:
@@ -255,6 +271,39 @@ async def show_balance_handle(update: Update, context: CallbackContext):
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("Top up", callback_data="top_up")]])
 
     await update.message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=reply_markup)
+
+async def show_languages_handle(update: Update, context: CallbackContext):
+    await register_user_if_not_exists(update, context)
+
+    reply_markup = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("English", callback_data="set_language|en"),
+        ],
+        [
+            InlineKeyboardButton("繁體中文", callback_data="set_language|zh_TW"),
+        ],
+        [
+            InlineKeyboardButton("简体中文", callback_data="set_language|zh_CN"),
+        ]
+    ])
+
+    await reply_or_edit_text(
+        update,
+        "🌐 Select preferred language",
+        reply_markup=reply_markup,
+    )
+
+async def set_language_handle(update: Update, context: CallbackContext):
+    user = await register_user_if_not_exists(update, context)
+
+    query = update.callback_query
+    await query.answer()
+    language = query.data.split("|")[1]
+
+    db.set_user_attribute(user.id, 'preferred_lang', language)
+
+    await send_greeting(update, context)
+    
 
 def price_to_tokens(price: float):
     return int(price / config.TOKEN_PRICE * 1000)
@@ -419,6 +468,8 @@ def run_bot() -> None:
     # application.add_handler(CommandHandler("mode", show_chat_modes_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(set_chat_mode_handle, pattern="^set_chat_mode"))
     application.add_handler(CommandHandler("balance", show_balance_handle, filters=user_filter))
+    application.add_handler(CommandHandler("language", show_languages_handle, filters=user_filter))
+    application.add_handler(CallbackQueryHandler(set_language_handle, pattern="^set_language"))
 
     # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
     conv_handler = ConversationHandler(

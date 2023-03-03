@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-03-02 15:51+0800\n"
+"POT-Creation-Date: 2023-03-03 21:11+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,7 +15,19 @@ msgstr ""
 "Generated-By: pygettext.py 1.5\n"
 
 
-#: bot/bot.py:78
-msgid "Hi! I'm <b>ChatGPT</b> bot implemented with GPT-3.5 OpenAI API 🤖"
-msgstr "你好！我是使用 GPT-3.5 OpenAI API 实现的 <b>ChatGPT</b> 机器人 🤖"
+#: bot/bot.py:86
+msgid "🤖 Hi! I'm <b>ChatGPT</b> bot powered by OpenAI GPT-3.5 API"
+msgstr "🤖 嗨！我是<b>ChatGPT</b>机器人，由 OpenAI GPT-3.5 API 提供支持"
+
+#: bot/bot.py:88
+msgid "<b>Commands</b>"
+msgstr "<b>命令</b>"
+
+#: bot/bot.py:118
+msgid "now you can ask me anything ..."
+msgstr "现在你可以问我任何事..."
+
+#: bot/bot.py:160
+msgid "⚠️ Insufficient tokens, check /balance"
+msgstr "⚠️ 代币不足，查看 /balance"
 

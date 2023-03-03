@@ -94,6 +94,12 @@ class Database:
 
         return ret
     
+    def get_user_preferred_language(self, user_id: int):
+        try:
+            return self.get_user_attribute(user_id, 'preferred_lang')
+        except:
+            return None
+    
     def get_user_remaining_tokens(self, user_id: int):
         total_tokens, used_tokens = self.get_user_attributes(user_id, ['total_tokens', 'used_tokens'])
         return total_tokens - used_tokens
