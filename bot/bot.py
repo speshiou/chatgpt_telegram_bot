@@ -23,6 +23,7 @@ import database
 import chatgpt
 import orders
 import i18n
+import bugreport
 
 # setup
 db = database.Database()
@@ -441,7 +442,10 @@ async def error_handle(update: Update, context: CallbackContext) -> None:
         f"<pre>{html.escape(tb_string)}</pre>"
     )
 
-    await context.bot.send_message(update.effective_chat.id, message, parse_mode=ParseMode.HTML)
+    try:
+        await bugreport.send_bugreport(message)
+    except Exception as e:
+        print(f"Failed to send bugreport: {e}")
 
 async def cancel(update: Update, context: CallbackContext):
     return ConversationHandler.END

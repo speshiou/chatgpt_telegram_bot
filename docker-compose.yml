@@ -22,6 +22,8 @@ services:
       - FREE_QUOTA=${FREE_QUOTA}
       - TOKEN_PRICE=${TOKEN_PRICE}
       - PAYMENT_ENDPOINT=${PAYMENT_ENDPOINT}
+      - BUGREPORT_BOT_TOKEN=${BUGREPORT_BOT_TOKEN}
+      - BUGREPORT_CHAT_ID=${BUGREPORT_CHAT_ID}
     command: python3 bot/bot.py
     restart: always
     build:
