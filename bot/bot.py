@@ -246,6 +246,9 @@ async def show_balance_handle(update: Update, context: CallbackContext):
 
     await update.message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=reply_markup)
 
+def price_to_tokens(price: float):
+    return int(price / config.TOKEN_PRICE * 1000)
+
 async def show_top_up(update: Update, context: CallbackContext):
     await register_user_if_not_exists(update, context)
 
@@ -254,15 +257,19 @@ async def show_top_up(update: Update, context: CallbackContext):
 
     reply_markup = InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("$10", callback_data="top_up|10"),
-            InlineKeyboardButton("$50", callback_data="top_up|50"),
-            InlineKeyboardButton("$100", callback_data="top_up|100"),
+            InlineKeyboardButton(f"$10 for {price_to_tokens(10)} tokens", callback_data="top_up|10"),
+        ],
+        [
+            InlineKeyboardButton(f"$50 for {price_to_tokens(50)} tokens", callback_data="top_up|50"),
+        ],
+        [
+            InlineKeyboardButton(f"$100 for {price_to_tokens(100)} tokens", callback_data="top_up|100"),
         ]
     ])
 
     await reply_or_edit_text(
         update,
-        "Select or enter the amount",
+        "💡 Select or enter the payment amount",
         parse_mode=ParseMode.HTML,
         reply_markup=reply_markup,
     )
@@ -289,10 +296,10 @@ async def show_payment_methods(update: Update, context: CallbackContext):
         await reply_or_edit_text(update, text_not_in_range)
         return TOP_UP
 
-    text = "Choose preferred payment method"
+    text = "💡 Choose preferred payment method"
     reply_markup = InlineKeyboardMarkup([
-        [InlineKeyboardButton("Paypal", callback_data=f"payment|paypal|{amount}")],
-        [InlineKeyboardButton("Crypto", callback_data=f"payment|crypto|{amount}")]
+        [InlineKeyboardButton("💳 Paypal", callback_data=f"payment|paypal|{amount}")],
+        [InlineKeyboardButton("🪙 Crypto", callback_data=f"payment|crypto|{amount}")]
     ])
 
     if update.message:
@@ -318,16 +325,32 @@ async def show_invoice(update: Update, context: CallbackContext):
     _, method, amount = query.data.split("|")
 
     amount = float(amount)
-    token_amount = int(amount / config.TOKEN_PRICE * 1000)
+    token_amount = price_to_tokens(amount)
+
+    await query.edit_message_text(
+        "📋 Creating an invoice ...",
+        parse_mode=ParseMode.HTML,
+    )
+
     result = orders.create(user_id, method, amount, token_amount)
 
     if result and result["status"] == "OK":
-        text = f"Your invoice: \n ${amount} = {token_amount} tokens"
+        text = f"📋 <b>Your invoice</b>:\n\n"
+        text += f"{token_amount} tokens\n"
+        text += "------------------\n"
+        text += f"${amount}\n\n"
+        text += "<i>Your tokens will be credited within 10 minutes of payment.</i>"
+
+        button_text = ""
+        if method == "paypal":
+            button_text = "💳 Pay with Paypal"
+        elif method == "crypto":
+            button_text = "🪙 Pay with Crypto"
         reply_markup = InlineKeyboardMarkup([
-            [InlineKeyboardButton(f"Pay with ${method}", url=result["url"])]
+            [InlineKeyboardButton(button_text, url=result["url"])]
         ])
     else:
-        text = "Failed to create an invoice"
+        text = "⚠️ Failed to create an invoice, please try again later."
         reply_markup = None
 
     await query.edit_message_text(
