@@ -9,6 +9,8 @@ SUPPORTED_LOCALES = set([
 ])
 
 def mapping_tg_lang_code(code):
+    if not code:
+        return DEFAULT_LOCALE
     if code in SUPPORTED_LOCALES:
         return code
     if code == "zh-hant" or code.startswith("zh"):
