@@ -143,6 +143,16 @@ async def retry_handle(update: Update, context: CallbackContext):
 
     await message_handle(update, context, message=last_dialog_message["user"], use_new_dialog_timeout=False)
 
+def finalize_message_handle(user_id, message, answer, used_tokens):
+    # update user data
+    new_dialog_message = {"user": message, "bot": answer, "date": datetime.now()}
+    db.set_dialog_messages(
+        user_id,
+        db.get_dialog_messages(user_id) + [new_dialog_message],
+    )
+
+    # IMPORTANT: consume tokens in the end of function call to protect users' credits
+    db.inc_user_used_tokens(user_id, used_tokens)
 
 async def message_handle(update: Update, context: CallbackContext, message=None, use_new_dialog_timeout=True):
     # check if message is edited
@@ -171,8 +181,11 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         await update.message.reply_text(_("⚠️ Insufficient tokens, check /balance"), parse_mode=ParseMode.HTML)
         return
 
+    message = message or update.message.text
+    answer = None
+    used_tokens = None
+
     try:
-        message = message or update.message.text
         messages = db.get_dialog_messages(user_id)
         if not messages:
             logger.warning("missing dialog data, start a new dialog")
@@ -185,35 +198,32 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             chat_mode=db.get_user_attribute(user_id, "current_chat_mode"),
         )
 
+        # send message if some messages were removed from the context
+        if n_first_dialog_messages_removed > 0:
+            if n_first_dialog_messages_removed == 1:
+                text = "✍️ <i>Note:</i> Your current dialog is too long, so your <b>first message</b> was removed from the context.\n Send /new command to start new dialog"
+            else:
+                text = f"✍️ <i>Note:</i> Your current dialog is too long, so <b>{n_first_dialog_messages_removed} first messages</b> were removed from the context.\n Send /new command to start new dialog"
+            await update.message.reply_text(text, parse_mode=ParseMode.HTML)
+
+        await update.message.reply_text(answer, parse_mode=ParseMode.MARKDOWN)
+
         # update user data
-        new_dialog_message = {"user": message, "bot": answer, "date": datetime.now()}
-        db.set_dialog_messages(
-            user_id,
-            db.get_dialog_messages(user_id) + [new_dialog_message],
-        )
-
-        db.inc_user_used_tokens(user_id, used_tokens)
-
+        finalize_message_handle(user_id, message, answer, used_tokens)
+    except telegram.error.BadRequest as e:
+        if answer:
+            # answer has invalid characters, so we send it without parse_mode
+            await update.message.reply_text(answer)
+            # update user data
+            finalize_message_handle(user_id, message, answer, used_tokens)
+        else:
+            error_text = f"Errors from Telegram: {e}"
+            logger.error(error_text)    
     except Exception as e:
         error_text = f"Something went wrong during completion. Reason: {e}"
         logger.error(error_text)
         await update.message.reply_text(error_text)
         return
-
-    # send message if some messages were removed from the context
-    if n_first_dialog_messages_removed > 0:
-        if n_first_dialog_messages_removed == 1:
-            text = "✍️ <i>Note:</i> Your current dialog is too long, so your <b>first message</b> was removed from the context.\n Send /new command to start new dialog"
-        else:
-            text = f"✍️ <i>Note:</i> Your current dialog is too long, so <b>{n_first_dialog_messages_removed} first messages</b> were removed from the context.\n Send /new command to start new dialog"
-        await update.message.reply_text(text, parse_mode=ParseMode.HTML)
-
-    try:
-        await update.message.reply_text(answer, parse_mode=ParseMode.MARKDOWN)
-    except telegram.error.BadRequest:
-        # answer has invalid characters, so we send it without parse_mode
-        await update.message.reply_text(answer)
-
 
 async def new_dialog_handle(update: Update, context: CallbackContext):
     await register_user_if_not_exists(update, context)
