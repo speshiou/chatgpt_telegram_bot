@@ -133,13 +133,13 @@ async def retry_handle(update: Update, context: CallbackContext):
     user_id = update.message.from_user.id
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
-    dialog_messages = db.get_dialog_messages(user_id, dialog_id=None)
-    if len(dialog_messages) == 0:
+    dialog_messages = db.get_dialog_messages(user_id)
+    if not dialog_messages or len(dialog_messages) == 0:
         await update.message.reply_text("🤷‍♂️ No messages to retry")
         return
 
     last_dialog_message = dialog_messages.pop()
-    db.set_dialog_messages(user_id, dialog_messages, dialog_id=None)  # last message was removed from the context
+    db.set_dialog_messages(user_id, dialog_messages)  # last message was removed from the context
 
     await message_handle(update, context, message=last_dialog_message["user"], use_new_dialog_timeout=False)
 
@@ -173,10 +173,15 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
     try:
         message = message or update.message.text
+        messages = db.get_dialog_messages(user_id)
+        if not messages:
+            logger.warning("missing dialog data, start a new dialog")
+            db.start_new_dialog(user_id)
+            messages = []
 
         answer, prompt, used_tokens, n_first_dialog_messages_removed = chatgpt.ChatGPT().send_message(
             message,
-            dialog_messages=db.get_dialog_messages(user_id, dialog_id=None),
+            dialog_messages=messages,
             chat_mode=db.get_user_attribute(user_id, "current_chat_mode"),
         )
 
@@ -184,8 +189,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         new_dialog_message = {"user": message, "bot": answer, "date": datetime.now()}
         db.set_dialog_messages(
             user_id,
-            db.get_dialog_messages(user_id, dialog_id=None) + [new_dialog_message],
-            dialog_id=None
+            db.get_dialog_messages(user_id) + [new_dialog_message],
         )
 
         db.inc_user_used_tokens(user_id, used_tokens)
