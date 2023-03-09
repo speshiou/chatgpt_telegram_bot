@@ -62,6 +62,7 @@ async def register_user_if_not_exists(update: Update, context: CallbackContext):
             first_name=user.first_name,
             last_name= user.last_name
         )
+        db.inc_stats('new_users')
     return user
 
 async def reply_or_edit_text(update: Update, text: str, parse_mode: ParseMode = ParseMode.HTML, reply_markup = None):

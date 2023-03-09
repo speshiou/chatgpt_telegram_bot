@@ -14,6 +14,7 @@ class Database:
 
         self.user_collection = self.db["users"]
         self.dialog_collection = self.db["dialogs"]
+        self.stat_collection = self.db["stats"]
 
     def check_if_user_exists(self, user_id: int, raise_exception: bool = False):
         if self.user_collection.count_documents({"_id": user_id}) > 0:
@@ -127,3 +128,31 @@ class Database:
             {"_id": dialog_id, "user_id": user_id},
             {"$set": {"messages": dialog_messages}}
         )
+
+    def inc_stats(self, field: str, amount: int = 1):
+        today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+
+        default_data = { 
+            "new_users": 0,
+            "referral_new_users": 0,
+            "net_sales": 0, 
+            "new_orders": 0,
+            "paid_orders": 0,
+        }
+
+        if field not in default_data:
+            raise ValueError(f"Invalid field `{field}` for stats")
+        
+        # prevent conflict field
+        default_data.pop(field, None)
+
+        inc = { field: amount }
+
+        query = {"_id": today}
+        update = {
+            "$setOnInsert": default_data,
+            "$inc": inc,
+        }
+
+        self.stat_collection.update_one(query, update, upsert=True)
+
