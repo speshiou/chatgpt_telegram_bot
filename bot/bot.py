@@ -40,6 +40,7 @@ def get_commands(lang=i18n.DEFAULT_LOCALE):
         # BotCommand("mode", _("select chat mode")),
         BotCommand("balance", _("show balance")),
         BotCommand("topup", _("top-up tokens")),
+        # BotCommand("earn", _("earn rewards by referral")),
         BotCommand("language", _("set UI language")),
     ]
 
@@ -452,6 +453,21 @@ async def show_invoice(update: Update, context: CallbackContext):
 
     ConversationHandler.END
 
+async def show_earn_handle(update: Update, context: CallbackContext):
+    user = await register_user_if_not_exists(update, context)
+    referral_url = f"https://t.me/{config.TELEGRAM_BOT_NAME}?start=u{user.id}"
+
+    message = "<b>💰 Earn</b>"
+    message += "\n\n"
+    message += "Get 5% rewards from the referred payments"
+    message += "\n\n"
+    message += "Referral link:"
+    message += "\n"
+    message += f'<a href="{referral_url}">{referral_url}</a>'
+    message += "\n\n"
+    message += "<i>💡 Refer someone via your referral link, and you'll get a reward when they make a payment.</i>"
+    await reply_or_edit_text(update, message)
+
 async def edited_message_handle(update: Update, context: CallbackContext):
     text = "🥲 Unfortunately, message <b>editing</b> is not supported"
     await update.edited_message.reply_text(text, parse_mode=ParseMode.HTML)
@@ -503,6 +519,7 @@ def run_bot() -> None:
     # application.add_handler(CommandHandler("mode", show_chat_modes_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(set_chat_mode_handle, pattern="^set_chat_mode"))
     application.add_handler(CommandHandler("balance", show_balance_handle, filters=user_filter))
+    application.add_handler(CommandHandler("earn", show_earn_handle, filters=user_filter))
     application.add_handler(CommandHandler("language", show_languages_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(set_language_handle, pattern="^set_language"))
 

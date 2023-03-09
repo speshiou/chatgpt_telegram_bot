@@ -31,6 +31,7 @@ FREE_QUOTA = _env_parse_int('FREE_QUOTA', 10000)
 # default price for gpt-3.5-turbo
 TOKEN_PRICE = _env_parse_float('TOKEN_PRICE', 0.002)
 
+TELEGRAM_BOT_NAME = os.getenv('TELEGRAM_BOT_NAME')
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 ALLOWED_TELEGRAM_USERNAMES = _env_parse_str_array('ALLOWED_TELEGRAM_USERNAMES')
@@ -39,6 +40,8 @@ PAYMENT_ENDPOINT = os.getenv('PAYMENT_ENDPOINT')
 BUGREPORT_BOT_TOKEN = os.getenv('BUGREPORT_BOT_TOKEN')
 BUGREPORT_CHAT_ID = os.getenv('BUGREPORT_CHAT_ID')
 
+if not TELEGRAM_BOT_NAME:
+    raise Exception("TELEGRAM_BOT_NAME not set")
 if not TELEGRAM_BOT_TOKEN:
     raise Exception("TELEGRAM_BOT_TOKEN not set")
 if not OPENAI_API_KEY:

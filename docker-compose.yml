@@ -15,6 +15,7 @@ services:
     container_name: chatgpt-telegram-bot
     environment:
       - MONGODB_PORT=${MONGODB_PORT:-27017}
+      - TELEGRAM_BOT_NAME=${TELEGRAM_BOT_NAME}
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ALLOWED_TELEGRAM_USERNAMES=${ALLOWED_TELEGRAM_USERNAMES}
