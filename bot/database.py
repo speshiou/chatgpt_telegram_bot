@@ -142,9 +142,6 @@ class Database:
         default_data = { 
             "new_users": 0,
             "referral_new_users": 0,
-            "net_sales": 0, 
-            "new_orders": 0,
-            "paid_orders": 0,
         }
 
         if field not in default_data:

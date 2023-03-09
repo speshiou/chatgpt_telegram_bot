@@ -22,7 +22,7 @@ from telegram.constants import ParseMode, ChatAction
 import config
 import database
 import chatgpt
-import orders
+import api
 import i18n
 import bugreport
 
@@ -424,7 +424,7 @@ async def show_invoice(update: Update, context: CallbackContext):
         parse_mode=ParseMode.HTML,
     )
 
-    result = orders.create(user_id, method, amount, token_amount)
+    result = await api.create_order(user_id, method, amount, token_amount)
 
     if result and result["status"] == "OK":
         text = f"📋 <b>Your invoice</b>:\n\n"
@@ -455,18 +455,23 @@ async def show_invoice(update: Update, context: CallbackContext):
 
 async def show_earn_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
-    referral_url = f"https://t.me/{config.TELEGRAM_BOT_NAME}?start=u{user.id}"
+    result = await api.earn(user.id)
+    referral_url = result['referral_url'];
 
-    message = "<b>💰 Earn</b>"
-    message += "\n\n"
-    message += "Get 5% rewards from the referred payments"
-    message += "\n\n"
-    message += "Referral link:"
-    message += "\n"
-    message += f'<a href="{referral_url}">{referral_url}</a>'
-    message += "\n\n"
-    message += "<i>💡 Refer someone via your referral link, and you'll get a reward when they make a payment.</i>"
-    await reply_or_edit_text(update, message)
+    if result and result["status"] == "OK":
+        text = "<b>💰 Earn</b>"
+        text += "\n\n"
+        text += "Get %s%% rewards from the referred payments" % (result['commission_rate'] * 100)
+        text += "\n\n"
+        text += "Referral link:"
+        text += "\n"
+        text += f'<a href="{referral_url}">{referral_url}</a>'
+        text += "\n\n"
+        text += "<i>💡 Refer someone via your referral link, and you'll get a reward when they make a payment.</i>"
+    else:
+        text = "⚠️ Server error, please try again later."
+
+    await reply_or_edit_text(update, text)
 
 async def edited_message_handle(update: Update, context: CallbackContext):
     text = "🥲 Unfortunately, message <b>editing</b> is not supported"
