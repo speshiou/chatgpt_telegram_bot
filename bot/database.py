@@ -32,6 +32,7 @@ class Database:
         username: str = "",
         first_name: str = "",
         last_name: str = "",
+        referred_by: int = None,
     ):
         user_dict = {
             "_id": user_id,
@@ -49,6 +50,9 @@ class Database:
 
             "used_tokens": 0,
             "total_tokens": config.FREE_QUOTA,
+
+            "referred_by": referred_by,
+            "referred_count": 0,
         }
 
         if not self.check_if_user_exists(user_id):
@@ -104,6 +108,9 @@ class Database:
     def get_user_remaining_tokens(self, user_id: int):
         total_tokens, used_tokens = self.get_user_attributes(user_id, ['total_tokens', 'used_tokens'])
         return total_tokens - used_tokens
+
+    def inc_user_referred_count(self, user_id: int):
+        self.user_collection.update_one({"_id": user_id}, {"$inc": { 'referred_count': 1}})
 
     def inc_user_used_tokens(self, user_id: int, used_token: int):
         self.user_collection.update_one({"_id": user_id}, {"$inc": { 'used_tokens': used_token}})

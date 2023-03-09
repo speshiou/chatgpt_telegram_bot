@@ -2,6 +2,7 @@ import logging
 import traceback
 import html
 import json
+import re
 from datetime import datetime
 
 import telegram
@@ -42,7 +43,7 @@ def get_commands(lang=i18n.DEFAULT_LOCALE):
         BotCommand("language", _("set UI language")),
     ]
 
-async def register_user_if_not_exists(update: Update, context: CallbackContext):
+async def register_user_if_not_exists(update: Update, context: CallbackContext, referred_by: int = None):
     user = None
     if update.message:
         user = update.message.from_user
@@ -55,14 +56,22 @@ async def register_user_if_not_exists(update: Update, context: CallbackContext):
         return
     
     if not db.check_if_user_exists(user.id):
+        if referred_by and (user.id == referred_by or not db.check_if_user_exists(referred_by)):
+            # referred by unknown user or self, unset referral
+            referred_by = None
+
         db.add_new_user(
             user.id,
             chat_id,
             username=user.username,
             first_name=user.first_name,
-            last_name= user.last_name
+            last_name=user.last_name,
+            referred_by=referred_by
         )
         db.inc_stats('new_users')
+        if referred_by:
+            db.inc_user_referred_count(referred_by)
+            db.inc_stats('referral_new_users')
     return user
 
 async def reply_or_edit_text(update: Update, text: str, parse_mode: ParseMode = ParseMode.HTML, reply_markup = None):
@@ -120,7 +129,12 @@ async def start_handle(update: Update, context: CallbackContext):
     user_id = update.message.from_user.id
     is_new_user = not db.check_if_user_exists(user_id)
 
-    user = await register_user_if_not_exists(update, context)
+    # Extract the referral URL from the message text
+    message_text = update.message.text
+    m = re.match("\/start u(\d+)", message_text)
+    referred_by = int(m[1]) if m else None
+
+    user = await register_user_if_not_exists(update, context, referred_by=referred_by)
     
     _ = i18n.get_text_func(user.language_code)
 
