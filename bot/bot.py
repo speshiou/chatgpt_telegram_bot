@@ -48,6 +48,9 @@ async def register_user_if_not_exists(update: Update, context: CallbackContext, 
     if update.message:
         user = update.message.from_user
         chat_id = update.message.chat_id
+    elif update.edited_message:
+        user = update.edited_message.from_user
+        chat_id = update.edited_message.chat_id
     elif update.callback_query:
         user = update.callback_query.from_user
         chat_id = update.effective_chat.id
