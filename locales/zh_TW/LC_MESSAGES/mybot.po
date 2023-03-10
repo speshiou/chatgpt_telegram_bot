@@ -3,9 +3,9 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 msgid ""
-msgstr "Project-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-03 22:30+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:04+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:04+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:33+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:33+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:42+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:42+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:43+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:43+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:46+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:46+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:53+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:53+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:58+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:58+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 10:01+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 10:01+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 10:13+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 10:13+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 10:23+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 10:23+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 12:47+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\n"
+msgstr "Project-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-03 22:30+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:04+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:04+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:33+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:33+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:42+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:42+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:43+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:43+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:46+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:46+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:53+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:53+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:58+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:58+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 10:01+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 10:01+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 10:13+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 10:13+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 10:23+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 10:23+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 12:47+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 12:47+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 22:24+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 22:24+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 22:26+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\n"
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-03-10 12:47+0800\n"
+"POT-Creation-Date: 2023-03-10 22:26+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -51,148 +51,152 @@ msgstr "現在你可以問我任何事..."
 msgid "😅 No dialog history to retry"
 msgstr "😅 沒有要重試的對話歷史記錄"
 
-#: ./bot/bot.py:194
+#: ./bot/bot.py:197
 msgid "💬 Starting a new dialog due to timeout"
 msgstr "💬 由於超時而開始一個新的對話"
 
-#: ./bot/bot.py:203
+#: ./bot/bot.py:206
 msgid "⚠️ Insufficient tokens, check /balance"
 msgstr "⚠️ 代幣不足，查看 /balance"
 
-#: ./bot/bot.py:226
+#: ./bot/bot.py:229
 msgid ""
 "💡 the current dialog is too long, so the <b>first message</b> was removed from the dialog history.\n"
 " Send /new to start a new dialog"
 msgstr "💡 當前對話太長，因此 <b>第一條</b> 已從對話歷史記錄中刪除。\n 發送 /new 開始新對話"
 
-#: ./bot/bot.py:228
+#: ./bot/bot.py:231
 msgid ""
 "💡 the current dialog is too long, so the <b>first {} messages</b> have removed from the dialog history.\n"
 " Send /new to start a new dialog"
 msgstr "💡 當前對話太長，因此 <b>前 {} 條消息</b> 已從對話歷史記錄中刪除。\n 發送 /new 開始新對話"
 
-#: ./bot/bot.py:245
+#: ./bot/bot.py:236
+msgid "⚠️ the answer is too long, will split it into multiple messages without text formatting"
+msgstr "⚠️ 回答訊息過長，會拆分成多條消息，不帶文字格式"
+
+#: ./bot/bot.py:256
 msgid "Temporary OpenAI server failure, please try again later. Reason: {}"
 msgstr "OpenAI 服務器暫時性故障，請稍後重試。原因： {}"
 
-#: ./bot/bot.py:258
+#: ./bot/bot.py:269
 msgid "💬 Starting a new dialog"
 msgstr "💬 開始一個新的對話"
 
-#: ./bot/bot.py:307
+#: ./bot/bot.py:318
 msgid ""
 "👛 <b>Balance</b>\n"
 "\n"
 msgstr "👛 <b>餘額</b>\n\n"
 
-#: ./bot/bot.py:308
+#: ./bot/bot.py:319
 msgid ""
 "<b>{:,}</b> tokens left\n"
 msgstr "剩餘 <b>{:,}</b> 個標記額度\n"
 
-#: ./bot/bot.py:309
+#: ./bot/bot.py:320
 msgid ""
 "<i>You used <b>{:,}</b> tokens</i>\n"
 "\n"
 msgstr "<i>您使用了 <b>{:,}</b> 個標記額度</i>\n\n"
 
-#: ./bot/bot.py:310
+#: ./bot/bot.py:321
 msgid "<i>💡 The longer dialog would spend more tokens, use /new to reset</i>"
 msgstr "<i>💡 越長的對話會花費更多的標記額度，使用 /new 來重置</i>"
 
-#: ./bot/bot.py:356
+#: ./bot/bot.py:367
 msgid "🌐 Select preferred UI language"
 msgstr "🌐 選擇首選 UI 語言"
 
-#: ./bot/bot.py:385
+#: ./bot/bot.py:396
 msgid "💡 Only accept number between 0.1 to 100"
 msgstr "💡 只接受 0.1 到 100 之間的數字"
 
-#: ./bot/bot.py:389
+#: ./bot/bot.py:400
 msgid ""
 "🛒 Choose the payment method\n"
 "\n"
 msgstr "🛒 選擇付款方式\n\n"
 
-#: ./bot/bot.py:390
+#: ./bot/bot.py:401
 msgid ""
 "💳 Paypal - Debit or Credit Card\n"
 msgstr "💳 Paypal - 借記卡或信用卡\n"
 
-#: ./bot/bot.py:391
+#: ./bot/bot.py:402
 msgid ""
 "💎 Crypto - BTC, USDT, USDC, TON\n"
 msgstr "💎 加密貨幣 - BTC、USDT、USDC、TON\n"
 
-#: ./bot/bot.py:425
+#: ./bot/bot.py:436
 msgid "📋 Creating an invoice ..."
 msgstr "📋 創建發票 ..."
 
-#: ./bot/bot.py:432
+#: ./bot/bot.py:443
 msgid ""
 "📋 <b>Your invoice</b>:\n"
 "\n"
 msgstr "📋 <b>您的發票</b>：\n\n"
 
-#: ./bot/bot.py:436
+#: ./bot/bot.py:447
 msgid "💡 <i>Your tokens will be credited within 10 minutes of payment.</i>"
 msgstr "💡 <i>您的代幣將在付款後 10 分鐘內存入。</i>"
 
-#: ./bot/bot.py:440
+#: ./bot/bot.py:451
 msgid "💳 Pay with Paypal"
 msgstr "💳 使用 Paypal 付款"
 
-#: ./bot/bot.py:442
+#: ./bot/bot.py:453
 msgid "💎 Pay with Crypto"
 msgstr "💎 使用加密支付"
 
-#: ./bot/bot.py:447
+#: ./bot/bot.py:458
 msgid "⚠️ Failed to create an invoice, please try again later."
 msgstr "⚠️ 發票創建失敗，請稍後重試。"
 
-#: ./bot/bot.py:466
+#: ./bot/bot.py:477
 msgid ""
 "<b>💰 Earn</b>\n"
 "\n"
 msgstr "<b>💰 賺取</b>\n\n"
 
-#: ./bot/bot.py:468
+#: ./bot/bot.py:479
 msgid ""
 "Get %s%% rewards from the referred payments\n"
 "\n"
 msgstr "從推薦的付款中獲得 %s%% 的獎勵\n\n"
 
-#: ./bot/bot.py:469
+#: ./bot/bot.py:480
 msgid ""
 "Unused rewards: ${:,.2f}\n"
 msgstr "未使用的獎勵：${:,.2f}\n"
 
-#: ./bot/bot.py:470
+#: ./bot/bot.py:481
 msgid ""
 "Total earned: ${:,.2f}\n"
 "\n"
 msgstr "總獲得的獎勵：${:,.2f}\n\n"
 
-#: ./bot/bot.py:471
+#: ./bot/bot.py:482
 msgid ""
 "Referral link:\n"
 msgstr "推薦鏈接：\n"
 
-#: ./bot/bot.py:473
+#: ./bot/bot.py:484
 msgid ""
 "<i>You have referred {:,} new users</i>\n"
 "\n"
 msgstr "<i>您推薦了 {:,} 個新用戶</i>\n\n"
 
-#: ./bot/bot.py:474
+#: ./bot/bot.py:485
 msgid "<i>💡 Refer the new users via your referral link, and you'll get a reward when they make a payment.</i>"
 msgstr "<i>💡 通過您的推薦鏈接推薦新用戶，當他們付款時您將獲得獎勵。</i>"
 
-#: ./bot/bot.py:476
+#: ./bot/bot.py:487
 msgid "⚠️ Server error, please try again later."
 msgstr "⚠️ 服務器錯誤，請稍後重試。"
 
-#: ./bot/bot.py:484
+#: ./bot/bot.py:495
 msgid "💡 Edited messages won't take effects"
 msgstr "💡 編輯的訊息不會生效"
 

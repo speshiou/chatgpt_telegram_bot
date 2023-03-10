@@ -176,6 +176,9 @@ def finalize_message_handle(user_id, message, answer, used_tokens):
     # IMPORTANT: consume tokens in the end of function call to protect users' credits
     db.inc_user_used_tokens(user_id, used_tokens)
 
+def split_long_message(text):
+    return [text[i:i + config.MESSAGE_MAX_LENGTH] for i in range(0, len(text), config.MESSAGE_MAX_LENGTH)]
+
 async def message_handle(update: Update, context: CallbackContext, message=None, use_new_dialog_timeout=True):
     # check if message is edited
     if update.edited_message is not None:
@@ -228,7 +231,15 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
                 text = _("💡 the current dialog is too long, so the <b>first {} messages</b> have removed from the dialog history.\n Send /new to start a new dialog").format(n_first_dialog_messages_removed)
             await update.message.reply_text(text, parse_mode=ParseMode.HTML)
 
-        await update.message.reply_text(answer, parse_mode=ParseMode.MARKDOWN)
+        # check if the anwser is too long (over 4000)
+        if len(answer) > config.MESSAGE_MAX_LENGTH:
+            await update.message.reply_text(_("⚠️ the answer is too long, will split it into multiple messages without text formatting"))
+            message_chunks = split_long_message(answer)
+            for message_chunk in message_chunks:
+                # send splitted messages in plain text to prevent incomplete entities
+                await update.message.reply_text(message_chunk)
+        else:
+            await update.message.reply_text(answer, parse_mode=ParseMode.MARKDOWN)
 
         # update user data
         finalize_message_handle(user_id, message, answer, used_tokens)

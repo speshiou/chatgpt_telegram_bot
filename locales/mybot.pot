@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-03-10 12:47+0800\n"
+"POT-Creation-Date: 2023-03-10 22:28+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -51,148 +51,152 @@ msgstr ""
 msgid "😅 No dialog history to retry"
 msgstr ""
 
-#: ./bot/bot.py:194
+#: ./bot/bot.py:197
 msgid "💬 Starting a new dialog due to timeout"
 msgstr ""
 
-#: ./bot/bot.py:203
+#: ./bot/bot.py:206
 msgid "⚠️ Insufficient tokens, check /balance"
 msgstr ""
 
-#: ./bot/bot.py:226
+#: ./bot/bot.py:229
 msgid ""
 "💡 the current dialog is too long, so the <b>first message</b> was removed from the dialog history.\n"
 " Send /new to start a new dialog"
 msgstr ""
 
-#: ./bot/bot.py:228
+#: ./bot/bot.py:231
 msgid ""
 "💡 the current dialog is too long, so the <b>first {} messages</b> have removed from the dialog history.\n"
 " Send /new to start a new dialog"
 msgstr ""
 
-#: ./bot/bot.py:245
+#: ./bot/bot.py:236
+msgid "⚠️ the answer is too long, will split it into multiple messages without text formatting"
+msgstr ""
+
+#: ./bot/bot.py:256
 msgid "Temporary OpenAI server failure, please try again later. Reason: {}"
 msgstr ""
 
-#: ./bot/bot.py:258
+#: ./bot/bot.py:269
 msgid "💬 Starting a new dialog"
 msgstr ""
 
-#: ./bot/bot.py:307
+#: ./bot/bot.py:318
 msgid ""
 "👛 <b>Balance</b>\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:308
+#: ./bot/bot.py:319
 msgid ""
 "<b>{:,}</b> tokens left\n"
 msgstr ""
 
-#: ./bot/bot.py:309
+#: ./bot/bot.py:320
 msgid ""
 "<i>You used <b>{:,}</b> tokens</i>\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:310
+#: ./bot/bot.py:321
 msgid "<i>💡 The longer dialog would spend more tokens, use /new to reset</i>"
 msgstr ""
 
-#: ./bot/bot.py:356
+#: ./bot/bot.py:367
 msgid "🌐 Select preferred UI language"
 msgstr ""
 
-#: ./bot/bot.py:385
+#: ./bot/bot.py:396
 msgid "💡 Only accept number between 0.1 to 100"
 msgstr ""
 
-#: ./bot/bot.py:389
+#: ./bot/bot.py:400
 msgid ""
 "🛒 Choose the payment method\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:390
+#: ./bot/bot.py:401
 msgid ""
 "💳 Paypal - Debit or Credit Card\n"
 msgstr ""
 
-#: ./bot/bot.py:391
+#: ./bot/bot.py:402
 msgid ""
 "💎 Crypto - BTC, USDT, USDC, TON\n"
 msgstr ""
 
-#: ./bot/bot.py:425
+#: ./bot/bot.py:436
 msgid "📋 Creating an invoice ..."
 msgstr ""
 
-#: ./bot/bot.py:432
+#: ./bot/bot.py:443
 msgid ""
 "📋 <b>Your invoice</b>:\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:436
+#: ./bot/bot.py:447
 msgid "💡 <i>Your tokens will be credited within 10 minutes of payment.</i>"
 msgstr ""
 
-#: ./bot/bot.py:440
+#: ./bot/bot.py:451
 msgid "💳 Pay with Paypal"
 msgstr ""
 
-#: ./bot/bot.py:442
+#: ./bot/bot.py:453
 msgid "💎 Pay with Crypto"
 msgstr ""
 
-#: ./bot/bot.py:447
+#: ./bot/bot.py:458
 msgid "⚠️ Failed to create an invoice, please try again later."
 msgstr ""
 
-#: ./bot/bot.py:466
+#: ./bot/bot.py:477
 msgid ""
 "<b>💰 Earn</b>\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:468
+#: ./bot/bot.py:479
 msgid ""
 "Get %s%% rewards from the referred payments\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:469
+#: ./bot/bot.py:480
 msgid ""
 "Unused rewards: ${:,.2f}\n"
 msgstr ""
 
-#: ./bot/bot.py:470
+#: ./bot/bot.py:481
 msgid ""
 "Total earned: ${:,.2f}\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:471
+#: ./bot/bot.py:482
 msgid ""
 "Referral link:\n"
 msgstr ""
 
-#: ./bot/bot.py:473
+#: ./bot/bot.py:484
 msgid ""
 "<i>You have referred {:,} new users</i>\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:474
+#: ./bot/bot.py:485
 msgid "<i>💡 Refer the new users via your referral link, and you'll get a reward when they make a payment.</i>"
 msgstr ""
 
-#: ./bot/bot.py:476
+#: ./bot/bot.py:487
 msgid "⚠️ Server error, please try again later."
 msgstr ""
 
-#: ./bot/bot.py:484
+#: ./bot/bot.py:495
 msgid "💡 Edited messages won't take effects"
 msgstr ""
 
