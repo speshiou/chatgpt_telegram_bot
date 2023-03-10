@@ -38,8 +38,7 @@ def get_commands(lang=i18n.DEFAULT_LOCALE):
         BotCommand("new", _("start a new dialog")),
         BotCommand("retry", _("regenerate last answer")),
         # BotCommand("mode", _("select chat mode")),
-        BotCommand("balance", _("show balance")),
-        BotCommand("topup", _("top-up tokens")),
+        BotCommand("balance", _("check balance")),
         # BotCommand("earn", _("earn rewards by referral")),
         BotCommand("language", _("set UI language")),
     ]
@@ -98,6 +97,10 @@ def get_chat_id(update: Update):
         chat_id = update.effective_chat.id
     return chat_id
 
+def get_text_func(user):
+    lang = db.get_user_preferred_language(user.id) or user.language_code
+    return i18n.get_text_func(lang)
+
 async def send_greeting(update: Update, context: CallbackContext, is_new_user=False):
     user = await register_user_if_not_exists(update, context)
     lang = db.get_user_preferred_language(user.id) or user.language_code
@@ -119,7 +122,7 @@ async def send_greeting(update: Update, context: CallbackContext, is_new_user=Fa
     
     if is_new_user and update.message:
         await update.message.reply_text(
-            "✅ {:,} free tokens have been credited, check /balance".format(config.FREE_QUOTA), 
+            _("✅ {:,} free tokens have been credited, check /balance").format(config.FREE_QUOTA), 
             parse_mode=ParseMode.HTML,
             )
     chat_id = get_chat_id(update)
@@ -135,9 +138,7 @@ async def start_handle(update: Update, context: CallbackContext):
     m = re.match("\/start u(\d+)", message_text)
     referred_by = int(m[1]) if m else None
 
-    user = await register_user_if_not_exists(update, context, referred_by=referred_by)
-    
-    _ = i18n.get_text_func(user.language_code)
+    await register_user_if_not_exists(update, context, referred_by=referred_by)
 
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
     db.start_new_dialog(user_id)
@@ -145,13 +146,15 @@ async def start_handle(update: Update, context: CallbackContext):
     await send_greeting(update, context, is_new_user=is_new_user)
 
 async def retry_handle(update: Update, context: CallbackContext):
-    await register_user_if_not_exists(update, context)
+    user = await register_user_if_not_exists(update, context)
+    _ = get_text_func(user)
+    
     user_id = update.message.from_user.id
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
     dialog_messages = db.get_dialog_messages(user_id)
     if not dialog_messages or len(dialog_messages) == 0:
-        await update.message.reply_text("🤷‍♂️ No messages to retry")
+        await update.message.reply_text(_("😅 No dialog history to retry"))
         return
 
     last_dialog_message = dialog_messages.pop()
@@ -177,7 +180,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         return
         
     user = await register_user_if_not_exists(update, context)
-    _ = i18n.get_text_func(user.language_code)
+    _ = get_text_func(user)
 
     user_id = update.message.from_user.id
 
@@ -185,7 +188,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     if use_new_dialog_timeout:
         if (datetime.now() - db.get_user_attribute(user_id, "last_interaction")).seconds > config.NEW_DIALOG_TIMEOUT:
             db.start_new_dialog(user_id)
-            await update.message.reply_text("💬 Starting a new dialog due to timeout")
+            await update.message.reply_text(_("💬 Starting a new dialog due to timeout"))
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
     # send typing action
@@ -217,9 +220,9 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         # send message if some messages were removed from the context
         if n_first_dialog_messages_removed > 0:
             if n_first_dialog_messages_removed == 1:
-                text = "✍️ <i>Note:</i> Your current dialog is too long, so your <b>first message</b> was removed from the context.\n Send /new command to start new dialog"
+                text = _("💡 the current dialog is too long, so the <b>first message</b> was removed from the dialog history.\n Send /new to start a new dialog")
             else:
-                text = f"✍️ <i>Note:</i> Your current dialog is too long, so <b>{n_first_dialog_messages_removed} first messages</b> were removed from the context.\n Send /new command to start new dialog"
+                text = _("💡 the current dialog is too long, so the <b>first {} messages</b> have removed from the dialog history.\n Send /new to start a new dialog").format(n_first_dialog_messages_removed)
             await update.message.reply_text(text, parse_mode=ParseMode.HTML)
 
         await update.message.reply_text(answer, parse_mode=ParseMode.MARKDOWN)
@@ -236,18 +239,20 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             error_text = f"Errors from Telegram: {e}"
             logger.error(error_text)    
     except Exception as e:
-        error_text = f"Something went wrong during completion. Reason: {e}"
+        error_text = _("Temporary OpenAI server failure, please try again later. Reason: {}").format(e)
         logger.error(error_text)
         await update.message.reply_text(error_text)
         return
 
 async def new_dialog_handle(update: Update, context: CallbackContext):
-    await register_user_if_not_exists(update, context)
+    user = await register_user_if_not_exists(update, context)
+    _ = get_text_func(user)
+
     user_id = update.message.from_user.id
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
     db.start_new_dialog(user_id)
-    await update.message.reply_text("💬 Starting new dialog")
+    await update.message.reply_text(_("💬 Starting a new dialog"))
 
     # chat_mode = db.get_user_attribute(user_id, "current_chat_mode")
     # await update.message.reply_text(f"{chatgpt.CHAT_MODES[chat_mode]['welcome_message']}", parse_mode=ParseMode.HTML)
@@ -287,7 +292,8 @@ async def set_chat_mode_handle(update: Update, context: CallbackContext):
 
 
 async def show_balance_handle(update: Update, context: CallbackContext):
-    await register_user_if_not_exists(update, context)
+    user = await register_user_if_not_exists(update, context)
+    _ = get_text_func(user)
 
     user_id = update.message.from_user.id
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
@@ -295,18 +301,30 @@ async def show_balance_handle(update: Update, context: CallbackContext):
     used_tokens = db.get_user_attribute(user_id, "used_tokens")
     n_spent_dollars = used_tokens * (config.TOKEN_PRICE / 1000)
 
-    text = f"👛 <b>Balance</b>\n\n"
-    text += "<b>{:,}</b> tokens\n".format(db.get_user_remaining_tokens(user_id))
-    text += "<i>You used <b>{:,}</b> tokens</i>".format(used_tokens)
+    text = _("👛 <b>Balance</b>\n\n")
+    text += _("<b>{:,}</b> tokens left\n").format(db.get_user_remaining_tokens(user_id))
+    text += _("<i>You used <b>{:,}</b> tokens</i>\n\n").format(used_tokens)
+    text += _("<i>💡 The longer dialog would spend more tokens, use /new to reset</i>")
     # text += f"You spent <b>{n_spent_dollars:.03f}$</b>\n"
     # text += f"You used <b>{used_tokens}</b> tokens <i>(price: ${config.TOKEN_PRICE} per 1000 tokens)</i>\n"
 
-    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("Top up", callback_data="top_up")]])
+    reply_markup = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("{:,} tokens - $1".format(price_to_tokens(1)), callback_data="top_up|1"),
+        ],
+        [
+            InlineKeyboardButton("{:,} tokens - $5".format(price_to_tokens(5)), callback_data="top_up|5"),
+        ],
+        [
+            InlineKeyboardButton("{:,} tokens - $10".format(price_to_tokens(10)), callback_data="top_up|10"),
+        ]
+    ])
 
     await update.message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=reply_markup)
 
 async def show_languages_handle(update: Update, context: CallbackContext):
-    await register_user_if_not_exists(update, context)
+    user = await register_user_if_not_exists(update, context)
+    _ = get_text_func(user)
 
     reply_markup = InlineKeyboardMarkup([
         [
@@ -322,7 +340,7 @@ async def show_languages_handle(update: Update, context: CallbackContext):
 
     await reply_or_edit_text(
         update,
-        "🌐 Select preferred language",
+        _("🌐 Select preferred UI language"),
         reply_markup=reply_markup,
     )
 
@@ -336,40 +354,14 @@ async def set_language_handle(update: Update, context: CallbackContext):
     db.set_user_attribute(user.id, 'preferred_lang', language)
 
     await send_greeting(update, context)
-    
 
 def price_to_tokens(price: float):
     return int(price / config.TOKEN_PRICE * 1000)
 
-async def show_top_up(update: Update, context: CallbackContext):
-    await register_user_if_not_exists(update, context)
-
-    if update.callback_query:
-        await update.callback_query.answer()
-
-    reply_markup = InlineKeyboardMarkup([
-        [
-            InlineKeyboardButton("{:,} tokens - $1".format(price_to_tokens(1)), callback_data="top_up|1"),
-        ],
-        [
-            InlineKeyboardButton("{:,} tokens - $5".format(price_to_tokens(5)), callback_data="top_up|5"),
-        ],
-        [
-            InlineKeyboardButton("{:,} tokens - $10".format(price_to_tokens(10)), callback_data="top_up|10"),
-        ]
-    ])
-
-    await reply_or_edit_text(
-        update,
-        "💡 Select a token package",
-        parse_mode=ParseMode.HTML,
-        reply_markup=reply_markup,
-    )
-
-    return TOP_UP
-
 async def show_payment_methods(update: Update, context: CallbackContext):
-    await register_user_if_not_exists(update, context)
+    user = await register_user_if_not_exists(update, context)
+    _ = get_text_func(user)
+
     if update.message:
         amount = update.message.text
     else:
@@ -377,18 +369,20 @@ async def show_payment_methods(update: Update, context: CallbackContext):
         await query.answer()
         amount = query.data.split("|")[1]
 
-    text_not_in_range = "💡 Only accept number between 0.1 to 100, or /cancel top-up"
+    text_not_in_range = _("💡 Only accept number between 0.1 to 100")
     if not amount.replace('.', '', 1).isdigit():
         await reply_or_edit_text(update, text_not_in_range)
-        return TOP_UP
+        return PAYMENT
     
     amount = float(amount)
 
     if amount > 100 or amount < 0.1:
         await reply_or_edit_text(update, text_not_in_range)
-        return TOP_UP
+        return PAYMENT
 
-    text = "💡 Choose preferred payment method"
+    text = _("🛒 Choose the payment method\n\n")
+    text += _("💳 Paypal - Debit or Credit Card\n")
+    text += _("💎 Crypto - BTC, USDT, USDC, TON\n")
     reply_markup = InlineKeyboardMarkup([
         [InlineKeyboardButton("💳 Paypal", callback_data=f"payment|paypal|{amount}")],
         [InlineKeyboardButton("💎 Crypto", callback_data=f"payment|crypto|{amount}")]
@@ -410,39 +404,41 @@ async def show_payment_methods(update: Update, context: CallbackContext):
     return PAYMENT
 
 async def show_invoice(update: Update, context: CallbackContext):
-    await register_user_if_not_exists(update, context)
+    user = await register_user_if_not_exists(update, context)
+    _ = get_text_func(user)
+
     query = update.callback_query
     await query.answer()
     user_id = query.from_user.id
-    _, method, amount = query.data.split("|")
+    c, method, amount = query.data.split("|")
 
     amount = float(amount)
     token_amount = price_to_tokens(amount)
 
     await query.edit_message_text(
-        "📋 Creating an invoice ...",
+        _("📋 Creating an invoice ..."),
         parse_mode=ParseMode.HTML,
     )
 
     result = await api.create_order(user_id, method, amount, token_amount)
 
     if result and result["status"] == "OK":
-        text = f"📋 <b>Your invoice</b>:\n\n"
+        text = _("📋 <b>Your invoice</b>:\n\n")
         text += "{:,} tokens\n".format(token_amount)
         text += "------------------\n"
         text += f"${amount}\n\n"
-        text += "<i>Your tokens will be credited within 10 minutes of payment.</i>"
+        text += _("💡 <i>Your tokens will be credited within 10 minutes of payment.</i>")
 
         button_text = ""
         if method == "paypal":
-            button_text = "💳 Pay with Paypal"
+            button_text = _("💳 Pay with Paypal")
         elif method == "crypto":
-            button_text = "💎 Pay with Crypto"
+            button_text = _("💎 Pay with Crypto")
         reply_markup = InlineKeyboardMarkup([
             [InlineKeyboardButton(button_text, url=result["url"])]
         ])
     else:
-        text = "⚠️ Failed to create an invoice, please try again later."
+        text = _("⚠️ Failed to create an invoice, please try again later.")
         reply_markup = None
 
     await query.edit_message_text(
@@ -455,26 +451,30 @@ async def show_invoice(update: Update, context: CallbackContext):
 
 async def show_earn_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
+    _ = get_text_func(user)
+
     result = await api.earn(user.id)
-    referral_url = result['referral_url'];
+    referral_url = result['referral_url']
 
     if result and result["status"] == "OK":
-        text = "<b>💰 Earn</b>"
-        text += "\n\n"
-        text += "Get %s%% rewards from the referred payments" % (result['commission_rate'] * 100)
-        text += "\n\n"
-        text += "Referral link:"
-        text += "\n"
-        text += f'<a href="{referral_url}">{referral_url}</a>'
-        text += "\n\n"
-        text += "<i>💡 Refer someone via your referral link, and you'll get a reward when they make a payment.</i>"
+        text = _("<b>💰 Earn</b>\n\n")
+        # text += "\n\n"
+        text += _("Get %s%% rewards from the referred payments\n\n") % (result['commission_rate'] * 100)
+        text += _("Unused rewards: {:,.2f}\n").format(result['unused_rewards'])
+        text += _("Total earned: {:,.2f}\n\n").format(result['total_earned'])
+        text += _("Referral link:\n")
+        text += f'<a href="{referral_url}">{referral_url}</a>\n\n'
+        text += _("<i>💡 Refer the new users via your referral link, and you'll get a reward when they make a payment.</i>")
     else:
-        text = "⚠️ Server error, please try again later."
+        text = _("⚠️ Server error, please try again later.")
 
     await reply_or_edit_text(update, text)
 
 async def edited_message_handle(update: Update, context: CallbackContext):
-    text = "🥲 Unfortunately, message <b>editing</b> is not supported"
+    user = await register_user_if_not_exists(update, context)
+    _ = get_text_func(user)
+
+    text = _("💡 Edited messages won't take effects")
     await update.edited_message.reply_text(text, parse_mode=ParseMode.HTML)
 
 
@@ -522,7 +522,7 @@ def run_bot() -> None:
     application.add_handler(CommandHandler("retry", retry_handle, filters=user_filter))
     application.add_handler(CommandHandler("new", new_dialog_handle, filters=user_filter))
     # application.add_handler(CommandHandler("mode", show_chat_modes_handle, filters=user_filter))
-    application.add_handler(CallbackQueryHandler(set_chat_mode_handle, pattern="^set_chat_mode"))
+    # application.add_handler(CallbackQueryHandler(set_chat_mode_handle, pattern="^set_chat_mode"))
     application.add_handler(CommandHandler("balance", show_balance_handle, filters=user_filter))
     application.add_handler(CommandHandler("earn", show_earn_handle, filters=user_filter))
     application.add_handler(CommandHandler("language", show_languages_handle, filters=user_filter))
@@ -531,14 +531,9 @@ def run_bot() -> None:
     # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
     conv_handler = ConversationHandler(
         entry_points=[
-            CommandHandler("topup", show_top_up, filters=user_filter),
-            CallbackQueryHandler(show_top_up, pattern="^top_up$"),
+            CallbackQueryHandler(show_payment_methods, pattern="^top_up\|(\d)+"),
         ],
         states={
-            TOP_UP: [
-                CallbackQueryHandler(show_payment_methods, pattern="^top_up\|(\d)+"),
-                # MessageHandler(filters.TEXT & ~filters.COMMAND & user_filter, show_payment_methods)
-            ],
             PAYMENT: [
                 CallbackQueryHandler(show_invoice, pattern="^payment\|"),
             ],

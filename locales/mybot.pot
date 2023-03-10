@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-03-03 22:30+0800\n"
+"POT-Creation-Date: 2023-03-10 10:14+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,39 +15,178 @@ msgstr ""
 "Generated-By: pygettext.py 1.5\n"
 
 
-#: bot/bot.py:36
+#: ./bot/bot.py:38
 msgid "start a new dialog"
 msgstr ""
 
-#: bot/bot.py:37
+#: ./bot/bot.py:39
 msgid "regenerate last answer"
 msgstr ""
 
-#: bot/bot.py:39
-msgid "show balance"
+#: ./bot/bot.py:41
+msgid "check balance"
 msgstr ""
 
-#: bot/bot.py:40
-msgid "top-up tokens"
-msgstr ""
-
-#: bot/bot.py:41
+#: ./bot/bot.py:43
 msgid "set UI language"
 msgstr ""
 
-#: bot/bot.py:96
+#: ./bot/bot.py:111
 msgid "🤖 Hi! I'm <b>ChatGPT</b> bot powered by OpenAI GPT-3.5 API"
 msgstr ""
 
-#: bot/bot.py:98
+#: ./bot/bot.py:113
 msgid "<b>Commands</b>"
 msgstr ""
 
-#: bot/bot.py:115
+#: ./bot/bot.py:125
+msgid "✅ {:,} free tokens have been credited, check /balance"
+msgstr ""
+
+#: ./bot/bot.py:130
 msgid "now you can ask me anything ..."
 msgstr ""
 
-#: bot/bot.py:170
+#: ./bot/bot.py:157
+msgid "😅 No dialog history to retry"
+msgstr ""
+
+#: ./bot/bot.py:191
+msgid "💬 Starting a new dialog due to timeout"
+msgstr ""
+
+#: ./bot/bot.py:200
 msgid "⚠️ Insufficient tokens, check /balance"
+msgstr ""
+
+#: ./bot/bot.py:223
+msgid ""
+"💡 the current dialog is too long, so the <b>first message</b> was removed from the dialog history.\n"
+" Send /new to start a new dialog"
+msgstr ""
+
+#: ./bot/bot.py:225
+msgid ""
+"💡 the current dialog is too long, so the <b>first {} messages</b> have removed from the dialog history.\n"
+" Send /new to start a new dialog"
+msgstr ""
+
+#: ./bot/bot.py:242
+msgid "Temporary OpenAI server failure, please try again later. Reason: {}"
+msgstr ""
+
+#: ./bot/bot.py:255
+msgid "💬 Starting a new dialog"
+msgstr ""
+
+#: ./bot/bot.py:304
+msgid ""
+"👛 <b>Balance</b>\n"
+"\n"
+msgstr ""
+
+#: ./bot/bot.py:305
+msgid ""
+"<b>{:,}</b> tokens left\n"
+msgstr ""
+
+#: ./bot/bot.py:306
+msgid ""
+"<i>You used <b>{:,}</b> tokens</i>\n"
+"\n"
+msgstr ""
+
+#: ./bot/bot.py:307
+msgid "<i>💡 The longer dialog would spend more tokens, use /new to reset</i>"
+msgstr ""
+
+#: ./bot/bot.py:343
+msgid "🌐 Select preferred UI language"
+msgstr ""
+
+#: ./bot/bot.py:372
+msgid "💡 Only accept number between 0.1 to 100"
+msgstr ""
+
+#: ./bot/bot.py:383
+msgid ""
+"🛒 Choose the payment method\n"
+"\n"
+msgstr ""
+
+#: ./bot/bot.py:384
+msgid ""
+"💳 Paypal - Debit or Credit Card\n"
+msgstr ""
+
+#: ./bot/bot.py:385
+msgid ""
+"💎 Crypto - BTC, USDT, USDC, TON\n"
+msgstr ""
+
+#: ./bot/bot.py:419
+msgid "📋 Creating an invoice ..."
+msgstr ""
+
+#: ./bot/bot.py:426
+msgid ""
+"📋 <b>Your invoice</b>:\n"
+"\n"
+msgstr ""
+
+#: ./bot/bot.py:430
+msgid "💡 <i>Your tokens will be credited within 10 minutes of payment.</i>"
+msgstr ""
+
+#: ./bot/bot.py:434
+msgid "💳 Pay with Paypal"
+msgstr ""
+
+#: ./bot/bot.py:436
+msgid "💎 Pay with Crypto"
+msgstr ""
+
+#: ./bot/bot.py:441
+msgid "⚠️ Failed to create an invoice, please try again later."
+msgstr ""
+
+#: ./bot/bot.py:460
+msgid ""
+"<b>💰 Earn</b>\n"
+"\n"
+msgstr ""
+
+#: ./bot/bot.py:462
+msgid ""
+"Get %s%% rewards from the referred payments\n"
+"\n"
+msgstr ""
+
+#: ./bot/bot.py:463
+msgid ""
+"Unused rewards: {:,.2f}\n"
+msgstr ""
+
+#: ./bot/bot.py:464
+msgid ""
+"Total earned: {:,.2f}\n"
+"\n"
+msgstr ""
+
+#: ./bot/bot.py:465
+msgid ""
+"Referral link:\n"
+msgstr ""
+
+#: ./bot/bot.py:467
+msgid "<i>💡 Refer the new users via your referral link, and you'll get a reward when they make a payment.</i>"
+msgstr ""
+
+#: ./bot/bot.py:469
+msgid "⚠️ Server error, please try again later."
+msgstr ""
+
+#: ./bot/bot.py:477
+msgid "💡 Edited messages won't take effects"
 msgstr ""
 

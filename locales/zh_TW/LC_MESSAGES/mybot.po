@@ -3,9 +3,9 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 msgid ""
-msgstr ""
+msgstr "Project-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-03 22:30+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:04+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:04+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:33+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:33+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:42+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:42+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:43+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:43+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:46+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:46+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:53+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:53+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:58+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 09:58+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 10:01+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 10:01+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\nProject-Id-Version: PACKAGE VERSION\nPOT-Creation-Date: 2023-03-10 10:13+0800\nPO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\nLast-Translator: FULL NAME <EMAIL@ADDRESS>\nLanguage-Team: LANGUAGE <LL@li.org>\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: pygettext.py 1.5\n"
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-03-03 22:30+0800\n"
+"POT-Creation-Date: 2023-03-10 10:13+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,39 +15,178 @@ msgstr ""
 "Generated-By: pygettext.py 1.5\n"
 
 
-#: bot/bot.py:36
+#: ./bot/bot.py:38
 msgid "start a new dialog"
 msgstr "開始一個新的對話"
 
-#: bot/bot.py:37
+#: ./bot/bot.py:39
 msgid "regenerate last answer"
 msgstr "重新生成上一個答案"
 
-#: bot/bot.py:39
-msgid "show balance"
-msgstr "顯示餘額"
+#: ./bot/bot.py:41
+msgid "check balance"
+msgstr "查看餘額"
 
-#: bot/bot.py:40
-msgid "top-up tokens"
-msgstr "充值代幣"
-
-#: bot/bot.py:41
+#: ./bot/bot.py:43
 msgid "set UI language"
 msgstr "設置界面語言"
 
-#: bot/bot.py:96
+#: ./bot/bot.py:111
 msgid "🤖 Hi! I'm <b>ChatGPT</b> bot powered by OpenAI GPT-3.5 API"
 msgstr "🤖 嗨！我是<b>ChatGPT</b>機器人，由 OpenAI GPT-3.5 API 提供支持"
 
-#: bot/bot.py:98
+#: ./bot/bot.py:113
 msgid "<b>Commands</b>"
 msgstr "<b>指令</b>"
 
-#: bot/bot.py:115
+#: ./bot/bot.py:125
+msgid "✅ {:,} free tokens have been credited, check /balance"
+msgstr "✅ {:,} 免費標記額度已入賬，查看 /balance"
+
+#: ./bot/bot.py:130
 msgid "now you can ask me anything ..."
 msgstr "現在你可以問我任何事..."
 
-#: bot/bot.py:170
+#: ./bot/bot.py:157
+msgid "😅 No dialog history to retry"
+msgstr "😅 沒有要重試的對話歷史記錄"
+
+#: ./bot/bot.py:191
+msgid "💬 Starting a new dialog due to timeout"
+msgstr "💬 由於超時而開始一個新的對話"
+
+#: ./bot/bot.py:200
 msgid "⚠️ Insufficient tokens, check /balance"
 msgstr "⚠️ 代幣不足，查看 /balance"
+
+#: ./bot/bot.py:223
+msgid ""
+"💡 the current dialog is too long, so the <b>first message</b> was removed from the dialog history.\n"
+" Send /new to start a new dialog"
+msgstr "💡 當前對話太長，因此 <b>第一條</b> 已從對話歷史記錄中刪除。\n 發送 /new 開始新對話"
+
+#: ./bot/bot.py:225
+msgid ""
+"💡 the current dialog is too long, so the <b>first {} messages</b> have removed from the dialog history.\n"
+" Send /new to start a new dialog"
+msgstr "💡 當前對話太長，因此 <b>前 {} 條消息</b> 已從對話歷史記錄中刪除。\n 發送 /new 開始新對話"
+
+#: ./bot/bot.py:242
+msgid "Temporary OpenAI server failure, please try again later. Reason: {}"
+msgstr "OpenAI 服務器暫時性故障，請稍後重試。原因： {}"
+
+#: ./bot/bot.py:255
+msgid "💬 Starting a new dialog"
+msgstr "💬 開始一個新的對話"
+
+#: ./bot/bot.py:304
+msgid ""
+"👛 <b>Balance</b>\n"
+"\n"
+msgstr "👛 <b>餘額</b>\n\n"
+
+#: ./bot/bot.py:305
+msgid ""
+"<b>{:,}</b> tokens left\n"
+msgstr "剩餘 <b>{:,}</b> 個標記額度\n"
+
+#: ./bot/bot.py:306
+msgid ""
+"<i>You used <b>{:,}</b> tokens</i>\n"
+"\n"
+msgstr "<i>您使用了 <b>{:,}</b> 個標記額度</i>\n\n"
+
+#: ./bot/bot.py:307
+msgid "<i>💡 The longer dialog would spend more tokens, use /new to reset</i>"
+msgstr "<i>💡 越長的對話會花費更多的標記額度，使用 /new 來重置</i>"
+
+#: ./bot/bot.py:343
+msgid "🌐 Select preferred UI language"
+msgstr "🌐 選擇首選 UI 語言"
+
+#: ./bot/bot.py:372
+msgid "💡 Only accept number between 0.1 to 100"
+msgstr "💡 只接受 0.1 到 100 之間的數字"
+
+#: ./bot/bot.py:383
+msgid ""
+"🛒 Choose the payment method\n"
+"\n"
+msgstr "🛒 選擇付款方式\n\n"
+
+#: ./bot/bot.py:384
+msgid ""
+"💳 Paypal - Debit or Credit Card\n"
+msgstr "💳 Paypal - 借記卡或信用卡\n"
+
+#: ./bot/bot.py:385
+msgid ""
+"💎 Crypto - BTC, USDT, USDC, TON\n"
+msgstr "💎 加密貨幣 - BTC、USDT、USDC、TON\n"
+
+#: ./bot/bot.py:419
+msgid "📋 Creating an invoice ..."
+msgstr "📋 創建發票 ..."
+
+#: ./bot/bot.py:426
+msgid ""
+"📋 <b>Your invoice</b>:\n"
+"\n"
+msgstr "📋 <b>您的發票</b>：\n\n"
+
+#: ./bot/bot.py:430
+msgid "💡 <i>Your tokens will be credited within 10 minutes of payment.</i>"
+msgstr "💡 <i>您的代幣將在付款後 10 分鐘內存入。</i>"
+
+#: ./bot/bot.py:434
+msgid "💳 Pay with Paypal"
+msgstr "💳 使用 Paypal 付款"
+
+#: ./bot/bot.py:436
+msgid "💎 Pay with Crypto"
+msgstr "💎 使用加密支付"
+
+#: ./bot/bot.py:441
+msgid "⚠️ Failed to create an invoice, please try again later."
+msgstr "⚠️ 發票創建失敗，請稍後重試。"
+
+#: ./bot/bot.py:460
+msgid ""
+"<b>💰 Earn</b>\n"
+"\n"
+msgstr "<b>💰賺取</b>\n\n"
+
+#: ./bot/bot.py:462
+msgid ""
+"Get %s%% rewards from the referred payments\n"
+"\n"
+msgstr "從推薦的付款中獲得 %s%% 的獎勵\n\n"
+
+#: ./bot/bot.py:463
+msgid ""
+"Unused rewards: {:,.2f}\n"
+msgstr "未使用的獎勵：{:,.2f}\n"
+
+#: ./bot/bot.py:464
+msgid ""
+"Total earned: {:,.2f}\n"
+"\n"
+msgstr "總獲得的獎勵：{:,.2f}\n\n"
+
+#: ./bot/bot.py:465
+msgid ""
+"Referral link:\n"
+msgstr "推薦鏈接：\n"
+
+#: ./bot/bot.py:467
+msgid "<i>💡 Refer the new users via your referral link, and you'll get a reward when they make a payment.</i>"
+msgstr "<i>💡 通過您的推薦鏈接推薦新用戶，當他們付款時您將獲得獎勵。</i>"
+
+#: ./bot/bot.py:469
+msgid "⚠️ Server error, please try again later."
+msgstr "⚠️ 服務器錯誤，請稍後重試。"
+
+#: ./bot/bot.py:477
+msgid "💡 Edited messages won't take effects"
+msgstr "💡 編輯的訊息不會生效"
 
