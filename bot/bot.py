@@ -469,7 +469,8 @@ async def show_earn_handle(update: Update, context: CallbackContext):
         text += _("Unused rewards: ${:,.2f}\n").format(result['unused_rewards'])
         text += _("Total earned: ${:,.2f}\n\n").format(result['total_earned'])
         text += _("Referral link:\n")
-        text += f'<a href="{referral_url}">{referral_url}</a>\n\n'
+        text += f'<a href="{referral_url}">{referral_url}</a>\n'
+        text += _("<i>You have referred {:,} new users</i>\n\n").format(result['referred_count'])
         text += _("<i>💡 Refer the new users via your referral link, and you'll get a reward when they make a payment.</i>")
     else:
         text = _("⚠️ Server error, please try again later.")
