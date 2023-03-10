@@ -308,17 +308,27 @@ async def show_balance_handle(update: Update, context: CallbackContext):
     # text += f"You spent <b>{n_spent_dollars:.03f}$</b>\n"
     # text += f"You used <b>{used_tokens}</b> tokens <i>(price: ${config.TOKEN_PRICE} per 1000 tokens)</i>\n"
 
-    reply_markup = InlineKeyboardMarkup([
-        [
-            InlineKeyboardButton("{:,} tokens - $1".format(price_to_tokens(1)), callback_data="top_up|1"),
-        ],
-        [
-            InlineKeyboardButton("{:,} tokens - $5".format(price_to_tokens(5)), callback_data="top_up|5"),
-        ],
-        [
-            InlineKeyboardButton("{:,} tokens - $10".format(price_to_tokens(10)), callback_data="top_up|10"),
-        ]
-    ])
+    tokens_packs = [
+        {
+            "payment_amount": 1.0,
+            "tokens_amount": price_to_tokens(1),
+        },
+        {
+            "payment_amount": 5.0,
+            "tokens_amount": price_to_tokens(5) * 1.05,
+        },
+        {
+            "payment_amount": 10.0,
+            "tokens_amount": price_to_tokens(10) * 1.1,
+        },
+    ]
+
+    buttons = map(lambda pack: \
+                  InlineKeyboardButton("+{:,} tokens - ${:,.1f}".format(pack["tokens_amount"], pack["payment_amount"]), \
+                    callback_data="top_up|{}|{}".format(pack["payment_amount"], pack["tokens_amount"])), \
+                        tokens_packs)
+    rows = map(lambda button: [button], buttons)
+    reply_markup = InlineKeyboardMarkup(list(rows))
 
     await update.message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=reply_markup)
 
@@ -362,21 +372,14 @@ async def show_payment_methods(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
     _ = get_text_func(user)
 
-    if update.message:
-        amount = update.message.text
-    else:
-        query = update.callback_query
-        await query.answer()
-        amount = query.data.split("|")[1]
+    query = update.callback_query
+    await query.answer()
+    c, amount, tokens_amount = query.data.split("|")
 
-    text_not_in_range = _("💡 Only accept number between 0.1 to 100")
-    if not amount.replace('.', '', 1).isdigit():
-        await reply_or_edit_text(update, text_not_in_range)
-        return PAYMENT
-    
     amount = float(amount)
 
     if amount > 100 or amount < 0.1:
+        text_not_in_range = _("💡 Only accept number between 0.1 to 100")
         await reply_or_edit_text(update, text_not_in_range)
         return PAYMENT
 
@@ -384,8 +387,8 @@ async def show_payment_methods(update: Update, context: CallbackContext):
     text += _("💳 Paypal - Debit or Credit Card\n")
     text += _("💎 Crypto - BTC, USDT, USDC, TON\n")
     reply_markup = InlineKeyboardMarkup([
-        [InlineKeyboardButton("💳 Paypal", callback_data=f"payment|paypal|{amount}")],
-        [InlineKeyboardButton("💎 Crypto", callback_data=f"payment|crypto|{amount}")]
+        [InlineKeyboardButton("💳 Paypal", callback_data=f"payment|paypal|{amount}|{tokens_amount}")],
+        [InlineKeyboardButton("💎 Crypto", callback_data=f"payment|crypto|{amount}|{tokens_amount}")]
     ])
 
     if update.message:
@@ -410,10 +413,10 @@ async def show_invoice(update: Update, context: CallbackContext):
     query = update.callback_query
     await query.answer()
     user_id = query.from_user.id
-    c, method, amount = query.data.split("|")
+    c, method, amount, token_amount = query.data.split("|")
 
     amount = float(amount)
-    token_amount = price_to_tokens(amount)
+    token_amount = int(float(token_amount))
 
     await query.edit_message_text(
         _("📋 Creating an invoice ..."),
