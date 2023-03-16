@@ -217,7 +217,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             db.start_new_dialog(user_id)
             messages = []
 
-        answer, prompt, used_tokens, n_first_dialog_messages_removed = chatgpt.ChatGPT().send_message(
+        answer, prompt, used_tokens, n_first_dialog_messages_removed = await chatgpt.ChatGPT().send_message(
             message,
             dialog_messages=messages,
             chat_mode=db.get_user_attribute(user_id, "current_chat_mode"),

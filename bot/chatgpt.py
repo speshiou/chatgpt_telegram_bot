@@ -1,3 +1,6 @@
+
+import abc
+
 import config
 
 import openai
@@ -34,20 +37,25 @@ CHAT_MODES = {
     },
 }
 
-
 class ChatGPT:
     def __init__(self):
         pass
 
-    def create_request(self, model, message, dialog_messages=[], chat_mode="assistant"):
+    async def create_request(self, model, message, dialog_messages=[], chat_mode="assistant"):
+        r = None
         if model == MODEL_DAVINCI_003:
-            return Davinci003(message, dialog_messages, chat_mode)
+            r = Davinci003(message, dialog_messages, chat_mode)
         elif model == MODEL_GPT_35_TURBO:
-            return CPT35Turbo(message, dialog_messages, chat_mode)
+            r = CPT35Turbo(message, dialog_messages, chat_mode)
+        else:
+            raise ValueError(f"Chat model {model} is not supported")
         
-        raise ValueError(f"Chat model {model} is not supported")
+        if not isinstance(r, OpenAIRequest):
+            raise TypeError(f"{r} is not a subclass of OpenAIRequest")
+        
+        return await r.create()
     
-    def send_message(self, message, dialog_messages=[], chat_mode="assistant"):
+    async def send_message(self, message, dialog_messages=[], chat_mode="assistant"):
         if chat_mode not in CHAT_MODES.keys():
             raise ValueError(f"Chat mode {chat_mode} is not supported")
 
@@ -56,13 +64,9 @@ class ChatGPT:
         prompt = None
         while answer is None:
             try:
-                r = self.create_request(OPENAI_CHAT_MODEL, message, dialog_messages, chat_mode)
+                prompt, answer, used_tokens = await self.create_request(OPENAI_CHAT_MODEL, message, dialog_messages, chat_mode)
 
-                prompt = r.prompt()
-                answer = r.answer()
                 answer = self._postprocess_answer(answer)
-
-                used_tokens = r.used_token()
 
             except openai.error.InvalidRequestError as e:  # too many tokens
                 if len(dialog_messages) == 0:
@@ -79,15 +83,38 @@ class ChatGPT:
     def _postprocess_answer(self, answer):
         answer = answer.strip()
         return answer
-    
 
-class Davinci003:
+class OpenAIRequest(metaclass=abc.ABCMeta):
     def __init__(self, message, dialog_messages=[], chat_mode="assistant"):
-        self._prompt = self._generate_prompt(message, dialog_messages, chat_mode)
+        self.message = message
+        self.dialog_messages = dialog_messages
+        self.chat_mode = chat_mode
+        self._prompt = None
 
-        self._r = openai.Completion.create(
+    @abc.abstractmethod
+    async def create(self):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def prompt(self):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def answer(self):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def used_token(self):
+        raise NotImplementedError
+
+class Davinci003(OpenAIRequest):
+    def __init__(self, message, dialog_messages=[], chat_mode="assistant"):
+        OpenAIRequest.__init__(self, message, dialog_messages, chat_mode)
+
+    async def create(self):
+        self._r = await openai.Completion.acreate(
             engine=MODEL_DAVINCI_003,
-            prompt=self._prompt,
+            prompt=self.prompt(),
             temperature=0.7,
             max_tokens=1000,
             top_p=1,
@@ -95,7 +122,27 @@ class Davinci003:
             presence_penalty=0,
         )
 
+        return self.prompt(), self.answer(), self.used_token()
+
     def prompt(self):
+        if self._prompt:
+            return self._prompt
+        
+        prompt = CHAT_MODES[self.chat_mode]["prompt_start"]
+        prompt += "\n\n"
+
+        # add chat context
+        if len(self.dialog_messages) > 0:
+            prompt += "Chat:\n"
+            for dialog_message in self.dialog_messages:
+                prompt += f"User: {dialog_message['user']}\n"
+                prompt += f"ChatGPT: {dialog_message['bot']}\n"
+
+        # current message
+        prompt += f"User: {self.message}\n"
+        prompt += "ChatGPT: "
+
+        self._prompt = prompt
         return self._prompt
 
     def answer(self):
@@ -103,53 +150,33 @@ class Davinci003:
     
     def used_token(self):
         return self._r.usage.total_tokens
-        
-    def _generate_prompt(self, message, dialog_messages, chat_mode):
-        prompt = CHAT_MODES[chat_mode]["prompt_start"]
-        prompt += "\n\n"
-
-        # add chat context
-        if len(dialog_messages) > 0:
-            prompt += "Chat:\n"
-            for dialog_message in dialog_messages:
-                prompt += f"User: {dialog_message['user']}\n"
-                prompt += f"ChatGPT: {dialog_message['bot']}\n"
-
-        # current message
-        prompt += f"User: {message}\n"
-        prompt += "ChatGPT: "
-
-        return prompt
     
-class CPT35Turbo:
+class CPT35Turbo(OpenAIRequest):
     def __init__(self, message, dialog_messages=[], chat_mode="assistant"):
-        self._prompt = self._generate_prompt(message, dialog_messages, chat_mode)
-        
-        self._r = openai.ChatCompletion.create(
+        OpenAIRequest.__init__(self, message, dialog_messages, chat_mode)
+
+    async def create(self):
+        self._r = await openai.ChatCompletion.acreate(
             model=MODEL_GPT_35_TURBO,
-            messages=self._prompt,
+            messages=self.prompt(),
         )
 
-    def prompt(self):
-        return self._prompt
+        return self.prompt(), self.answer(), self.used_token()
 
-    def answer(self):
-        return self._r.choices[0].message.content
-    
-    def used_token(self):
-        return self._r.usage.total_tokens
+    def prompt(self):
+        if self._prompt:
+            return self._prompt
         
-    def _generate_prompt(self, message, dialog_messages, chat_mode):
         messages = [
             {
                 "role": "system",
-                "content": CHAT_MODES[chat_mode]["prompt_start"],
+                "content": CHAT_MODES[self.chat_mode]["prompt_start"],
             }
         ]
 
         # add chat context
-        if len(dialog_messages) > 0:
-            for dialog_message in dialog_messages:
+        if len(self.dialog_messages) > 0:
+            for dialog_message in self.dialog_messages:
                 messages.append({
                     "role": "user",
                     "content": dialog_message['user'],
@@ -162,7 +189,15 @@ class CPT35Turbo:
         # current message
         messages.append({
             "role": "user",
-            "content": message,
+            "content": self.message,
         })
 
-        return messages
+        self._prompt = messages
+        return self._prompt
+
+    def answer(self):
+        return self._r.choices[0].message.content
+    
+    def used_token(self):
+        return self._r.usage.total_tokens
+        
