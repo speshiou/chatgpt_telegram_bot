@@ -35,7 +35,7 @@ CHATGPT, TOP_UP, PAYMENT = range(3)
 def get_commands(lang=i18n.DEFAULT_LOCALE):
     _ = i18n.get_text_func(lang)
     return [
-        BotCommand("new", _("start a new dialog")),
+        BotCommand("new", _("start a new conversation")),
         BotCommand("retry", _("regenerate last answer")),
         # BotCommand("mode", _("select chat mode")),
         BotCommand("balance", _("check balance")),
@@ -130,7 +130,7 @@ async def send_greeting(update: Update, context: CallbackContext, is_new_user=Fa
             )
     chat_id = get_chat_id(update)
     if chat_id:
-        await context.bot.send_message(chat_id, _("now you can ask me anything ..."))
+        await context.bot.send_message(chat_id, _("Now you can ask me anything ..."))
 
 async def start_handle(update: Update, context: CallbackContext):
     user_id = update.message.from_user.id
@@ -157,7 +157,7 @@ async def retry_handle(update: Update, context: CallbackContext):
 
     dialog_messages = db.get_dialog_messages(user_id)
     if not dialog_messages or len(dialog_messages) == 0:
-        await update.message.reply_text(_("😅 No dialog history to retry"))
+        await update.message.reply_text(_("😅 No conversation history to retry"))
         return
 
     last_dialog_message = dialog_messages.pop()
@@ -194,7 +194,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     if use_new_dialog_timeout:
         if (datetime.now() - db.get_user_attribute(user_id, "last_interaction")).seconds > config.NEW_DIALOG_TIMEOUT:
             db.start_new_dialog(user_id)
-            await update.message.reply_text(_("💬 Starting a new dialog due to timeout"))
+            await update.message.reply_text(_("💬 Start a new conversation due to timeout, and the previous messages will no longer be referenced to generate answers."))
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
     # send typing action
@@ -226,9 +226,9 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         # send message if some messages were removed from the context
         if n_first_dialog_messages_removed > 0:
             if n_first_dialog_messages_removed == 1:
-                text = _("💡 the current dialog is too long, so the <b>first message</b> was removed from the dialog history.\n Send /new to start a new dialog")
+                text = _("💡 the current conversation is too long, so the <b>first message</b> was removed from the references.\n Send /new to start a new conversation")
             else:
-                text = _("💡 the current dialog is too long, so the <b>first {} messages</b> have removed from the dialog history.\n Send /new to start a new dialog").format(n_first_dialog_messages_removed)
+                text = _("💡 the current conversation is too long, so the <b>first {} messages</b> have removed from the references.\n Send /new to start a new conversation").format(n_first_dialog_messages_removed)
             await update.message.reply_text(text, parse_mode=ParseMode.HTML)
 
         # check if the anwser is too long (over 4000)
@@ -266,7 +266,7 @@ async def new_dialog_handle(update: Update, context: CallbackContext):
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
     db.start_new_dialog(user_id)
-    await update.message.reply_text(_("💬 Starting a new dialog"))
+    await update.message.reply_text(_("💬 Start a new conversation, and the previous messages will no longer be referenced to generate answers."))
 
     # chat_mode = db.get_user_attribute(user_id, "current_chat_mode")
     # await update.message.reply_text(f"{chatgpt.CHAT_MODES[chat_mode]['welcome_message']}", parse_mode=ParseMode.HTML)
@@ -318,7 +318,7 @@ async def show_balance_handle(update: Update, context: CallbackContext):
     text = _("👛 <b>Balance</b>\n\n")
     text += _("<b>{:,}</b> tokens left\n").format(db.get_user_remaining_tokens(user_id))
     text += _("<i>You used <b>{:,}</b> tokens</i>\n\n").format(used_tokens)
-    text += _("<i>💡 The longer dialog would spend more tokens, use /new to reset</i>")
+    text += _("<i>💡 The longer conversation would spend more tokens, use /new to reset</i>")
     # text += f"You spent <b>{n_spent_dollars:.03f}$</b>\n"
     # text += f"You used <b>{used_tokens}</b> tokens <i>(price: ${config.TOKEN_PRICE} per 1000 tokens)</i>\n"
 

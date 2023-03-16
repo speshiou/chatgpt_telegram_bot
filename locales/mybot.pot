@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-03-10 22:28+0800\n"
+"POT-Creation-Date: 2023-03-16 10:18+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 
 
 #: ./bot/bot.py:38
-msgid "start a new dialog"
+msgid "start a new conversation"
 msgstr ""
 
 #: ./bot/bot.py:39
@@ -44,15 +44,15 @@ msgid "✅ {:,} free tokens have been credited, check /balance"
 msgstr ""
 
 #: ./bot/bot.py:133
-msgid "now you can ask me anything ..."
+msgid "Now you can ask me anything ..."
 msgstr ""
 
 #: ./bot/bot.py:160
-msgid "😅 No dialog history to retry"
+msgid "😅 No conversation history to retry"
 msgstr ""
 
 #: ./bot/bot.py:197
-msgid "💬 Starting a new dialog due to timeout"
+msgid "💬 Start a new conversation due to timeout, and the previous messages will no longer be referenced to generate answers."
 msgstr ""
 
 #: ./bot/bot.py:206
@@ -61,14 +61,14 @@ msgstr ""
 
 #: ./bot/bot.py:229
 msgid ""
-"💡 the current dialog is too long, so the <b>first message</b> was removed from the dialog history.\n"
-" Send /new to start a new dialog"
+"💡 the current conversation is too long, so the <b>first message</b> was removed from the references.\n"
+" Send /new to start a new conversation"
 msgstr ""
 
 #: ./bot/bot.py:231
 msgid ""
-"💡 the current dialog is too long, so the <b>first {} messages</b> have removed from the dialog history.\n"
-" Send /new to start a new dialog"
+"💡 the current conversation is too long, so the <b>first {} messages</b> have removed from the references.\n"
+" Send /new to start a new conversation"
 msgstr ""
 
 #: ./bot/bot.py:236
@@ -80,7 +80,7 @@ msgid "Temporary OpenAI server failure, please try again later. Reason: {}"
 msgstr ""
 
 #: ./bot/bot.py:269
-msgid "💬 Starting a new dialog"
+msgid "💬 Start a new conversation, and the previous messages will no longer be referenced to generate answers."
 msgstr ""
 
 #: ./bot/bot.py:318
@@ -101,7 +101,7 @@ msgid ""
 msgstr ""
 
 #: ./bot/bot.py:321
-msgid "<i>💡 The longer dialog would spend more tokens, use /new to reset</i>"
+msgid "<i>💡 The longer conversation would spend more tokens, use /new to reset</i>"
 msgstr ""
 
 #: ./bot/bot.py:367
