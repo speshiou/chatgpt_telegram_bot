@@ -329,11 +329,11 @@ async def show_balance_handle(update: Update, context: CallbackContext):
         },
         {
             "payment_amount": 5.0,
-            "tokens_amount": price_to_tokens(5) * 1.05,
+            "tokens_amount": int(price_to_tokens(5) * 1.05),
         },
         {
             "payment_amount": 10.0,
-            "tokens_amount": price_to_tokens(10) * 1.1,
+            "tokens_amount": int(price_to_tokens(10) * 1.1),
         },
     ]
 
