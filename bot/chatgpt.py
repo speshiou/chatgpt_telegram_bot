@@ -115,6 +115,7 @@ class Davinci003(OpenAIRequest):
         self._r = await openai.Completion.acreate(
             engine=MODEL_DAVINCI_003,
             prompt=self.prompt(),
+            request_timeout=config.OPENAI_TIMEOUT,
             temperature=0.7,
             max_tokens=1000,
             top_p=1,
@@ -159,6 +160,7 @@ class CPT35Turbo(OpenAIRequest):
         self._r = await openai.ChatCompletion.acreate(
             model=MODEL_GPT_35_TURBO,
             messages=self.prompt(),
+            request_timeout=config.OPENAI_TIMEOUT,
         )
 
         return self.prompt(), self.answer(), self.used_token()
