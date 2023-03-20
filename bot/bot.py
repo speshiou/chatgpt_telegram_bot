@@ -130,6 +130,10 @@ async def send_greeting(update: Update, context: CallbackContext, is_new_user=Fa
         await context.bot.send_message(chat_id, _("Now you can ask me anything ..."))
 
 async def start_handle(update: Update, context: CallbackContext):
+    chat = update.effective_chat
+    if chat.type != Chat.PRIVATE:
+        return
+    
     user_id = update.message.from_user.id
     is_new_user = not db.check_if_user_exists(user_id)
 
@@ -344,7 +348,7 @@ async def show_balance_handle(update: Update, context: CallbackContext):
     _ = get_text_func(user)
     chat = update.effective_chat
     if chat.type != Chat.PRIVATE:
-        text = _("🔒 For privacy reason, your balance won't show in a group chat.")
+        text = _("🔒 For privacy reason, your balance won't show in a group chat. Please contact @{} directly.".format(config.TELEGRAM_BOT_NAME))
         await update.message.reply_text(text)
         return
 
@@ -387,6 +391,12 @@ async def show_balance_handle(update: Update, context: CallbackContext):
 async def show_languages_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
     _ = get_text_func(user)
+
+    chat = update.effective_chat
+    if chat.type != Chat.PRIVATE:
+        text = _("💡 Please contact @{} directly to set UI language.".format(config.TELEGRAM_BOT_NAME))
+        await update.message.reply_text(text)
+        return
 
     reply_markup = InlineKeyboardMarkup([
         [
