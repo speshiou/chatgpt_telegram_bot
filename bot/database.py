@@ -13,6 +13,7 @@ class Database:
         self.db = self.client["chatgpt_telegram_bot"]
 
         self.user_collection = self.db["users"]
+        self.chat_collection = self.db["chats"]
         self.dialog_collection = self.db["dialogs"]
         self.stat_collection = self.db["stats"]
 
@@ -28,25 +29,18 @@ class Database:
     def add_new_user(
         self,
         user_id: int,
-        chat_id: int,
         username: str = "",
         first_name: str = "",
         last_name: str = "",
         referred_by: int = None,
     ):
-        user_dict = {
-            "_id": user_id,
-            "chat_id": chat_id,
-
+        data = {
             "username": username,
             "first_name": first_name,
             "last_name": last_name,
 
             "last_interaction": datetime.now(),
             "first_seen": datetime.now(),
-            
-            "current_dialog_id": None,
-            "current_chat_mode": "assistant",
 
             "used_tokens": 0,
             "total_tokens": config.FREE_QUOTA,
@@ -55,19 +49,50 @@ class Database:
             "referred_count": 0,
         }
 
-        if not self.check_if_user_exists(user_id):
-            self.user_collection.insert_one(user_dict)
-            
-        # TODO: maybe start a new dialog here?
+        query = {"_id": user_id}
+        update = {
+            "$setOnInsert": data,
+        }
 
-    def start_new_dialog(self, user_id: int):
-        self.check_if_user_exists(user_id, raise_exception=True)
+        self.user_collection.update_one(query, update, upsert=True)
 
+    def upsert_chat(self, chat_id: int, dialog_id: ObjectId, chat_mode=config.DEFAULT_CHAT_MODE):
+        default_data = {
+            "first_seen": datetime.now(),
+            "used_tokens": 0,
+        }
+
+        data = {
+            "current_chat_mode": chat_mode,
+            "current_dialog_id": dialog_id,
+            "last_interaction": datetime.now(),
+        }
+
+        query = {"_id": chat_id}
+        update = {
+            "$set": data,
+            "$setOnInsert": default_data,
+        }
+
+        self.chat_collection.update_one(query, update, upsert=True)
+
+    def get_chat_attribute(self, chat_id: int, key: str):
+        data = self.chat_collection.find_one({"_id": chat_id})
+        return data[key] if data and key in data else None
+
+    def get_current_chat_mode(self, chat_id: int):
+        return self.get_chat_attribute(chat_id, 'current_chat_mode') or config.DEFAULT_CHAT_MODE
+
+    def get_chat_dialog_id(self, chat_id: int):
+        return self.get_chat_attribute(chat_id, 'current_dialog_id')
+
+    def start_new_dialog(self, chat_id: int, chat_mode=None):
+        chat_mode = chat_mode or self.get_current_chat_mode(chat_id)
         dialog_id = ObjectId()
         dialog_dict = {
             "_id": dialog_id,
-            "user_id": user_id,
-            "chat_mode": self.get_user_attribute(user_id, "current_chat_mode"),
+            "chat_id": chat_id,
+            "chat_mode": chat_mode,
             "start_time": datetime.now(),
             "messages": []
         }
@@ -75,13 +100,25 @@ class Database:
         # add new dialog
         self.dialog_collection.insert_one(dialog_dict)
 
-        # update user's current dialog
-        self.user_collection.update_one(
-            {"_id": user_id},
-            {"$set": {"current_dialog_id": dialog_id}}
-        )
+        # update chat dialog
+        self.upsert_chat(chat_id, dialog_id, chat_mode)
 
         return dialog_id
+    
+    def get_dialog_messages(self, chat_id: int):
+        dialog_id = self.get_chat_dialog_id(chat_id)
+        if not dialog_id:
+            return None
+        dialog_dict = self.dialog_collection.find_one({"_id": dialog_id, "chat_id": chat_id})               
+        return dialog_dict["messages"] if dialog_dict else None
+
+    def set_dialog_messages(self, chat_id: int, dialog_messages: list):
+        dialog_id = self.get_chat_dialog_id(chat_id)
+        
+        self.dialog_collection.update_one(
+            {"_id": dialog_id, "chat_id": chat_id},
+            {"$set": {"messages": dialog_messages}}
+        )
 
     def get_user_attribute(self, user_id: int, key: str):
         self.check_if_user_exists(user_id, raise_exception=True)
@@ -118,23 +155,6 @@ class Database:
     def set_user_attribute(self, user_id: int, key: str, value: Any):
         self.check_if_user_exists(user_id, raise_exception=True)
         self.user_collection.update_one({"_id": user_id}, {"$set": {key: value}})
-
-    def get_dialog_messages(self, user_id: int):
-        self.check_if_user_exists(user_id, raise_exception=True)
-
-        dialog_id = self.get_user_attribute(user_id, "current_dialog_id")
-        dialog_dict = self.dialog_collection.find_one({"_id": dialog_id, "user_id": user_id})               
-        return dialog_dict["messages"] if dialog_dict else None
-
-    def set_dialog_messages(self, user_id: int, dialog_messages: list):
-        self.check_if_user_exists(user_id, raise_exception=True)
-
-        dialog_id = self.get_user_attribute(user_id, "current_dialog_id")
-        
-        self.dialog_collection.update_one(
-            {"_id": dialog_id, "user_id": user_id},
-            {"$set": {"messages": dialog_messages}}
-        )
 
     def inc_stats(self, field: str, amount: int = 1):
         today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)

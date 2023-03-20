@@ -45,14 +45,11 @@ async def register_user_if_not_exists(update: Update, context: CallbackContext, 
     user = None
     if update.message:
         user = update.message.from_user
-        chat_id = update.message.chat_id
     elif update.edited_message:
         user = update.edited_message.from_user
-        chat_id = update.edited_message.chat_id
     elif update.callback_query:
         user = update.callback_query.from_user
-        chat_id = update.effective_chat.id
-    if not user or not chat_id:
+    if not user:
         print(f"Unknown callback event: {update}")
         return
     
@@ -63,7 +60,6 @@ async def register_user_if_not_exists(update: Update, context: CallbackContext, 
 
         db.add_new_user(
             user.id,
-            chat_id,
             username=user.username,
             first_name=user.first_name,
             last_name=user.last_name,
@@ -145,24 +141,26 @@ async def start_handle(update: Update, context: CallbackContext):
     await register_user_if_not_exists(update, context, referred_by=referred_by)
 
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
-    db.start_new_dialog(user_id)
     
     await send_greeting(update, context, is_new_user=is_new_user)
 
 async def retry_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
+    chat_id = get_chat_id(update)
+    if not chat_id:
+        return
     _ = get_text_func(user)
     
     user_id = update.message.from_user.id
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
-    dialog_messages = db.get_dialog_messages(user_id)
+    dialog_messages = db.get_dialog_messages(chat_id)
     if not dialog_messages or len(dialog_messages) == 0:
         await update.message.reply_text(_("😅 No conversation history to retry"))
         return
 
     last_dialog_message = dialog_messages.pop()
-    db.set_dialog_messages(user_id, dialog_messages)  # last message was removed from the context
+    db.set_dialog_messages(chat_id, dialog_messages)  # last message was removed from the context
 
     await message_handle(update, context, message=last_dialog_message["user"], use_new_dialog_timeout=False)
 
@@ -177,7 +175,6 @@ async def group_chat_message_handle(update: Update, context: CallbackContext):
         await update.message.reply_text(text)
         return
     
-    print(update)
     message = update.message.text
     if message.startswith(f"/gpt@{config.TELEGRAM_BOT_NAME}"):
         message = message[len(f"/gpt@{config.TELEGRAM_BOT_NAME}"):]
@@ -192,12 +189,12 @@ async def group_chat_message_handle(update: Update, context: CallbackContext):
         return
     await message_handle(update, context, message=message, use_new_dialog_timeout=False)
 
-def finalize_message_handle(user_id, message, answer, used_tokens):
+def finalize_message_handle(user_id, chat_id, message, answer, used_tokens):
     # update user data
-    new_dialog_message = {"user": message, "bot": answer, "date": datetime.now()}
+    new_dialog_message = {"user": message, "bot": answer, "date": datetime.now(), "used_tokens": used_tokens}
     db.set_dialog_messages(
-        user_id,
-        db.get_dialog_messages(user_id) + [new_dialog_message],
+        chat_id,
+        db.get_dialog_messages(chat_id) + [new_dialog_message],
     )
 
     # IMPORTANT: consume tokens in the end of function call to protect users' credits
@@ -208,7 +205,8 @@ def split_long_message(text):
 
 async def message_handle(update: Update, context: CallbackContext, message=None, use_new_dialog_timeout=True):
     user = update.message.from_user if update.message else None
-    if not user:
+    chat_id = get_chat_id(update)
+    if not user or not chat_id:
         # sent from a channel
         return
     # check if message is edited
@@ -224,7 +222,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     # new dialog timeout
     if use_new_dialog_timeout:
         if (datetime.now() - db.get_user_attribute(user_id, "last_interaction")).seconds > config.NEW_DIALOG_TIMEOUT:
-            db.start_new_dialog(user_id)
+            db.start_new_dialog(chat_id)
             await update.message.reply_text(_("💬 Start a new conversation due to timeout, and the previous messages will no longer be referenced to generate answers."))
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
@@ -234,6 +232,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     remaining_tokens = db.get_user_remaining_tokens(user_id)
 
     if remaining_tokens < 0:
+        # TODO: show different messages for private and group chats
         await update.message.reply_text(_("⚠️ Insufficient tokens, check /balance"), parse_mode=ParseMode.HTML)
         return
 
@@ -242,16 +241,16 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     used_tokens = None
 
     try:
-        messages = db.get_dialog_messages(user_id)
-        if not messages:
+        messages = db.get_dialog_messages(chat_id)
+        if messages is None:
             logger.warning("missing dialog data, start a new dialog")
-            db.start_new_dialog(user_id)
+            db.start_new_dialog(chat_id)
             messages = []
 
         answer, prompt, used_tokens, n_first_dialog_messages_removed = await chatgpt.ChatGPT().send_message(
             message,
             dialog_messages=messages,
-            chat_mode=db.get_user_attribute(user_id, "current_chat_mode"),
+            chat_mode=db.get_current_chat_mode(chat_id),
         )
 
         # send message if some messages were removed from the context
@@ -273,13 +272,13 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             await update.message.reply_text(answer, parse_mode=ParseMode.MARKDOWN)
 
         # update user data
-        finalize_message_handle(user_id, message, answer, used_tokens)
+        finalize_message_handle(user_id, chat_id, message, answer, used_tokens)
     except telegram.error.BadRequest as e:
         if answer:
             # answer has invalid characters, so we send it without parse_mode
             await update.message.reply_text(answer)
             # update user data
-            finalize_message_handle(user_id, message, answer, used_tokens)
+            finalize_message_handle(user_id, chat_id, message, answer, used_tokens)
         else:
             error_text = f"Errors from Telegram: {e}"
             logger.error(error_text)    
@@ -291,17 +290,17 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
 async def new_dialog_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
+    chat_id = get_chat_id(update)
+    if not chat_id:
+        return
+    
     _ = get_text_func(user)
 
     user_id = update.message.from_user.id
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
-    db.start_new_dialog(user_id)
+    db.start_new_dialog(chat_id)
     await update.message.reply_text(_("💬 Start a new conversation, and the previous messages will no longer be referenced to generate answers."))
-
-    # chat_mode = db.get_user_attribute(user_id, "current_chat_mode")
-    # await update.message.reply_text(f"{chatgpt.CHAT_MODES[chat_mode]['welcome_message']}", parse_mode=ParseMode.HTML)
-
 
 async def show_chat_modes_handle(update: Update, context: CallbackContext):
     await register_user_if_not_exists(update, context)
@@ -318,15 +317,16 @@ async def show_chat_modes_handle(update: Update, context: CallbackContext):
 
 async def set_chat_mode_handle(update: Update, context: CallbackContext):
     await register_user_if_not_exists(update, context)
-    user_id = update.callback_query.from_user.id
+    chat_id = get_chat_id(update)
+    if not chat_id:
+        return
 
     query = update.callback_query
     await query.answer()
 
     chat_mode = query.data.split("|")[1]
 
-    db.set_user_attribute(user_id, "current_chat_mode", chat_mode)
-    db.start_new_dialog(user_id)
+    db.start_new_dialog(chat_id, chat_mode)
 
     await query.edit_message_text(
         f"<b>{chatgpt.CHAT_MODES[chat_mode]['name']}</b> chat mode is set",
