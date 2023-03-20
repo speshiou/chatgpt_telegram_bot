@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-03-20 15:03+0800\n"
+"POT-Creation-Date: 2023-03-20 16:12+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -161,64 +161,69 @@ msgid ""
 msgstr ""
 
 #: ./bot/bot.py:493
+msgid ""
+"🙋‍♂️ If you have any issues related to crypto payment, please don't hesitate to contact {} for assistance.\n"
+msgstr ""
+
+#: ./bot/bot.py:494
 msgid "💡 <i>Your tokens will be credited within 10 minutes of payment.</i>"
 msgstr ""
 
-#: ./bot/bot.py:497
+#: ./bot/bot.py:498
 msgid "💳 Pay with Paypal"
 msgstr ""
 
-#: ./bot/bot.py:499
+#: ./bot/bot.py:500
 msgid "💎 Pay with Crypto"
 msgstr ""
 
-#: ./bot/bot.py:504
+#: ./bot/bot.py:505
 msgid "⚠️ Failed to create an invoice, please try again later."
 msgstr ""
 
-#: ./bot/bot.py:521
+#: ./bot/bot.py:522
 msgid ""
 "<b>💰 Earn</b>\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:523
+#: ./bot/bot.py:524
 msgid ""
 "Get %s%% rewards from the referred payments\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:524
+#: ./bot/bot.py:525
 msgid ""
 "Unused rewards: ${:,.2f}\n"
 msgstr ""
 
-#: ./bot/bot.py:525
+#: ./bot/bot.py:526
 msgid ""
 "Total earned: ${:,.2f}\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:526
+#: ./bot/bot.py:527
 msgid ""
 "Referral link:\n"
 msgstr ""
 
-#: ./bot/bot.py:528
+#: ./bot/bot.py:529
 msgid ""
 "<i>You have referred {:,} new users</i>\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:529
+#: ./bot/bot.py:530
 msgid "<i>💡 Refer the new users via your referral link, and you'll get a reward when they make a payment.</i>"
 msgstr ""
 
-#: ./bot/bot.py:531
+#: ./bot/bot.py:532
 msgid "⚠️ Server error, please try again later."
 msgstr ""
 
-#: ./bot/bot.py:539
+#: ./bot/bot.py:540
 msgid "💡 Edited messages won't take effects"
 msgstr ""
 
