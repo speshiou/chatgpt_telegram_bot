@@ -34,7 +34,7 @@ def get_commands(lang=i18n.DEFAULT_LOCALE):
     return [
         BotCommand("new", _("start a new conversation")),
         BotCommand("retry", _("regenerate last answer")),
-        BotCommand("gpt", _("ask questions in a group chat")),
+        # BotCommand("gpt", _("ask questions in a group chat")),
         # BotCommand("mode", _("select chat mode")),
         BotCommand("balance", _("check balance")),
         # BotCommand("earn", _("earn rewards by referral")),
