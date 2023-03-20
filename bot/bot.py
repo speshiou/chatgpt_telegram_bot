@@ -175,7 +175,7 @@ async def group_chat_message_handle(update: Update, context: CallbackContext):
     _ = get_text_func(user)
     chat = update.effective_chat
     if chat.type == Chat.PRIVATE:
-        text = _("👥 This command is for group chats, please add @{} into a group chat".format(config.TELEGRAM_BOT_NAME))
+        text = _("👥 This command is for group chats, please add @{} into a group chat").format(config.TELEGRAM_BOT_NAME)
         await update.message.reply_text(text)
         return
     
@@ -187,7 +187,7 @@ async def group_chat_message_handle(update: Update, context: CallbackContext):
     message = message.strip()
     
     if not message:
-        text = _("💡 Please enter your question followed by /gpt command\n\n")
+        text = _("💡 Please type /gpt and followed by your question or topic\n\n")
         text += _("<b>Example:</b> /gpt what can you do?")
         await update.message.reply_text(text, ParseMode.HTML)
         return
@@ -349,7 +349,7 @@ async def show_balance_handle(update: Update, context: CallbackContext):
     _ = get_text_func(user)
     chat = update.effective_chat
     if chat.type != Chat.PRIVATE:
-        text = _("🔒 For privacy reason, your balance won't show in a group chat. Please contact @{} directly.".format(config.TELEGRAM_BOT_NAME))
+        text = _("🔒 For privacy reason, your balance won't show in a group chat. Please contact @{} directly.").format(config.TELEGRAM_BOT_NAME)
         await update.message.reply_text(text)
         return
 
@@ -395,7 +395,7 @@ async def show_languages_handle(update: Update, context: CallbackContext):
 
     chat = update.effective_chat
     if chat.type != Chat.PRIVATE:
-        text = _("💡 Please contact @{} directly to set UI language.".format(config.TELEGRAM_BOT_NAME))
+        text = _("💡 Please contact @{} directly to set UI language").format(config.TELEGRAM_BOT_NAME)
         await update.message.reply_text(text)
         return
 
