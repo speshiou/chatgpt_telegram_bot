@@ -495,7 +495,7 @@ async def show_invoice(update: Update, context: CallbackContext):
         if method == "paypal":
             button_text = _("💳 Pay with Paypal")
         elif method == "crypto":
-            text += _("🙋‍♂️ If you have any issues related to crypto payment, please don't hesitate to contact {} for assistance.\n").format("@cryptomus_support")
+            text += _("🙋‍♂️ If you have any issues related to crypto payment, please don't hesitate to contact the customer service in the payment page, or send messages to {} directly for assistance.\n").format("@cryptomus_support")
             button_text = _("💎 Pay with Crypto")
 
         text += _("💡 <i>Your tokens will be credited within 10 minutes of payment.</i>")

@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-03-20 16:12+0800\n"
+"POT-Creation-Date: 2023-03-20 17:15+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -160,70 +160,70 @@ msgid ""
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:493
-msgid ""
-"🙋‍♂️ If you have any issues related to crypto payment, please don't hesitate to contact {} for assistance.\n"
-msgstr ""
-
-#: ./bot/bot.py:494
-msgid "💡 <i>Your tokens will be credited within 10 minutes of payment.</i>"
-msgstr ""
-
-#: ./bot/bot.py:498
+#: ./bot/bot.py:496
 msgid "💳 Pay with Paypal"
 msgstr ""
 
-#: ./bot/bot.py:500
+#: ./bot/bot.py:498
+msgid ""
+"🙋‍♂️ If you have any issues related to crypto payment, please don't hesitate to contact the customer service in the payment page, or send messages to {} directly for assistance.\n"
+msgstr ""
+
+#: ./bot/bot.py:499
 msgid "💎 Pay with Crypto"
 msgstr ""
 
-#: ./bot/bot.py:505
+#: ./bot/bot.py:501
+msgid "💡 <i>Your tokens will be credited within 10 minutes of payment.</i>"
+msgstr ""
+
+#: ./bot/bot.py:507
 msgid "⚠️ Failed to create an invoice, please try again later."
 msgstr ""
 
-#: ./bot/bot.py:522
+#: ./bot/bot.py:524
 msgid ""
 "<b>💰 Earn</b>\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:524
+#: ./bot/bot.py:526
 msgid ""
 "Get %s%% rewards from the referred payments\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:525
+#: ./bot/bot.py:527
 msgid ""
 "Unused rewards: ${:,.2f}\n"
 msgstr ""
 
-#: ./bot/bot.py:526
+#: ./bot/bot.py:528
 msgid ""
 "Total earned: ${:,.2f}\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:527
+#: ./bot/bot.py:529
 msgid ""
 "Referral link:\n"
 msgstr ""
 
-#: ./bot/bot.py:529
+#: ./bot/bot.py:531
 msgid ""
 "<i>You have referred {:,} new users</i>\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:530
+#: ./bot/bot.py:532
 msgid "<i>💡 Refer the new users via your referral link, and you'll get a reward when they make a payment.</i>"
 msgstr ""
 
-#: ./bot/bot.py:532
+#: ./bot/bot.py:534
 msgid "⚠️ Server error, please try again later."
 msgstr ""
 
-#: ./bot/bot.py:540
+#: ./bot/bot.py:542
 msgid "💡 Edited messages won't take effects"
 msgstr ""
 
