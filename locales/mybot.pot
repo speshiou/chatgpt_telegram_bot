@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-03-20 14:13+0800\n"
+"POT-Creation-Date: 2023-03-20 15:03+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,10 +21,6 @@ msgstr ""
 
 #: ./bot/bot.py:36
 msgid "regenerate last answer"
-msgstr ""
-
-#: ./bot/bot.py:37
-msgid "ask questions in a group chat"
 msgstr ""
 
 #: ./bot/bot.py:39
@@ -56,7 +52,7 @@ msgid "😅 No conversation history to retry"
 msgstr ""
 
 #: ./bot/bot.py:178
-msgid "👥 This command is for group chats, please add @{} into a group chat"
+msgid "👥 This command is for group chats, please add @{} to a group chat as a group member"
 msgstr ""
 
 #: ./bot/bot.py:190

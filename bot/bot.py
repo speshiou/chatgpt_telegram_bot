@@ -175,7 +175,7 @@ async def group_chat_message_handle(update: Update, context: CallbackContext):
     _ = get_text_func(user)
     chat = update.effective_chat
     if chat.type == Chat.PRIVATE:
-        text = _("👥 This command is for group chats, please add @{} into a group chat").format(config.TELEGRAM_BOT_NAME)
+        text = _("👥 This command is for group chats, please add @{} to a group chat as a group member").format(config.TELEGRAM_BOT_NAME)
         await update.message.reply_text(text)
         return
     
