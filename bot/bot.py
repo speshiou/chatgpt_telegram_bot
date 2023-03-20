@@ -164,7 +164,7 @@ async def retry_handle(update: Update, context: CallbackContext):
         return
 
     last_dialog_message = dialog_messages.pop()
-    db.set_dialog_messages(chat_id, dialog_messages)  # last message was removed from the context
+    db.pop_dialog_messages(chat_id)  # last message was removed from the context
 
     await message_handle(update, context, message=last_dialog_message["user"], use_new_dialog_timeout=False)
 
@@ -196,9 +196,9 @@ async def group_chat_message_handle(update: Update, context: CallbackContext):
 def finalize_message_handle(user_id, chat_id, message, answer, used_tokens):
     # update user data
     new_dialog_message = {"user": message, "bot": answer, "date": datetime.now(), "used_tokens": used_tokens}
-    db.set_dialog_messages(
+    db.push_dialog_messages(
         chat_id,
-        db.get_dialog_messages(chat_id) + [new_dialog_message],
+        new_dialog_message,
     )
 
     # IMPORTANT: consume tokens in the end of function call to protect users' credits

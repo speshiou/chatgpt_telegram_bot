@@ -112,12 +112,20 @@ class Database:
         dialog_dict = self.dialog_collection.find_one({"_id": dialog_id, "chat_id": chat_id})               
         return dialog_dict["messages"] if dialog_dict else None
 
-    def set_dialog_messages(self, chat_id: int, dialog_messages: list):
+    def pop_dialog_messages(self, chat_id: int):
         dialog_id = self.get_chat_dialog_id(chat_id)
         
         self.dialog_collection.update_one(
             {"_id": dialog_id, "chat_id": chat_id},
-            {"$set": {"messages": dialog_messages}}
+            {"$pop": {"messages": 1}}
+        )
+
+    def push_dialog_messages(self, chat_id: int, new_dialog_message):
+        dialog_id = self.get_chat_dialog_id(chat_id)
+        
+        self.dialog_collection.update_one(
+            {"_id": dialog_id, "chat_id": chat_id},
+            {"$push": {"messages": new_dialog_message}}
         )
 
     def get_user_attribute(self, user_id: int, key: str):
