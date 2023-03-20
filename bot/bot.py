@@ -6,11 +6,10 @@ import re
 from datetime import datetime
 
 import telegram
-from telegram import BotCommand, Update, User, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardRemove
+from telegram import BotCommand, Update, User, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application,
     ApplicationBuilder,
-    ConversationHandler,
     CallbackContext,
     CommandHandler,
     MessageHandler,
@@ -29,8 +28,6 @@ import bugreport
 # setup
 db = database.Database()
 logger = logging.getLogger(__name__)
-
-CHATGPT, TOP_UP, PAYMENT = range(3)
 
 def get_commands(lang=i18n.DEFAULT_LOCALE):
     _ = i18n.get_text_func(lang)
@@ -308,7 +305,7 @@ async def set_chat_mode_handle(update: Update, context: CallbackContext):
 async def show_balance_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
     _ = get_text_func(user)
-
+    
     user_id = update.message.from_user.id
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
@@ -395,7 +392,6 @@ async def show_payment_methods(update: Update, context: CallbackContext):
     if amount > 100 or amount < 0.1:
         text_not_in_range = _("💡 Only accept number between 0.1 to 100")
         await reply_or_edit_text(update, text_not_in_range)
-        return PAYMENT
 
     text = _("🛒 Choose the payment method\n\n")
     text += _("💳 Paypal - Debit or Credit Card\n")
@@ -417,8 +413,6 @@ async def show_payment_methods(update: Update, context: CallbackContext):
             parse_mode=ParseMode.HTML,
             reply_markup=reply_markup
         )
-
-    return PAYMENT
 
 async def show_invoice(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
@@ -463,8 +457,6 @@ async def show_invoice(update: Update, context: CallbackContext):
         parse_mode=ParseMode.HTML,
         reply_markup=reply_markup
     )
-
-    ConversationHandler.END
 
 async def show_earn_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
@@ -515,9 +507,6 @@ async def error_handle(update: Update, context: CallbackContext) -> None:
     except Exception as e:
         print(f"Failed to send bugreport: {e}")
 
-async def cancel(update: Update, context: CallbackContext):
-    return ConversationHandler.END
-
 async def app_post_init(application: Application):
     # setup bot commands
     await application.bot.set_my_commands(get_commands())
@@ -526,6 +515,7 @@ def run_bot() -> None:
     application = (
         ApplicationBuilder()
         .token(config.TELEGRAM_BOT_TOKEN)
+        .concurrent_updates(True)
         .post_init(app_post_init)
         .build()
     )
@@ -542,27 +532,11 @@ def run_bot() -> None:
     # application.add_handler(CommandHandler("mode", show_chat_modes_handle, filters=user_filter))
     # application.add_handler(CallbackQueryHandler(set_chat_mode_handle, pattern="^set_chat_mode"))
     application.add_handler(CommandHandler("balance", show_balance_handle, filters=user_filter))
+    application.add_handler(CallbackQueryHandler(show_payment_methods, pattern="^top_up\|(\d)+"))
+    application.add_handler(CallbackQueryHandler(show_invoice, pattern="^payment\|"))
     application.add_handler(CommandHandler("earn", show_earn_handle, filters=user_filter))
     application.add_handler(CommandHandler("language", show_languages_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(set_language_handle, pattern="^set_language"))
-
-    # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
-    conv_handler = ConversationHandler(
-        entry_points=[
-            CallbackQueryHandler(show_payment_methods, pattern="^top_up\|(\d)+"),
-        ],
-        states={
-            PAYMENT: [
-                CallbackQueryHandler(show_invoice, pattern="^payment\|"),
-            ],
-            CHATGPT: [
-            ],
-        },
-        fallbacks=[CommandHandler("cancel", cancel)],
-        allow_reentry=True,
-    )
-
-    application.add_handler(conv_handler)
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & user_filter, message_handle))
     application.add_error_handler(error_handle)
     
