@@ -34,6 +34,7 @@ def get_commands(lang=i18n.DEFAULT_LOCALE):
     return [
         BotCommand("new", _("start a new conversation")),
         BotCommand("retry", _("regenerate last answer")),
+        BotCommand("gpt", _("ask questions in a group chat")),
         # BotCommand("mode", _("select chat mode")),
         BotCommand("balance", _("check balance")),
         # BotCommand("earn", _("earn rewards by referral")),
@@ -164,6 +165,32 @@ async def retry_handle(update: Update, context: CallbackContext):
     db.set_dialog_messages(user_id, dialog_messages)  # last message was removed from the context
 
     await message_handle(update, context, message=last_dialog_message["user"], use_new_dialog_timeout=False)
+
+async def group_chat_message_handle(update: Update, context: CallbackContext):
+    user = await register_user_if_not_exists(update, context)
+    if not user:
+        return
+    _ = get_text_func(user)
+    chat = update.effective_chat
+    if chat.type == Chat.PRIVATE:
+        text = _("👥 This command is for group chats, please add @{} into a group chat".format(config.TELEGRAM_BOT_NAME))
+        await update.message.reply_text(text)
+        return
+    
+    print(update)
+    message = update.message.text
+    if message.startswith(f"/gpt@{config.TELEGRAM_BOT_NAME}"):
+        message = message[len(f"/gpt@{config.TELEGRAM_BOT_NAME}"):]
+    elif message.startswith("/gpt"):
+        message = message[len("/gpt"):]
+    message = message.strip()
+    
+    if not message:
+        text = _("💡 Please enter your question followed by /gpt command\n\n")
+        text += _("<b>Example:</b> /gpt what can you do?")
+        await update.message.reply_text(text, ParseMode.HTML)
+        return
+    await message_handle(update, context, message=message, use_new_dialog_timeout=False)
 
 def finalize_message_handle(user_id, message, answer, used_tokens):
     # update user data
@@ -551,6 +578,7 @@ def run_bot() -> None:
     application.add_handler(CommandHandler("earn", show_earn_handle, filters=user_filter))
     application.add_handler(CommandHandler("language", show_languages_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(set_language_handle, pattern="^set_language"))
+    application.add_handler(CommandHandler("gpt", group_chat_message_handle, filters=user_filter))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & user_filter, message_handle))
     application.add_error_handler(error_handle)
     
