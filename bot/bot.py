@@ -345,6 +345,7 @@ async def show_balance_handle(update: Update, context: CallbackContext):
     if not user:
         # sent from a channel
         return
+    user = await register_user_if_not_exists(update, context)
     _ = get_text_func(user)
     chat = update.effective_chat
     if chat.type != Chat.PRIVATE:
