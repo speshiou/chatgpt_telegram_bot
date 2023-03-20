@@ -6,7 +6,7 @@ import re
 from datetime import datetime
 
 import telegram
-from telegram import BotCommand, Update, User, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Chat, BotCommand, Update, User, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application,
     ApplicationBuilder,
@@ -98,7 +98,10 @@ def get_chat_id(update: Update):
     return chat_id
 
 def get_text_func(user):
-    lang = db.get_user_preferred_language(user.id) or user.language_code
+    if user:
+        lang = db.get_user_preferred_language(user.id) or user.language_code
+    else:
+        lang = None
     return i18n.get_text_func(lang)
 
 async def send_greeting(update: Update, context: CallbackContext, is_new_user=False):
@@ -177,6 +180,10 @@ def split_long_message(text):
     return [text[i:i + config.MESSAGE_MAX_LENGTH] for i in range(0, len(text), config.MESSAGE_MAX_LENGTH)]
 
 async def message_handle(update: Update, context: CallbackContext, message=None, use_new_dialog_timeout=True):
+    user = update.message.from_user if update.message else None
+    if not user:
+        # sent from a channel
+        return
     # check if message is edited
     if update.edited_message is not None:
         await edited_message_handle(update, context)
@@ -303,17 +310,24 @@ async def set_chat_mode_handle(update: Update, context: CallbackContext):
 
 
 async def show_balance_handle(update: Update, context: CallbackContext):
-    user = await register_user_if_not_exists(update, context)
+    user = update.message.from_user if update.message else None
+    if not user:
+        # sent from a channel
+        return
     _ = get_text_func(user)
-    
-    user_id = update.message.from_user.id
-    db.set_user_attribute(user_id, "last_interaction", datetime.now())
+    chat = update.effective_chat
+    if chat.type != Chat.PRIVATE:
+        text = _("🔒 For privacy reason, your balance won't show in a group chat.")
+        await update.message.reply_text(text)
+        return
 
-    used_tokens = db.get_user_attribute(user_id, "used_tokens")
+    db.set_user_attribute(user.id, "last_interaction", datetime.now())
+
+    used_tokens = db.get_user_attribute(user.id, "used_tokens")
     n_spent_dollars = used_tokens * (config.TOKEN_PRICE / 1000)
 
     text = _("👛 <b>Balance</b>\n\n")
-    text += _("<b>{:,}</b> tokens left\n").format(db.get_user_remaining_tokens(user_id))
+    text += _("<b>{:,}</b> tokens left\n").format(db.get_user_remaining_tokens(user.id))
     text += _("<i>You used <b>{:,}</b> tokens</i>\n\n").format(used_tokens)
     text += _("<i>💡 The longer conversation would spend more tokens, use /new to reset</i>")
     # text += f"You spent <b>{n_spent_dollars:.03f}$</b>\n"
