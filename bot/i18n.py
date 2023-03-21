@@ -13,8 +13,10 @@ def mapping_tg_lang_code(code):
         return DEFAULT_LOCALE
     if code in SUPPORTED_LOCALES:
         return code
-    if code == "zh-hant" or code.startswith("zh"):
+    if code == "zh-hant":
         return "zh_TW"
+    elif code.startswith("zh"):
+        return "zh_CN"
     return DEFAULT_LOCALE
 
 def get_text_func(lang):

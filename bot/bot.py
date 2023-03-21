@@ -108,7 +108,7 @@ async def send_greeting(update: Update, context: CallbackContext, is_new_user=Fa
 
     commands_text = "".join([f"/{c.command} - {c.description}\n" for c in get_commands(lang)])
 
-    reply_text = _("🤖 Hi! I'm <b>ChatGPT</b> bot powered by OpenAI GPT-3.5 API")
+    reply_text = _("Hi! I'm an AI chatbot powered by OpenAI's GPT-3.5 turbo model")
     reply_text += "\n\n"
     reply_text += _("<b>Commands</b>")
     reply_text += "\n"
@@ -127,7 +127,15 @@ async def send_greeting(update: Update, context: CallbackContext, is_new_user=Fa
             )
     chat_id = get_chat_id(update)
     if chat_id:
-        await context.bot.send_message(chat_id, _("Now you can ask me anything ..."))
+        text = _("Now you can ask me anything like\n\n")
+        text += _("🔎 Find answers\n")
+        text += _("🌎 Translate\n")
+        text += _("✍️ Writing and proofreading\n")
+        text += _("💡 Provide ideas and solve problems\n")
+        text += _("💻 Programming and debugging\n")
+        text += _("🧙‍♀️ Role-playing\n")
+        text += _("and much more ...\n")
+        await context.bot.send_message(chat_id, text)
 
 async def start_handle(update: Update, context: CallbackContext):
     chat = update.effective_chat
@@ -404,11 +412,11 @@ async def show_languages_handle(update: Update, context: CallbackContext):
             InlineKeyboardButton("English", callback_data="set_language|en"),
         ],
         [
-            InlineKeyboardButton("繁體中文", callback_data="set_language|zh_TW"),
+            InlineKeyboardButton("简体中文", callback_data="set_language|zh_CN"),
         ],
         [
-            InlineKeyboardButton("简体中文", callback_data="set_language|zh_CN"),
-        ]
+            InlineKeyboardButton("繁體中文", callback_data="set_language|zh_TW"),
+        ],
     ])
 
     await reply_or_edit_text(
