@@ -464,8 +464,8 @@ async def show_payment_methods(update: Update, context: CallbackContext):
     text += _("💳 Paypal - Debit or Credit Card\n")
     text += _("💎 Crypto - BTC, USDT, USDC, TON\n")
     reply_markup = InlineKeyboardMarkup([
-        [InlineKeyboardButton("💳 Paypal", callback_data=f"payment|paypal|{amount}|{tokens_amount}")],
-        [InlineKeyboardButton("💎 Crypto", callback_data=f"payment|crypto|{amount}|{tokens_amount}")]
+        [InlineKeyboardButton(_("💳 Paypal"), callback_data=f"payment|paypal|{amount}|{tokens_amount}")],
+        [InlineKeyboardButton(_("💎 Crypto"), callback_data=f"payment|crypto|{amount}|{tokens_amount}")]
     ])
 
     if update.message:
