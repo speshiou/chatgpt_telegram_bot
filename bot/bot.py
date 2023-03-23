@@ -199,7 +199,7 @@ async def group_chat_message_handle(update: Update, context: CallbackContext):
         text += _("<b>Example:</b> /gpt what can you do?")
         await update.message.reply_text(text, ParseMode.HTML)
         return
-    await message_handle(update, context, message=message, use_new_dialog_timeout=False)
+    await message_handle(update, context, message=message)
 
 def finalize_message_handle(user_id, chat_id, message, answer, used_tokens):
     # update user data
