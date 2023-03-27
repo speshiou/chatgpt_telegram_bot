@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-03-22 22:00+0800\n"
+"POT-Creation-Date: 2023-03-27 23:20+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -216,6 +216,7 @@ msgstr ""
 #: ./bot/bot.py:513
 msgid ""
 "🙋‍♂️ If you have any issues related to crypto payment, please don't hesitate to contact the customer service in the payment page, or send messages to {} directly for assistance.\n"
+"\n"
 msgstr ""
 
 #: ./bot/bot.py:514
@@ -223,7 +224,7 @@ msgid "💎 Pay with Crypto"
 msgstr ""
 
 #: ./bot/bot.py:516
-msgid "💡 <i>Your tokens will be credited within 10 minutes of payment.</i>"
+msgid "💡 <i>Tokens will be credited within 10 minutes of payment. (Please contact @gpt_chatbot_support if tokens are not received after 1 hour of payment.)</i>"
 msgstr ""
 
 #: ./bot/bot.py:522
