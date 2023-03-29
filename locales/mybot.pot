@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-03-27 23:20+0800\n"
+"POT-Creation-Date: 2023-03-29 08:38+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -209,71 +209,82 @@ msgid ""
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:511
-msgid "💳 Pay with Paypal"
-msgstr ""
-
-#: ./bot/bot.py:513
+#: ./bot/bot.py:509
 msgid ""
-"🙋‍♂️ If you have any issues related to crypto payment, please don't hesitate to contact the customer service in the payment page, or send messages to {} directly for assistance.\n"
-"\n"
+"💡 <b>Tips</b>:\n"
 msgstr ""
 
-#: ./bot/bot.py:514
-msgid "💎 Pay with Crypto"
+#: ./bot/bot.py:515
+msgid "If you do not have a PayPal account, click on the button located below the login button to pay with cards directly."
 msgstr ""
 
 #: ./bot/bot.py:516
-msgid "💡 <i>Tokens will be credited within 10 minutes of payment. (Please contact @gpt_chatbot_support if tokens are not received after 1 hour of payment.)</i>"
+msgid "💳 Pay with Paypal"
+msgstr ""
+
+#: ./bot/bot.py:518
+msgid "If you have any issues related to crypto payment, please contact the customer service in the payment page, or send messages to {} directly for assistance."
+msgstr ""
+
+#: ./bot/bot.py:519
+msgid "💎 Pay with Crypto"
+msgstr ""
+
+#: ./bot/bot.py:521
+msgid "Tokens will be credited within 10 minutes of payment."
 msgstr ""
 
 #: ./bot/bot.py:522
+msgid "Please contact @gpt_chatbot_support if tokens are not received after 1 hour of payment."
+msgstr ""
+
+#: ./bot/bot.py:530
 msgid "⚠️ Failed to create an invoice, please try again later."
 msgstr ""
 
-#: ./bot/bot.py:539
+#: ./bot/bot.py:547
 msgid ""
 "<b>💰 Earn</b>\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:541
+#: ./bot/bot.py:549
 msgid ""
 "Get %s%% rewards from the referred payments\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:542
+#: ./bot/bot.py:550
 msgid ""
 "Unused rewards: ${:,.2f}\n"
 msgstr ""
 
-#: ./bot/bot.py:543
+#: ./bot/bot.py:551
 msgid ""
 "Total earned: ${:,.2f}\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:544
+#: ./bot/bot.py:552
 msgid ""
 "Referral link:\n"
 msgstr ""
 
-#: ./bot/bot.py:546
+#: ./bot/bot.py:554
 msgid ""
 "<i>You have referred {:,} new users</i>\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:547
+#: ./bot/bot.py:555
 msgid "<i>💡 Refer the new users via your referral link, and you'll get a reward when they make a payment.</i>"
 msgstr ""
 
-#: ./bot/bot.py:549
+#: ./bot/bot.py:557
 msgid "⚠️ Server error, please try again later."
 msgstr ""
 
-#: ./bot/bot.py:557
+#: ./bot/bot.py:565
 msgid "💡 Edited messages won't take effects"
 msgstr ""
 

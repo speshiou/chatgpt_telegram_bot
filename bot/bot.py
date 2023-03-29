@@ -504,16 +504,24 @@ async def show_invoice(update: Update, context: CallbackContext):
         text = _("📋 <b>Your invoice</b>:\n\n")
         text += "{:,} tokens\n".format(token_amount)
         text += "------------------\n"
-        text += f"${amount}\n\n"
+        text += f"${amount}\n\n\n"
+
+        text += _("💡 <b>Tips</b>:\n")
+
+        tips = []
 
         button_text = ""
         if method == "paypal":
+            tips.append(_("If you do not have a PayPal account, click on the button located below the login button to pay with cards directly."))
             button_text = _("💳 Pay with Paypal")
         elif method == "crypto":
-            text += _("🙋‍♂️ If you have any issues related to crypto payment, please don't hesitate to contact the customer service in the payment page, or send messages to {} directly for assistance.\n\n").format("@cryptomus_support")
+            tips.append(_("If you have any issues related to crypto payment, please contact the customer service in the payment page, or send messages to {} directly for assistance.").format("@cryptomus_support"))
             button_text = _("💎 Pay with Crypto")
 
-        text += _("💡 <i>Tokens will be credited within 10 minutes of payment. (Please contact @gpt_chatbot_support if tokens are not received after 1 hour of payment.)</i>")
+        tips.append(_("Tokens will be credited within 10 minutes of payment."))
+        tips.append(_("Please contact @gpt_chatbot_support if tokens are not received after 1 hour of payment."))
+
+        text += "\n\n".join(map(lambda s: "• " + s, tips))
 
         reply_markup = InlineKeyboardMarkup([
             [InlineKeyboardButton(button_text, url=result["url"])]
