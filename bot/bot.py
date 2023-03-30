@@ -177,6 +177,10 @@ async def retry_handle(update: Update, context: CallbackContext):
     await message_handle(update, context, message=last_dialog_message["user"], use_new_dialog_timeout=False)
 
 async def group_chat_message_handle(update: Update, context: CallbackContext):
+    # check if message is edited
+    if update.edited_message is not None:
+        await edited_message_handle(update, context)
+        return
     user = await register_user_if_not_exists(update, context)
     if not user:
         return
@@ -221,6 +225,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     if not user or not chat_id:
         # sent from a channel
         return
+    
     # check if message is edited
     if update.edited_message is not None:
         await edited_message_handle(update, context)
