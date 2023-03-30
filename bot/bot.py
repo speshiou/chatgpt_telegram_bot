@@ -384,19 +384,19 @@ async def show_balance_handle(update: Update, context: CallbackContext):
             "tokens_amount": price_to_tokens(2),
         },
         {
-            "payment_amount": 5.0 * 0.95,
+            "payment_amount": 5.0 * 0.9,
             "tokens_amount": price_to_tokens(5),
-            "caption": "-5%",
-        },
-        {
-            "payment_amount": 8.99,
-            "tokens_amount": price_to_tokens(10),
             "caption": "-10%",
         },
         {
-            "payment_amount": 15.99,
-            "tokens_amount": price_to_tokens(20),
+            "payment_amount": 7.99,
+            "tokens_amount": price_to_tokens(10),
             "caption": "-20%",
+        },
+        {
+            "payment_amount": 13.99,
+            "tokens_amount": price_to_tokens(20),
+            "caption": "-30%",
         },
     ]
 
