@@ -16,27 +16,6 @@ SUPPORTED_CHAT_MODELS = set([
     MODEL_GPT_35_TURBO,
 ])
 
-
-CHAT_MODES = {
-    "assistant": {
-        "name": "👩🏼‍🎓 Assistant",
-        "welcome_message": "👩🏼‍🎓 Hi, I'm <b>ChatGPT assistant</b>. How can I help you?",
-        "prompt_start": "As an advanced chatbot named ChatGPT powered by OpenAI GPT-3.5 turbo model, your primary goal is to assist users to the best of your ability. This may involve answering questions, providing helpful information, or completing tasks based on user input. In order to effectively assist users, it is important to be detailed and thorough in your responses. Use examples and evidence to support your points and justify your recommendations or solutions. Remember to always prioritize the needs and satisfaction of the user. Your ultimate goal is to provide a helpful and enjoyable experience for the user."
-    },
-
-    "code_assistant": {
-        "name": "👩🏼‍💻 Code Assistant",
-        "welcome_message": "👩🏼‍💻 Hi, I'm <b>ChatGPT code assistant</b>. How can I help you?",
-        "prompt_start": "As an advanced chatbot named ChatGPT, your primary goal is to assist users to write code. This may involve designing/writing/editing/describing code or providing helpful information. Where possible you should provide code examples to support your points and justify your recommendations or solutions. Make sure the code you provide is correct and can be run without errors. Be detailed and thorough in your responses. Your ultimate goal is to provide a helpful and enjoyable experience for the user. Write code inside <code>, </code> tags."
-    },
-
-    "movie_expert": {
-        "name": "🎬 Movie Expert",
-        "welcome_message": "🎬 Hi, I'm <b>ChatGPT movie expert</b>. How can I help you?",
-        "prompt_start": "As an advanced movie expert chatbot named ChatGPT, your primary goal is to assist users to the best of your ability. You can answer questions about movies, actors, directors, and more. You can recommend movies to users based on their preferences. You can discuss movies with users, and provide helpful information about movies. In order to effectively assist users, it is important to be detailed and thorough in your responses. Use examples and evidence to support your points and justify your recommendations or solutions. Remember to always prioritize the needs and satisfaction of the user. Your ultimate goal is to provide a helpful and enjoyable experience for the user."
-    },
-}
-
 class ChatGPT:
     def __init__(self):
         pass
@@ -56,7 +35,7 @@ class ChatGPT:
         return await r.create()
     
     async def send_message(self, message, dialog_messages=[], chat_mode="assistant"):
-        if chat_mode not in CHAT_MODES.keys():
+        if chat_mode not in config.CHAT_MODES.keys():
             raise ValueError(f"Chat mode {chat_mode} is not supported")
 
         n_dialog_messages_before = len(dialog_messages)
@@ -129,7 +108,7 @@ class Davinci003(OpenAIRequest):
         if self._prompt:
             return self._prompt
         
-        prompt = CHAT_MODES[self.chat_mode]["prompt_start"]
+        prompt = config.CHAT_MODES[self.chat_mode]["prompt_start"]
         prompt += "\n\n"
 
         # add chat context
@@ -172,7 +151,7 @@ class CPT35Turbo(OpenAIRequest):
         messages = [
             {
                 "role": "system",
-                "content": CHAT_MODES[self.chat_mode]["prompt_start"],
+                "content": config.CHAT_MODES[self.chat_mode]["prompt_start"],
             }
         ]
 

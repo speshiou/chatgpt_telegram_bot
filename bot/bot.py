@@ -34,7 +34,8 @@ def get_commands(lang=i18n.DEFAULT_LOCALE):
     return [
         BotCommand("new", _("start a new conversation")),
         BotCommand("retry", _("regenerate last answer")),
-        BotCommand("gpt", _("ask questions in a group chat")),
+        BotCommand("gpt", _("switch to ChatGPT mode")),
+        BotCommand("rephrase", _("switch to Language Expert mode")),
         # BotCommand("mode", _("select chat mode")),
         BotCommand("balance", _("check balance")),
         # BotCommand("earn", _("earn rewards by referral")),
@@ -176,6 +177,14 @@ async def retry_handle(update: Update, context: CallbackContext):
 
     await message_handle(update, context, message=last_dialog_message["user"], use_new_dialog_timeout=False)
 
+def strip_command(message):
+    if not message.strip():
+        return None
+    m = re.match(f"\/\w+(@{config.TELEGRAM_BOT_NAME})? (.*)", message, re.DOTALL)
+    if m:
+        return m[2].strip()
+    return None
+
 async def group_chat_message_handle(update: Update, context: CallbackContext):
     # check if message is edited
     if update.edited_message is not None:
@@ -187,23 +196,57 @@ async def group_chat_message_handle(update: Update, context: CallbackContext):
     _ = get_text_func(user)
     chat = update.effective_chat
     if chat.type == Chat.PRIVATE:
-        text = _("👥 This command is for group chats, please add @{} to a group chat as a group member").format(config.TELEGRAM_BOT_NAME)
+        chat_id = get_chat_id(update)
+        chat_mode = db.get_current_chat_mode(chat_id)
+
+        text = _("🤖 Switch to ChatGPT mode\n\n")
+        if chat_mode != "assistant":
+            db.start_new_dialog(chat_id, "assistant")
+
+        text += _("👥 This command is also for group chats to talk to ChatGPT, please add @{} to a group chat as a group member").format(config.TELEGRAM_BOT_NAME)
+        text += "\n\n"
+        text += _("Now you can ask me anything ...")
         await update.message.reply_text(text)
         return
     
-    message = update.message.text
-    if message.startswith(f"/gpt@{config.TELEGRAM_BOT_NAME}"):
-        message = message[len(f"/gpt@{config.TELEGRAM_BOT_NAME}"):]
-    elif message.startswith("/gpt"):
-        message = message[len("/gpt"):]
-    message = message.strip()
-    
+    message = strip_command(update.message.text)    
     if not message:
         text = _("💡 Please type /gpt and followed by your question or topic\n\n")
         text += _("<b>Example:</b> /gpt what can you do?")
         await update.message.reply_text(text, ParseMode.HTML)
         return
     await message_handle(update, context, message=message)
+
+async def rephrase_message_handle(update: Update, context: CallbackContext):
+    # check if message is edited
+    if update.edited_message is not None:
+        await edited_message_handle(update, context)
+        return
+    
+    user = await register_user_if_not_exists(update, context)
+    if not user:
+        return
+
+    _ = get_text_func(user)
+
+    chat_id = get_chat_id(update)
+    chat = update.effective_chat
+    if chat.type == Chat.PRIVATE:
+        chat_mode = db.get_current_chat_mode(chat_id)
+        if chat_mode != "lang_expert":
+            db.start_new_dialog(chat_id, "lang_expert")
+        text = _("📝 Switch to Language Export mode\n\n")
+        text += _("Now you can give me any text in any languages, I will help you check grammar, spelling and wording usage, then rephrase it and do proofreading.")
+        await update.message.reply_text(text)
+        return
+
+    message = strip_command(update.message.text)    
+    if not message:
+        text = _("💡 Please type /rephrase and followed by the content you want to rephrase\n\n")
+        text += _("<b>Example:</b> /rephrase your sentences")
+        await update.message.reply_text(text, ParseMode.HTML)
+        return
+    await message_handle(update, context, message=message, chat_mode="lang_expert")
 
 def finalize_message_handle(user_id, chat_id, message, answer, used_tokens, max_message_count: int=-1):
     # update user data
@@ -220,7 +263,7 @@ def finalize_message_handle(user_id, chat_id, message, answer, used_tokens, max_
 def split_long_message(text):
     return [text[i:i + config.MESSAGE_MAX_LENGTH] for i in range(0, len(text), config.MESSAGE_MAX_LENGTH)]
 
-async def message_handle(update: Update, context: CallbackContext, message=None, use_new_dialog_timeout=True):
+async def message_handle(update: Update, context: CallbackContext, message=None, use_new_dialog_timeout=True, chat_mode=None):
     user = update.message.from_user if update.message else None
     chat_id = get_chat_id(update)
     if not user or not chat_id:
@@ -236,12 +279,17 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     _ = get_text_func(user)
 
     user_id = update.message.from_user.id
+    if chat_mode is None:
+        chat_mode = db.get_current_chat_mode(chat_id)
 
     # new dialog timeout
     if use_new_dialog_timeout:
         if (datetime.now() - db.get_user_attribute(user_id, "last_interaction")).seconds > config.NEW_DIALOG_TIMEOUT:
             db.start_new_dialog(chat_id)
-            await update.message.reply_text(_("💬 Start a new conversation due to timeout, and the previous messages will no longer be referenced to generate answers."))
+            text = _("💬 Start a new conversation due to timeout, and the previous messages will no longer be referenced to generate answers.")
+            text += "\n\n"
+            text += _("Now I'm in {} mode").format(_(config.CHAT_MODES[chat_mode]["name"]))
+            await update.message.reply_text(text)
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
     # send typing action
@@ -266,11 +314,14 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             logger.warning("missing dialog data, start a new dialog")
             db.start_new_dialog(chat_id)
             messages = []
+        if chat_mode == "lang_expert":
+            # to keep the language of input message, not to send chat history to model
+            messages = []        
 
         answer, prompt, used_tokens, n_first_dialog_messages_removed = await chatgpt.ChatGPT().send_message(
             message,
             dialog_messages=messages,
-            chat_mode=db.get_current_chat_mode(chat_id),
+            chat_mode=chat_mode,
         )
 
         # send message if some messages were removed from the context
@@ -323,7 +374,13 @@ async def new_dialog_handle(update: Update, context: CallbackContext):
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
     db.start_new_dialog(chat_id)
-    await update.message.reply_text(_("💬 Start a new conversation, and the previous messages will no longer be referenced to generate answers."))
+
+    chat_mode = db.get_current_chat_mode(chat_id)
+
+    text = _("💬 Start a new conversation, and the previous messages will no longer be referenced to generate answers.")
+    text += "\n\n"
+    text += _("Now I'm in {} mode").format(_(config.CHAT_MODES[chat_mode]["name"]))
+    await update.message.reply_text(text)
 
 async def show_chat_modes_handle(update: Update, context: CallbackContext):
     await register_user_if_not_exists(update, context)
@@ -331,7 +388,7 @@ async def show_chat_modes_handle(update: Update, context: CallbackContext):
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
     keyboard = []
-    for chat_mode, chat_mode_dict in chatgpt.CHAT_MODES.items():
+    for chat_mode, chat_mode_dict in config.CHAT_MODES.items():
         keyboard.append([InlineKeyboardButton(chat_mode_dict["name"], callback_data=f"set_chat_mode|{chat_mode}")])
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -352,11 +409,11 @@ async def set_chat_mode_handle(update: Update, context: CallbackContext):
     db.start_new_dialog(chat_id, chat_mode)
 
     await query.edit_message_text(
-        f"<b>{chatgpt.CHAT_MODES[chat_mode]['name']}</b> chat mode is set",
+        f"<b>{config.CHAT_MODES[chat_mode]['name']}</b> chat mode is set",
         parse_mode=ParseMode.HTML
     )
 
-    await query.edit_message_text(f"{chatgpt.CHAT_MODES[chat_mode]['welcome_message']}", parse_mode=ParseMode.HTML)
+    await query.edit_message_text(f"{config.CHAT_MODES[chat_mode]['welcome_message']}", parse_mode=ParseMode.HTML)
 
 
 async def show_balance_handle(update: Update, context: CallbackContext):
@@ -627,6 +684,7 @@ def run_bot() -> None:
     application.add_handler(CommandHandler("language", show_languages_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(set_language_handle, pattern="^set_language"))
     application.add_handler(CommandHandler("gpt", group_chat_message_handle, filters=user_filter))
+    application.add_handler(CommandHandler("rephrase", rephrase_message_handle, filters=user_filter))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & user_filter, message_handle))
     application.add_error_handler(error_handle)
     
