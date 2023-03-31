@@ -205,12 +205,13 @@ async def group_chat_message_handle(update: Update, context: CallbackContext):
         return
     await message_handle(update, context, message=message)
 
-def finalize_message_handle(user_id, chat_id, message, answer, used_tokens):
+def finalize_message_handle(user_id, chat_id, message, answer, used_tokens, max_message_count: int=-1):
     # update user data
     new_dialog_message = {"user": message, "bot": answer, "date": datetime.now(), "used_tokens": used_tokens}
     db.push_dialog_messages(
         chat_id,
         new_dialog_message,
+        max_message_count,
     )
 
     # IMPORTANT: consume tokens in the end of function call to protect users' credits
@@ -256,6 +257,8 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     message = message or update.message.text
     answer = None
     used_tokens = None
+    # handle too many tokens
+    max_message_count = -1
 
     try:
         messages = db.get_dialog_messages(chat_id)
@@ -273,9 +276,12 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         # send message if some messages were removed from the context
         if n_first_dialog_messages_removed > 0:
             if n_first_dialog_messages_removed == 1:
-                text = _("💡 the current conversation is too long, so the <b>first message</b> was removed from the references.\n Send /new to start a new conversation")
+                text = _("⚠️ the current conversation is too long, so the <b>first message</b> was removed from the references.\n Send /new to start a new conversation")
             else:
-                text = _("💡 the current conversation is too long, so the <b>first {} messages</b> have removed from the references.\n Send /new to start a new conversation").format(n_first_dialog_messages_removed)
+                text = _("⚠️ the current conversation is too long, so the <b>first {} messages</b> have removed from the references.\n Send /new to start a new conversation").format(n_first_dialog_messages_removed)
+
+            max_message_count = len(messages) + 1 - n_first_dialog_messages_removed
+
             await update.message.reply_text(text, parse_mode=ParseMode.HTML)
 
         # check if the anwser is too long (over 4000)
@@ -289,13 +295,13 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             await update.message.reply_text(answer, parse_mode=ParseMode.MARKDOWN)
 
         # update user data
-        finalize_message_handle(user_id, chat_id, message, answer, used_tokens)
+        finalize_message_handle(user_id, chat_id, message, answer, used_tokens, max_message_count)
     except telegram.error.BadRequest as e:
         if answer:
             # answer has invalid characters, so we send it without parse_mode
             await update.message.reply_text(answer)
             # update user data
-            finalize_message_handle(user_id, chat_id, message, answer, used_tokens)
+            finalize_message_handle(user_id, chat_id, message, answer, used_tokens, max_message_count)
         else:
             error_text = f"Errors from Telegram: {e}"
             logger.error(error_text)    

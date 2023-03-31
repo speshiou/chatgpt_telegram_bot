@@ -120,13 +120,22 @@ class Database:
             {"$pop": {"messages": 1}}
         )
 
-    def push_dialog_messages(self, chat_id: int, new_dialog_message):
+    def push_dialog_messages(self, chat_id: int, new_dialog_message, max_message_count: int=-1):
         dialog_id = self.get_chat_dialog_id(chat_id)
-        
-        self.dialog_collection.update_one(
-            {"_id": dialog_id, "chat_id": chat_id},
-            {"$push": {"messages": new_dialog_message}}
-        )
+
+        if max_message_count > 0:
+            self.dialog_collection.update_one(
+                {"_id": dialog_id, "chat_id": chat_id},
+                {"$push": {"messages": {
+                    "$each": [ new_dialog_message ],
+                    "$slice": -max_message_count,
+                }}}
+            )
+        else:
+            self.dialog_collection.update_one(
+                {"_id": dialog_id, "chat_id": chat_id},
+                {"$push": {"messages": new_dialog_message}}
+            )
 
     def get_user_attribute(self, user_id: int, key: str):
         self.check_if_user_exists(user_id, raise_exception=True)
