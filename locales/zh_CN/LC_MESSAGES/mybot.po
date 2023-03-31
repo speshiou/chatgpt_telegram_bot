@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-03-31 17:37+0800\n"
+"POT-Creation-Date: 2023-03-31 17:52+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -122,9 +122,9 @@ msgstr "<b>示例：</b> /gpt 你能做什么？"
 
 #: ./bot/bot.py:238
 msgid ""
-"📝 Switch to Language Export mode\n"
+"📝 Switch to Language Expert mode\n"
 "\n"
-msgstr "📝 切换到语言导出模式\n\n"
+msgstr "📝 切换到语言专家模式\n\n"
 
 #: ./bot/bot.py:239
 msgid "Now you can give me any text in any languages, I will help you check grammar, spelling and wording usage, then rephrase it and do proofreading."

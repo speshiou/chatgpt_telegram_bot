@@ -235,7 +235,7 @@ async def rephrase_message_handle(update: Update, context: CallbackContext):
         chat_mode = db.get_current_chat_mode(chat_id)
         if chat_mode != "lang_expert":
             db.start_new_dialog(chat_id, "lang_expert")
-        text = _("📝 Switch to Language Export mode\n\n")
+        text = _("📝 Switch to Language Expert mode\n\n")
         text += _("Now you can give me any text in any languages, I will help you check grammar, spelling and wording usage, then rephrase it and do proofreading.")
         await update.message.reply_text(text)
         return
