@@ -3,6 +3,7 @@ import traceback
 import html
 import json
 import re
+import math
 from datetime import datetime
 
 import telegram
@@ -260,8 +261,8 @@ def finalize_message_handle(user_id, chat_id, message, answer, used_tokens, max_
     # IMPORTANT: consume tokens in the end of function call to protect users' credits
     db.inc_user_used_tokens(user_id, used_tokens)
 
-def split_long_message(text):
-    return [text[i:i + config.MESSAGE_MAX_LENGTH] for i in range(0, len(text), config.MESSAGE_MAX_LENGTH)]
+def get_message_chunks(text, chuck_size=config.MESSAGE_MAX_LENGTH):
+    return [text[i:i + chuck_size] for i in range(0, len(text), chuck_size)]
 
 async def message_handle(update: Update, context: CallbackContext, message=None, use_new_dialog_timeout=True, chat_mode=None):
     user = update.message.from_user if update.message else None
@@ -304,7 +305,14 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
     message = message or update.message.text
     answer = None
+    sent_answer = None
     used_tokens = None
+    # handle long message that exceeds telegram's limit
+    n_message_chunks = 0
+    current_message_chunk_index = 0
+    n_sent_chunks = 0
+    last_answer_message = None
+    has_sent_long_message_warning = False
     # handle too many tokens
     max_message_count = -1
 
@@ -324,7 +332,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             chat_mode=chat_mode,
         )
 
-        # send message if some messages were removed from the context
+        # send warning if some messages were removed from the context
         if n_first_dialog_messages_removed > 0:
             if n_first_dialog_messages_removed == 1:
                 text = _("⚠️ the current conversation is too long, so the <b>first message</b> was removed from the references.\n Send /new to start a new conversation")
@@ -335,32 +343,47 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
             await update.message.reply_text(text, parse_mode=ParseMode.HTML)
 
-        # check if the anwser is too long (over 4000)
+        # send warning if the anwser is too long (based on telegram's limit)
         if len(answer) > config.MESSAGE_MAX_LENGTH:
-            await update.message.reply_text(_("⚠️ the answer is too long, will split it into multiple messages without text formatting"))
-            message_chunks = split_long_message(answer)
-            for message_chunk in message_chunks:
-                # send splitted messages in plain text to prevent incomplete entities
-                await update.message.reply_text(message_chunk)
-        else:
-            await update.message.reply_text(answer, parse_mode=ParseMode.MARKDOWN)
+            if not has_sent_long_message_warning:
+                await update.message.reply_text(_("⚠️ the answer is too long, will split it into multiple messages without text formatting"))
+                has_sent_long_message_warning = True
 
-        # update user data
-        finalize_message_handle(user_id, chat_id, message, answer, used_tokens, max_message_count)
+        # send answer chunks
+        n_message_chunks = math.ceil(len(answer) / config.MESSAGE_MAX_LENGTH)
+        for chuck_index in range(current_message_chunk_index, n_message_chunks):
+            start_index = chuck_index * config.MESSAGE_MAX_LENGTH
+            end_index = (chuck_index + 1) * config.MESSAGE_MAX_LENGTH
+            message_chunk = answer[start_index:end_index]
+            if current_message_chunk_index < n_message_chunks - 1 or last_answer_message is None:
+                # send a new message chunk
+                last_answer_message = await update.message.reply_text(message_chunk, parse_mode=ParseMode.MARKDOWN)
+            elif last_answer_message is not None:
+                # update last message chunk
+                await context.bot.edit_message_text(message_chunk, chat_id=chat_id, message_id=last_answer_message.message_id)
+            sent_answer = answer[0:end_index]
+            current_message_chunk_index = chuck_index
+            n_sent_chunks = chuck_index + 1
     except telegram.error.BadRequest as e:
-        if answer:
-            # answer has invalid characters, so we send it without parse_mode
-            await update.message.reply_text(answer)
-            # update user data
-            finalize_message_handle(user_id, chat_id, message, answer, used_tokens, max_message_count)
-        else:
-            error_text = f"Errors from Telegram: {e}"
-            logger.error(error_text)    
+        error_text = f"Errors from Telegram: {e}"
+        logger.error(error_text)    
+        if answer and n_sent_chunks < n_message_chunks:
+            # send remaining answer chunks
+            chunks = get_message_chunks(answer)
+            for i in range(current_message_chunk_index + 1, n_message_chunks):
+                chunk = chunks[i]
+                # answer may have invalid characters, so we send it without parse_mode
+                await update.message.reply_text(chunk)
+            sent_answer = answer
     except Exception as e:
         error_text = _("Temporary OpenAI server failure, please try again later. Reason: {}").format(e)
         logger.error(error_text)
         await update.message.reply_text(error_text)
         return
+    
+    # consume tokens and append the message record to db
+    if sent_answer is not None:
+        finalize_message_handle(user_id, chat_id, message, sent_answer, used_tokens, max_message_count)
 
 async def new_dialog_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
@@ -639,17 +662,21 @@ async def error_handle(update: Update, context: CallbackContext) -> None:
 
     # collect error message
     tb_list = traceback.format_exception(None, context.error, context.error.__traceback__)
-    tb_string = "".join(tb_list)[:2000]
+    chunks = get_message_chunks("".join(tb_list), chuck_size=2000)
     update_str = update.to_dict() if isinstance(update, Update) else str(update)
-    message = (
-        f"An exception was raised while handling an update\n"
-        f"<pre>update = {html.escape(json.dumps(update_str, indent=2, ensure_ascii=False))}"
-        "</pre>\n\n"
-        f"<pre>{html.escape(tb_string)}</pre>"
-    )
 
     try:
-        await bugreport.send_bugreport(message)
+        for i, chuck in enumerate(chunks):
+            if i == 0:
+                message = (
+                    f"An exception was raised while handling an update\n"
+                    f"<pre>update = {html.escape(json.dumps(update_str, indent=2, ensure_ascii=False))}"
+                    "</pre>\n\n"
+                    f"<pre>{html.escape(chuck)}</pre>"
+                )
+            else:
+                message = f"<pre>{html.escape(chuck)}</pre>"
+            await bugreport.send_bugreport(message)
     except Exception as e:
         print(f"Failed to send bugreport: {e}")
 
