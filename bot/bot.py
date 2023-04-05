@@ -324,46 +324,64 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             messages = []
         if chat_mode == "lang_expert":
             # to keep the language of input message, not to send chat history to model
-            messages = []        
+            messages = []
 
-        answer, prompt, used_tokens, n_first_dialog_messages_removed = await chatgpt.ChatGPT().send_message(
+        stream = chatgpt.send_message(
             message,
             dialog_messages=messages,
             chat_mode=chat_mode,
+            stream=config.STREAM_ENABLED
         )
 
-        # send warning if some messages were removed from the context
-        if n_first_dialog_messages_removed > 0:
-            if n_first_dialog_messages_removed == 1:
-                text = _("⚠️ the current conversation is too long, so the <b>first message</b> was removed from the references.\n Send /new to start a new conversation")
-            else:
-                text = _("⚠️ the current conversation is too long, so the <b>first {} messages</b> have removed from the references.\n Send /new to start a new conversation").format(n_first_dialog_messages_removed)
+        prev_answer = ""
+        
+        async for buffer in stream:
+            
+            finished, answer, used_tokens, n_first_dialog_messages_removed = buffer
+            if not finished and len(answer) - len(prev_answer) < 100:
+                # reduce edit message requests
+                continue
+            prev_answer = answer
+            parse_mode = ParseMode.MARKDOWN if finished else None
 
-            max_message_count = len(messages) + 1 - n_first_dialog_messages_removed
+            # send warning if some messages were removed from the context
+            if n_first_dialog_messages_removed > 0:
+                if n_first_dialog_messages_removed == 1:
+                    text = _("⚠️ The <b>first message</b> was removed from the context due to OpenAI's token amount limit. Use /new to reset")
+                else:
+                    text = _("⚠️ The <b>first {} messages</b> have removed from the context due to OpenAI's token amount limit. Use /new to reset").format(n_first_dialog_messages_removed)
 
-            await update.message.reply_text(text, parse_mode=ParseMode.HTML)
+                max_message_count = len(messages) + 1 - n_first_dialog_messages_removed
 
-        # send warning if the anwser is too long (based on telegram's limit)
-        if len(answer) > config.MESSAGE_MAX_LENGTH:
-            if not has_sent_long_message_warning:
-                await update.message.reply_text(_("⚠️ the answer is too long, will split it into multiple messages without text formatting"))
-                has_sent_long_message_warning = True
+                await update.message.reply_text(text, parse_mode=ParseMode.HTML)
 
-        # send answer chunks
-        n_message_chunks = math.ceil(len(answer) / config.MESSAGE_MAX_LENGTH)
-        for chuck_index in range(current_message_chunk_index, n_message_chunks):
-            start_index = chuck_index * config.MESSAGE_MAX_LENGTH
-            end_index = (chuck_index + 1) * config.MESSAGE_MAX_LENGTH
-            message_chunk = answer[start_index:end_index]
-            if current_message_chunk_index < n_message_chunks - 1 or last_answer_message is None:
-                # send a new message chunk
-                last_answer_message = await update.message.reply_text(message_chunk, parse_mode=ParseMode.MARKDOWN)
-            elif last_answer_message is not None:
-                # update last message chunk
-                await context.bot.edit_message_text(message_chunk, chat_id=chat_id, message_id=last_answer_message.message_id)
-            sent_answer = answer[0:end_index]
-            current_message_chunk_index = chuck_index
-            n_sent_chunks = chuck_index + 1
+            # send warning if the anwser is too long (based on telegram's limit)
+            if len(answer) > config.MESSAGE_MAX_LENGTH:
+                parse_mode = None
+                if not has_sent_long_message_warning:
+                    await update.message.reply_text(_("⚠️ the answer is too long, will split it into multiple messages without text formatting"))
+                    has_sent_long_message_warning = True
+
+            # send answer chunks
+            n_message_chunks = math.ceil(len(answer) / config.MESSAGE_MAX_LENGTH)
+            for chuck_index in range(current_message_chunk_index, n_message_chunks):
+                start_index = chuck_index * config.MESSAGE_MAX_LENGTH
+                end_index = (chuck_index + 1) * config.MESSAGE_MAX_LENGTH
+                message_chunk = answer[start_index:end_index]
+                if current_message_chunk_index < n_message_chunks - 1 or last_answer_message is None:
+                    # send a new message chunk
+                    last_answer_message = await update.message.reply_text(message_chunk, parse_mode=parse_mode)
+                elif last_answer_message is not None:
+                    # update last message chunk
+                    try:
+                        await context.bot.edit_message_text(message_chunk, chat_id=chat_id, message_id=last_answer_message.message_id, parse_mode=parse_mode)
+                    except telegram.error.BadRequest as e:
+                        if str(e).startswith("Message is not modified"):
+                            continue
+                        print(e)
+                sent_answer = answer[0:end_index]
+                current_message_chunk_index = chuck_index
+                n_sent_chunks = chuck_index + 1
     except telegram.error.BadRequest as e:
         error_text = f"Errors from Telegram: {e}"
         logger.error(error_text)    
@@ -379,10 +397,12 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         error_text = _("Temporary OpenAI server failure, please try again later. Reason: {}").format(e)
         logger.error(error_text)
         await update.message.reply_text(error_text)
+        # printing stack trace
+        traceback.print_exc()
         return
     
     # consume tokens and append the message record to db
-    if sent_answer is not None:
+    if sent_answer is not None and used_tokens is not None:
         finalize_message_handle(user_id, chat_id, message, sent_answer, used_tokens, max_message_count)
 
 async def new_dialog_handle(update: Update, context: CallbackContext):
