@@ -399,7 +399,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
                 await update.message.reply_text(chunk)
             sent_answer = answer
     except Exception as e:
-        error_text = _("Temporary OpenAI server failure, please try again later. Reason: {}").format(e)
+        error_text = "⚠️ " + _("Temporary OpenAI server failure, please try again later. Reason: {}").format(e)
         logger.error(error_text)
         await update.message.reply_text(error_text)
         # printing stack trace
