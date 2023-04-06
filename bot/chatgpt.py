@@ -14,7 +14,7 @@ SUPPORTED_CHAT_MODELS = set([
     MODEL_GPT_35_TURBO,
 ])
 
-async def send_message(message, dialog_messages=[], chat_mode="assistant", stream=False):
+async def send_message(message, dialog_messages=[], chat_mode="assistant", max_tokens=None, stream=False):
     if chat_mode not in config.CHAT_MODES.keys():
         raise ValueError(f"Chat mode {chat_mode} is not supported")
     
@@ -30,7 +30,7 @@ async def send_message(message, dialog_messages=[], chat_mode="assistant", strea
     answer = None
     while answer is None:
         try:
-            r = await openai_utils.create_request(prompt, model, stream=stream)
+            r = await openai_utils.create_request(prompt, model, max_tokens=max_tokens, stream=stream)
 
             if stream:
                 async for buffer in r:

@@ -329,6 +329,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             message,
             dialog_messages=messages,
             chat_mode=chat_mode,
+            max_tokens=remaining_tokens if remaining_tokens <= 2000 else None,
             stream=config.STREAM_ENABLED
         )
 

@@ -90,12 +90,13 @@ def reply_content(response, model, stream=False):
     else:
         raise NotImplementedError(f"""reply_content() is not implemented for model {model}.""")
     
-async def create_request(prompt, model, stream=False):
+async def create_request(prompt, model, max_tokens=None, stream=False):
     if model == "gpt-3.5-turbo":
         return await openai.ChatCompletion.acreate(
             model=model,
             messages=prompt,
             request_timeout=config.OPENAI_TIMEOUT,
+            max_tokens=max_tokens,
             stream=stream,
         )
     else:
