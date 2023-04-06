@@ -312,7 +312,6 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     current_message_chunk_index = 0
     n_sent_chunks = 0
     last_answer_message = None
-    has_sent_long_message_warning = False
     # handle too many tokens
     max_message_count = -1
 
@@ -333,34 +332,24 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             stream=config.STREAM_ENABLED
         )
 
+        num_dialog_messages_removed = 0
         prev_answer = ""
         
         async for buffer in stream:
             
             finished, answer, used_tokens, n_first_dialog_messages_removed = buffer
+
+            num_dialog_messages_removed += n_first_dialog_messages_removed
+
             if not finished and len(answer) - len(prev_answer) < 100:
                 # reduce edit message requests
                 continue
             prev_answer = answer
             parse_mode = ParseMode.MARKDOWN if finished else None
 
-            # send warning if some messages were removed from the context
-            if n_first_dialog_messages_removed > 0:
-                if n_first_dialog_messages_removed == 1:
-                    text = _("⚠️ The <b>first message</b> was removed from the context due to OpenAI's token amount limit. Use /new to reset")
-                else:
-                    text = _("⚠️ The <b>first {} messages</b> have removed from the context due to OpenAI's token amount limit. Use /new to reset").format(n_first_dialog_messages_removed)
-
-                max_message_count = len(messages) + 1 - n_first_dialog_messages_removed
-
-                await update.message.reply_text(text, parse_mode=ParseMode.HTML)
-
             # send warning if the anwser is too long (based on telegram's limit)
             if len(answer) > config.MESSAGE_MAX_LENGTH:
                 parse_mode = None
-                if not has_sent_long_message_warning:
-                    await update.message.reply_text(_("⚠️ the answer is too long, will split it into multiple messages without text formatting"))
-                    has_sent_long_message_warning = True
 
             # send answer chunks
             n_message_chunks = math.ceil(len(answer) / config.MESSAGE_MAX_LENGTH)
@@ -382,6 +371,21 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
                 sent_answer = answer[0:end_index]
                 current_message_chunk_index = chuck_index
                 n_sent_chunks = chuck_index + 1
+
+        # send warning if some messages were removed from the context
+        if num_dialog_messages_removed > 0:
+            if num_dialog_messages_removed == 1:
+                text = _("⚠️ The <b>first message</b> was removed from the context due to OpenAI's token amount limit. Use /new to reset")
+            else:
+                text = _("⚠️ The <b>first {} messages</b> have removed from the context due to OpenAI's token amount limit. Use /new to reset").format(num_dialog_messages_removed)
+
+            max_message_count = len(messages) + 1 - num_dialog_messages_removed
+
+            await update.message.reply_text(text, parse_mode=ParseMode.HTML)
+
+        # send warning if the anwser is too long (based on telegram's limit)
+        if len(answer) > config.MESSAGE_MAX_LENGTH:
+            await update.message.reply_text(_("⚠️ The answer was too long, has been splitted into multiple unformatted messages"))
     except telegram.error.BadRequest as e:
         error_text = f"Errors from Telegram: {e}"
         logger.error(error_text)    
