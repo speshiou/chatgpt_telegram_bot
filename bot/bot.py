@@ -329,7 +329,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             message,
             dialog_messages=messages,
             chat_mode=chat_mode,
-            max_tokens=remaining_tokens if remaining_tokens <= 2000 else None,
+            max_tokens=remaining_tokens if remaining_tokens < chatgpt.MODEL_MAX_TOKENS else None,
             stream=config.STREAM_ENABLED
         )
 
@@ -398,6 +398,8 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
                 # answer may have invalid characters, so we send it without parse_mode
                 await update.message.reply_text(chunk)
             sent_answer = answer
+    except ValueError as e:
+        await update.message.reply_text(_("⚠️ Require {} tokens to process the input text, check /balance").format(e.args[1]), parse_mode=ParseMode.HTML)
     except Exception as e:
         error_text = "⚠️ " + _("Temporary OpenAI server failure, please try again later. Reason: {}").format(e)
         logger.error(error_text)
