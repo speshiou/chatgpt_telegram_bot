@@ -149,7 +149,7 @@ class Database:
         for key in keys:
             if key not in user_dict:
                 raise ValueError(f"User {user_id} does not have a value for {key}")
-            ret.append(user_dict[key])
+            ret.append(user_dict[key] if key in user_dict else None)
 
         return ret
     
@@ -168,6 +168,21 @@ class Database:
 
     def inc_user_used_tokens(self, user_id: int, used_token: int):
         self.user_collection.update_one({"_id": user_id}, {"$inc": { 'used_tokens': used_token}})
+
+    def is_user_generating_image(self, user_id: int):
+        try:
+            timeout = config.IMAGE_TIMEOUT
+            last_imaging_time = self.get_user_attribute(user_id, 'last_imaging_time')
+            diff = (datetime.now() - last_imaging_time).total_seconds()
+            if last_imaging_time is None or diff > timeout:
+                return False
+            return timeout - diff
+        except Exception as e:
+            pass
+        return False
+    
+    def mark_user_is_generating_image(self, user_id: int, generating: bool):
+        self.set_user_attribute(user_id, 'last_imaging_time', datetime.now() if generating else None)
 
     def set_user_attribute(self, user_id: int, key: str, value: Any):
         self.check_if_user_exists(user_id, raise_exception=True)

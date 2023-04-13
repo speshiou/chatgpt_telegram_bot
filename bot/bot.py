@@ -21,6 +21,7 @@ from telegram.constants import ParseMode, ChatAction
 
 import config
 import database
+import openai_utils
 import chatgpt
 import api
 import i18n
@@ -33,10 +34,11 @@ logger = logging.getLogger(__name__)
 def get_commands(lang=i18n.DEFAULT_LOCALE):
     _ = i18n.get_text_func(lang)
     return [
-        BotCommand("new", _("start a new conversation")),
-        BotCommand("retry", _("regenerate last answer")),
         BotCommand("gpt", _("switch to ChatGPT mode")),
         BotCommand("rephrase", _("switch to Language Expert mode")),
+        BotCommand("image", _("generate images ({} tokens)".format(config.DALLE_TOKENS))),
+        BotCommand("new", _("start a new conversation")),
+        BotCommand("retry", _("regenerate last answer")),
         # BotCommand("mode", _("select chat mode")),
         BotCommand("balance", _("check balance")),
         # BotCommand("earn", _("earn rewards by referral")),
@@ -210,7 +212,7 @@ async def group_chat_message_handle(update: Update, context: CallbackContext):
         await update.message.reply_text(text)
         return
     
-    message = strip_command(update.message.text)    
+    message = strip_command(update.message.text)
     if not message:
         text = _("💡 Please type /gpt and followed by your question or topic\n\n")
         text += _("<b>Example:</b> /gpt what can you do?")
@@ -411,6 +413,53 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     # consume tokens and append the message record to db
     if sent_answer is not None and used_tokens is not None:
         finalize_message_handle(user_id, chat_id, message, sent_answer, used_tokens, max_message_count)
+
+async def img_message_handle(update: Update, context: CallbackContext):
+    user = await register_user_if_not_exists(update, context)
+    chat_id = get_chat_id(update)
+    if not chat_id:
+        return
+    
+    _ = get_text_func(user)
+    user_id = update.message.from_user.id
+    db.set_user_attribute(user_id, "last_interaction", datetime.now())
+
+    used_tokens = config.DALLE_TOKENS
+    
+    message = strip_command(update.message.text)
+    if not message:
+        text = _("💡 Please type /image and followed by the image prompt\n\n")
+        text += _("<b>Example:</b> /image a orange cat\n")
+        text += _("<b>Price:</b> {} tokens per image").format(used_tokens)
+        await update.message.reply_text(text, ParseMode.HTML)
+        return
+    
+    remaining_tokens = db.get_user_remaining_tokens(user_id)
+    if remaining_tokens < used_tokens:
+        await update.message.reply_text(_("⚠️ Insufficient tokens. To generate an image, it will cost {} tokens. Check /balance").format(used_tokens), parse_mode=ParseMode.HTML)
+        return
+    
+    remaing_time = db.is_user_generating_image(user_id)
+    if remaing_time:
+        await update.message.reply_text(_("⚠️ It is only possible to generate one image at a time. Please wait for {} seconds to retry.").format(int(remaing_time)), parse_mode=ParseMode.HTML)
+        return
+    
+    placeholder = None
+    try:
+        db.mark_user_is_generating_image(user_id, True)
+        placeholder = await update.message.reply_text("👨‍🎨 painting ...")
+        image_url = await openai_utils.create_image(message)
+        await placeholder.delete()
+        await update.message.reply_photo(image_url)
+        db.inc_user_used_tokens(user_id, used_tokens)
+        db.mark_user_is_generating_image(user_id, False)
+    except Exception as e:
+        db.mark_user_is_generating_image(user_id, False)
+        text = _("Temporary OpenAI server failure, please try again later. Reason: {}").format(e)
+        if placeholder is None:
+            await update.message.reply_text(text)
+        else:
+            await placeholder.edit_text(text)
 
 async def new_dialog_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
@@ -739,6 +788,7 @@ def run_bot() -> None:
     application.add_handler(CallbackQueryHandler(set_language_handle, pattern="^set_language"))
     application.add_handler(CommandHandler("gpt", group_chat_message_handle, filters=user_filter))
     application.add_handler(CommandHandler("rephrase", rephrase_message_handle, filters=user_filter))
+    application.add_handler(CommandHandler("img", img_message_handle, filters=user_filter))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & user_filter, message_handle))
     application.add_error_handler(error_handle)
     

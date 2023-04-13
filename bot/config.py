@@ -3,6 +3,8 @@ import os
 def _env_parse_int(name, default_value = None):
     value = os.getenv(name, default_value)
     if value:
+        if isinstance(value, int):
+            return value
         if value.isnumeric():
             return int(value)
         else:
@@ -30,6 +32,9 @@ MONGODB_URI = f"mongodb://mongo:{MONGODB_PORT}"
 FREE_QUOTA = _env_parse_int('FREE_QUOTA', 10000)
 # default price for gpt-3.5-turbo
 TOKEN_PRICE = _env_parse_float('TOKEN_PRICE', 0.002)
+# DALL·E tokens
+DALLE_TOKENS = _env_parse_int('DALLE_TOKENS', 10000)
+IMAGE_TIMEOUT = _env_parse_int('IMAGE_TIMEOUT', 60)
 
 TELEGRAM_BOT_NAME = os.getenv('TELEGRAM_BOT_NAME')
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')

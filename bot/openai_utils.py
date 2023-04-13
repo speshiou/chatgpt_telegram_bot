@@ -101,3 +101,11 @@ async def create_request(prompt, model, max_tokens=None, stream=False):
         )
     else:
         raise NotImplementedError(f"""create_request() is not implemented for model {model}.""")
+    
+async def create_image(prompt):
+    response = await openai.Image.acreate(
+        prompt=prompt,
+        n=1,
+        size="1024x1024"
+    )
+    return response['data'][0]['url']
