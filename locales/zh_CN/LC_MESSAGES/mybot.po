@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-04-13 12:14+0800\n"
+"POT-Creation-Date: 2023-04-13 13:33+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -43,317 +43,317 @@ msgstr "查看余额"
 msgid "set UI language"
 msgstr "设置界面语言"
 
-#: ./bot/bot.py:115
+#: ./bot/bot.py:117
 msgid "Hi! I'm an AI chatbot powered by OpenAI's GPT-3.5 turbo and DALL·E models."
 msgstr "你好！我是一个由 OpenAI 的 GPT-3.5 turbo 和 DALL·E 模型提供支持的 AI 聊天机器人。"
 
-#: ./bot/bot.py:117
-msgid "By using this chatbot, you agree to our <a href=\"%s\">terms of service</a> and <a href=\"%s\">privacy policy</a>."
-msgstr "使用此聊天机器人即表示您同意我们的<a href=\"%s\">服务条款</a>和<a href=\"%s\">隐私政策</a>。"
-
 #: ./bot/bot.py:119
+msgid "By using this chatbot, you agree to our <a href=\"{}\">terms of service</a> and <a href=\"{}\">privacy policy</a>."
+msgstr "使用此聊天机器人即表示您同意我们的<a href=\"{}\">服务条款</a>和<a href=\"{}\">隐私政策</a>。"
+
+#: ./bot/bot.py:121
 msgid "<b>Commands</b>"
 msgstr "<b>命令</b>"
 
-#: ./bot/bot.py:132
+#: ./bot/bot.py:134
 msgid "✅ {:,} free tokens have been credited, check /balance"
 msgstr "✅ {:,} 免费标记额度已入账，查看 /balance"
 
-#: ./bot/bot.py:137
+#: ./bot/bot.py:139
 msgid ""
 "Now you can ask me anything like\n"
 "\n"
 msgstr "现在你可以问我任何问题了\n\n"
 
-#: ./bot/bot.py:138
+#: ./bot/bot.py:140
 msgid ""
 "🔎 Find answers\n"
 msgstr "🔎 寻找答案\n"
 
-#: ./bot/bot.py:139
+#: ./bot/bot.py:141
 msgid ""
 "🌎 Translate\n"
 msgstr "🌎 翻译\n"
 
-#: ./bot/bot.py:140
+#: ./bot/bot.py:142
 msgid ""
 "✍️ Writing and proofreading\n"
 msgstr "✍️ 写作和校对\n"
 
-#: ./bot/bot.py:141
+#: ./bot/bot.py:143
 msgid ""
 "💡 Provide ideas and solve problems\n"
 msgstr "💡 提供想法并解决问题\n"
 
-#: ./bot/bot.py:142
+#: ./bot/bot.py:144
 msgid ""
 "💻 Programming and debugging\n"
 msgstr "💻 编程和调试\n"
 
-#: ./bot/bot.py:143
+#: ./bot/bot.py:145
 msgid ""
 "🧙‍♀️ Role-playing\n"
 msgstr "🧙‍♀️ 角色扮演\n"
 
-#: ./bot/bot.py:144
+#: ./bot/bot.py:146
 msgid ""
 "and much more ...\n"
 msgstr "还有更多...\n"
 
-#: ./bot/bot.py:178
+#: ./bot/bot.py:180
 msgid "😅 No conversation history to retry"
 msgstr "😱 没有要重试的对话历史记录"
 
-#: ./bot/bot.py:208
+#: ./bot/bot.py:210
 msgid ""
 "🤖 Switch to ChatGPT mode\n"
 "\n"
 msgstr "🤖 切换到 ChatGPT 模式\n\n"
 
-#: ./bot/bot.py:212
+#: ./bot/bot.py:214
 msgid "👥 This command is also for group chats to talk to ChatGPT, please add @{} to a group chat as a group member"
 msgstr "👥 此命令也用于群聊与 ChatGPT 对话，请将 @{} 添加到群聊作为群成员"
 
-#: ./bot/bot.py:214
+#: ./bot/bot.py:216
 msgid "Now you can ask me anything ..."
 msgstr "现在你可以问我任何事..."
 
-#: ./bot/bot.py:220
+#: ./bot/bot.py:222
 msgid ""
 "💡 Please type /gpt and followed by your question or topic\n"
 "\n"
 msgstr "💡 请输入 /gpt 然后接著输入您的问题或主题\n\n"
 
-#: ./bot/bot.py:221
+#: ./bot/bot.py:223
 msgid "<b>Example:</b> /gpt what can you do?"
 msgstr "<b>示例：</b> /gpt 你能做什么？"
 
-#: ./bot/bot.py:244
+#: ./bot/bot.py:246
 msgid ""
 "📝 Switch to Language Expert mode\n"
 "\n"
 msgstr "📝 切换到语言专家模式\n\n"
 
-#: ./bot/bot.py:245
+#: ./bot/bot.py:247
 msgid "Now you can give me any text in any languages, I will help you check grammar, spelling and wording usage, then rephrase it and do proofreading."
 msgstr "现在你可以给我任何语言的任何文本，我会帮你检查语法、拼写和用词用法，然后改写并进行校对。"
 
-#: ./bot/bot.py:251
+#: ./bot/bot.py:253
 msgid ""
 "💡 Please type /rephrase and followed by the content you want to rephrase\n"
 "\n"
 msgstr "💡 请输入 /rephrase 然后输入您要改写的内容\n\n"
 
-#: ./bot/bot.py:252
+#: ./bot/bot.py:254
 msgid "<b>Example:</b> /rephrase your sentences"
 msgstr "<b>示例：</b> /rephrase 你的句子"
 
-#: ./bot/bot.py:295
+#: ./bot/bot.py:297
 msgid "💬 Start a new conversation due to timeout, and the previous messages will no longer be referenced to generate answers."
 msgstr "💬 由于超时而开始新的对话，不再参考之前的信息生成答案。"
 
-#: ./bot/bot.py:297 ./bot/bot.py:484
+#: ./bot/bot.py:299 ./bot/bot.py:486
 msgid "Now I'm in {} mode"
 msgstr "现在我处于 {} 模式"
 
-#: ./bot/bot.py:308
+#: ./bot/bot.py:310
 msgid "⚠️ Insufficient tokens, check /balance"
 msgstr "⚠️ 标记额度不足，查看 /balance"
 
-#: ./bot/bot.py:384
+#: ./bot/bot.py:386
 msgid "⚠️ The <b>first message</b> was removed from the context due to OpenAI's token amount limit. Use /new to reset"
 msgstr "⚠️ 由于 OpenAI 的标记数量限制，<b>第一条消息</b> 已从上下文中删除。使用 /new 重置"
 
-#: ./bot/bot.py:386
+#: ./bot/bot.py:388
 msgid "⚠️ The <b>first {} messages</b> have removed from the context due to OpenAI's token amount limit. Use /new to reset"
 msgstr "⚠️ 由于 OpenAI 的标记数量限制，<b>前 {} 条消息</b> 已从上下文中删除。使用 /new 重置"
 
-#: ./bot/bot.py:394
+#: ./bot/bot.py:396
 msgid "⚠️ The answer was too long, has been splitted into multiple unformatted messages"
 msgstr "⚠️ 答案太长，被拆分成多条未格式化的信息"
 
-#: ./bot/bot.py:407
+#: ./bot/bot.py:409
 msgid "⚠️ Require {} tokens to process the input text, check /balance"
 msgstr "⚠️ 需要 {} 个标记来处理输入文本，检查 /balance"
 
-#: ./bot/bot.py:409 ./bot/bot.py:461
+#: ./bot/bot.py:411 ./bot/bot.py:463
 msgid "Temporary OpenAI server failure, please try again later. Reason: {}"
 msgstr "OpenAI 服务器暂时性故障，请稍后重试。原因： {}"
 
-#: ./bot/bot.py:434
+#: ./bot/bot.py:436
 msgid ""
 "💡 Please type /image and followed by the image prompt\n"
 "\n"
 msgstr "💡 请输入 /image 然后输入图片提示\n\n"
 
-#: ./bot/bot.py:435
+#: ./bot/bot.py:437
 msgid ""
 "<b>Example:</b> /image a orange cat\n"
 msgstr "<b>示例：</b> /image a orange cat\n"
 
-#: ./bot/bot.py:436
+#: ./bot/bot.py:438
 msgid "<b>Price:</b> {} tokens per image"
 msgstr "<b>价格：</b> 每张图片 {} 个标记"
 
-#: ./bot/bot.py:442
+#: ./bot/bot.py:444
 msgid "⚠️ Insufficient tokens. To generate an image, it will cost {} tokens. Check /balance"
 msgstr "⚠️ 标记额度不足。要生成图像，将花费 {} 个标记。查看 /balance"
 
-#: ./bot/bot.py:447
+#: ./bot/bot.py:449
 msgid "⚠️ It is only possible to generate one image at a time. Please wait for {} seconds to retry."
 msgstr "⚠️ 一次只能生成一张图像。请等待 {} 秒重试。"
 
-#: ./bot/bot.py:482
+#: ./bot/bot.py:484
 msgid "💬 Start a new conversation, and the previous messages will no longer be referenced to generate answers."
 msgstr "💬 开始新对话，不再参考之前的信息生成答案。"
 
-#: ./bot/bot.py:530
+#: ./bot/bot.py:532
 msgid "🔒 For privacy reason, your balance won't show in a group chat. Please contact @{} directly."
 msgstr "🔒 出于隐私原因，您的余额不会在群聊中显示。请直接联系 @{}。"
 
-#: ./bot/bot.py:539
+#: ./bot/bot.py:541
 msgid ""
 "👛 <b>Balance</b>\n"
 "\n"
 msgstr "👛 <b>余额</b>\n\n"
 
-#: ./bot/bot.py:540
+#: ./bot/bot.py:542
 msgid ""
 "<b>{:,}</b> tokens left\n"
 msgstr "剩余 <b>{:,}</b> 个标记额度\n"
 
-#: ./bot/bot.py:541
+#: ./bot/bot.py:543
 msgid ""
 "<i>You used <b>{:,}</b> tokens</i>\n"
 "\n"
 msgstr "<i>您使用了 <b>{:,}</b> 个标记额度</i>\n\n"
 
-#: ./bot/bot.py:542
+#: ./bot/bot.py:544
 msgid "<i>💡 The longer conversation would spend more tokens, use /new to reset. (<a href=\"{}\">Learn more</a>)</i>"
 msgstr "<i>💡 越长的对话会花费更多的标记，使用 /new 来重置。 （<a href=\"{}\">了解更多</a>）</i>"
 
-#: ./bot/bot.py:583
+#: ./bot/bot.py:585
 msgid "💡 Please contact @{} directly to set UI language"
 msgstr "💡 请直接联系 @{} 设置UI语言"
 
-#: ./bot/bot.py:601
+#: ./bot/bot.py:603
 msgid "🌐 Select preferred UI language"
 msgstr "🌐 选择首选 UI 语言"
 
-#: ./bot/bot.py:630
+#: ./bot/bot.py:632
 msgid "💡 Only accept number between 0.1 to 100"
 msgstr "💡 只接受 0.1 到 100 之间的数字"
 
-#: ./bot/bot.py:633
+#: ./bot/bot.py:635
 msgid ""
 "🛒 Choose the payment method\n"
 "\n"
 msgstr "🛒 选择付款方式\n\n"
 
-#: ./bot/bot.py:634
+#: ./bot/bot.py:636
 msgid ""
 "💳 Paypal - Debit or Credit Card\n"
 msgstr "💳 贝宝 - 借记卡或信用卡 (可免登录，🇨🇳 並支持中国银行卡)\n"
 
-#: ./bot/bot.py:635
+#: ./bot/bot.py:637
 msgid ""
 "💎 Crypto - BTC, USDT, USDC, TON\n"
 msgstr "💎 加密货币 - BTC、USDT、USDC、TON\n"
 
-#: ./bot/bot.py:637
+#: ./bot/bot.py:639
 msgid "💳 Paypal"
 msgstr "💳 贝宝"
 
-#: ./bot/bot.py:638
+#: ./bot/bot.py:640
 msgid "💎 Crypto"
 msgstr "💎 加密货币"
 
-#: ./bot/bot.py:667
+#: ./bot/bot.py:669
 msgid "📋 Creating an invoice ..."
 msgstr "📋 创建发票 ..."
 
-#: ./bot/bot.py:674
+#: ./bot/bot.py:676
 msgid ""
 "📋 <b>Your invoice</b>:\n"
 "\n"
 msgstr "📋 <b>您的发票</b>：\n\n"
 
-#: ./bot/bot.py:679
+#: ./bot/bot.py:681
 msgid ""
 "💡 <b>Tips</b>:\n"
 msgstr "💡 <b>提示</b>：\n"
 
-#: ./bot/bot.py:685
+#: ./bot/bot.py:687
 msgid "If you do not have a PayPal account, click on the button located below the login button to pay with cards directly."
 msgstr "如果您没有贝宝(PayPal)帐户，请单击登录按钮下方的按钮直接使用卡片付款。 (🇨🇳 支持中国银行卡)"
 
-#: ./bot/bot.py:686
+#: ./bot/bot.py:688
 msgid "💳 Pay with Paypal"
 msgstr "💳 使用贝宝付款"
 
-#: ./bot/bot.py:688
+#: ./bot/bot.py:690
 msgid "If you have any issues related to crypto payment, please contact the customer service in the payment page, or send messages to {} directly for assistance."
 msgstr "如果您有任何与加密支付相关的问题，请在支付页面联系客服，或直接发送信息至 {} 寻求帮助。"
 
-#: ./bot/bot.py:689
+#: ./bot/bot.py:691
 msgid "💎 Pay with Crypto"
 msgstr "💎 用加密支付"
 
-#: ./bot/bot.py:691
+#: ./bot/bot.py:693
 msgid "Tokens will be credited within 10 minutes of payment."
 msgstr "标记额度将在付款后 10 分钟内存入。"
 
-#: ./bot/bot.py:692
+#: ./bot/bot.py:694
 msgid "Please contact @gpt_chatbot_support if tokens are not received after 1 hour of payment."
 msgstr "如果在付款 1 小时后仍未收到标记额度，请联系 @gpt_chatbot_support。"
 
-#: ./bot/bot.py:700
+#: ./bot/bot.py:702
 msgid "⚠️ Failed to create an invoice, please try again later."
 msgstr "⚠️ 发票创建失败，请稍后重试。"
 
-#: ./bot/bot.py:717
+#: ./bot/bot.py:719
 msgid ""
 "<b>💰 Earn</b>\n"
 "\n"
 msgstr "<b>💰 赚取</b>\n\n"
 
-#: ./bot/bot.py:719
+#: ./bot/bot.py:721
 msgid ""
 "Get %s%% rewards from the referred payments\n"
 "\n"
 msgstr "从推荐的付款中获得 %s%% 的奖励\n\n"
 
-#: ./bot/bot.py:720
+#: ./bot/bot.py:722
 msgid ""
 "Unused rewards: ${:,.2f}\n"
 msgstr "未使用的奖励：${:,.2f}\n"
 
-#: ./bot/bot.py:721
+#: ./bot/bot.py:723
 msgid ""
 "Total earned: ${:,.2f}\n"
 "\n"
 msgstr "总获得的奖厉：${:,.2f}\n\n"
 
-#: ./bot/bot.py:722
+#: ./bot/bot.py:724
 msgid ""
 "Referral link:\n"
 msgstr "推荐链接：\n"
 
-#: ./bot/bot.py:724
+#: ./bot/bot.py:726
 msgid ""
 "<i>You have referred {:,} new users</i>\n"
 "\n"
 msgstr "<i>您推荐了 {:,} 个新用户</i>\n\n"
 
-#: ./bot/bot.py:725
+#: ./bot/bot.py:727
 msgid "<i>💡 Refer the new users via your referral link, and you'll get a reward when they make a payment.</i>"
 msgstr "<i>💡 通过您的推荐链接推荐新用户，当他们付款时您将获得奖励。</i>"
 
-#: ./bot/bot.py:727
+#: ./bot/bot.py:729
 msgid "⚠️ Server error, please try again later."
 msgstr "⚠️ 服务器错误，请稍后重试。"
 
-#: ./bot/bot.py:735
+#: ./bot/bot.py:737
 msgid "💡 Edited messages won't take effects"
 msgstr "💡 编辑的信息不会生效"
 

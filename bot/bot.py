@@ -75,19 +75,21 @@ async def register_user_if_not_exists(update: Update, context: CallbackContext, 
             db.inc_stats('referral_new_users')
     return user
 
-async def reply_or_edit_text(update: Update, text: str, parse_mode: ParseMode = ParseMode.HTML, reply_markup = None):
+async def reply_or_edit_text(update: Update, text: str, parse_mode: ParseMode = ParseMode.HTML, reply_markup = None, disable_web_page_preview = None):
     if update.message:
         await update.message.reply_text(
             text,
             parse_mode=parse_mode,
-            reply_markup=reply_markup
+            reply_markup=reply_markup,
+            disable_web_page_preview=disable_web_page_preview,
         )
     else:
         query = update.callback_query
         await query.edit_message_text(
             text,
-            parse_mode=ParseMode.HTML,
-            reply_markup=reply_markup
+            parse_mode=parse_mode,
+            reply_markup=reply_markup,
+            disable_web_page_preview=disable_web_page_preview,
         )
 
 def get_chat_id(update: Update):
@@ -114,7 +116,7 @@ async def send_greeting(update: Update, context: CallbackContext, is_new_user=Fa
 
     reply_text = _("Hi! I'm an AI chatbot powered by OpenAI's GPT-3.5 turbo and DALL·E models.")
     reply_text += "\n\n"
-    reply_text = _("""By using this chatbot, you agree to our <a href="%s">terms of service</a> and <a href="%s">privacy policy</a>.""").format("https://tgchat.co/terms-of-service", "https://tgchat.co/privacy-policy")
+    reply_text += _("""By using this chatbot, you agree to our <a href="{}">terms of service</a> and <a href="{}">privacy policy</a>.""").format("https://tgchat.co/terms-of-service", "https://tgchat.co/privacy-policy")
     reply_text += "\n\n"
     reply_text += _("<b>Commands</b>")
     reply_text += "\n"
