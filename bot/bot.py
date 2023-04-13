@@ -36,7 +36,7 @@ def get_commands(lang=i18n.DEFAULT_LOCALE):
     return [
         BotCommand("gpt", _("switch to ChatGPT mode")),
         BotCommand("rephrase", _("switch to Language Expert mode")),
-        BotCommand("image", _("generate images ({} tokens)".format(config.DALLE_TOKENS))),
+        BotCommand("image", _("generate images ({} tokens)").format(config.DALLE_TOKENS)),
         BotCommand("new", _("start a new conversation")),
         BotCommand("retry", _("regenerate last answer")),
         # BotCommand("mode", _("select chat mode")),
@@ -112,7 +112,9 @@ async def send_greeting(update: Update, context: CallbackContext, is_new_user=Fa
 
     commands_text = "".join([f"/{c.command} - {c.description}\n" for c in get_commands(lang)])
 
-    reply_text = _("Hi! I'm an AI chatbot powered by OpenAI's GPT-3.5 turbo model")
+    reply_text = _("Hi! I'm an AI chatbot powered by OpenAI's GPT-3.5 turbo and DALL·E models.")
+    reply_text += "\n\n"
+    reply_text = _("""By using this chatbot, you agree to our <a href="%s">terms of service</a> and <a href="%s">privacy policy</a>.""").format("https://tgchat.co/terms-of-service", "https://tgchat.co/privacy-policy")
     reply_text += "\n\n"
     reply_text += _("<b>Commands</b>")
     reply_text += "\n"
@@ -122,6 +124,7 @@ async def send_greeting(update: Update, context: CallbackContext, is_new_user=Fa
         update,
         reply_text, 
         parse_mode=ParseMode.HTML,
+        disable_web_page_preview=True,
         )
     
     if is_new_user and update.message:
@@ -536,7 +539,7 @@ async def show_balance_handle(update: Update, context: CallbackContext):
     text = _("👛 <b>Balance</b>\n\n")
     text += _("<b>{:,}</b> tokens left\n").format(db.get_user_remaining_tokens(user.id))
     text += _("<i>You used <b>{:,}</b> tokens</i>\n\n").format(used_tokens)
-    text += _("<i>💡 The longer conversation would spend more tokens, use /new to reset</i>")
+    text += _("""<i>💡 The longer conversation would spend more tokens, use /new to reset. (<a href="{}">Learn more</a>)</i>""").format("https://tgchat.co/faq")
     # text += f"You spent <b>{n_spent_dollars:.03f}$</b>\n"
     # text += f"You used <b>{used_tokens}</b> tokens <i>(price: ${config.TOKEN_PRICE} per 1000 tokens)</i>\n"
 
@@ -569,7 +572,7 @@ async def show_balance_handle(update: Update, context: CallbackContext):
     rows = map(lambda button: [button], buttons)
     reply_markup = InlineKeyboardMarkup(list(rows))
 
-    await update.message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=reply_markup)
+    await update.message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=reply_markup, disable_web_page_preview=True)
 
 async def show_languages_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
