@@ -17,6 +17,8 @@ def hash_query(params):
     return hash
 
 async def api_request(endpoint, params):
+    if not config.API_ENDPOINT:
+        return None
     url = os.path.join(config.API_ENDPOINT, endpoint)
 
     params['create_time'] = int(time.time())

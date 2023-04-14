@@ -1,5 +1,4 @@
 
-import abc
 import openai
 import config
 import openai_utils
@@ -16,15 +15,10 @@ SUPPORTED_CHAT_MODELS = set([
     MODEL_GPT_35_TURBO,
 ])
 
-async def send_message(message, dialog_messages=[], chat_mode="assistant", max_tokens=MODEL_MAX_TOKENS, stream=False):
-    if chat_mode not in config.CHAT_MODES.keys():
-        raise ValueError(f"Chat mode {chat_mode} is not supported")
-    
+async def send_message(message, dialog_messages=[], system_prompt=None, max_tokens=MODEL_MAX_TOKENS, stream=False):
     model = OPENAI_CHAT_MODEL
     if max_tokens is None:
         max_tokens = MODEL_MAX_TOKENS
-
-    system_prompt = config.CHAT_MODES[chat_mode]["prompt_start"]
 
     n_dialog_messages_before = len(dialog_messages)
     n_first_dialog_messages_removed = 0

@@ -139,3 +139,7 @@ mongodb
 
 # System
 .DS_Store
+
+# venv
+pyvenv.cfg
+bin

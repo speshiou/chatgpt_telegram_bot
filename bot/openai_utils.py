@@ -1,6 +1,5 @@
 import tiktoken
 import openai
-import config
 
 def num_tokens_from_string(string: str, model: str) -> int:
     """Returns the number of tokens in a text string."""

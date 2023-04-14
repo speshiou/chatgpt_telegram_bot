@@ -289,6 +289,10 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     user_id = update.message.from_user.id
     if chat_mode is None:
         chat_mode = db.get_current_chat_mode(chat_id)
+    if chat_mode not in config.CHAT_MODES.keys():
+        # fallback to the first mode
+        chat_mode = list(config.CHAT_MODES.keys())[0]
+    system_prompt = config.CHAT_MODES[chat_mode]["prompt"]
 
     # new dialog timeout
     if use_new_dialog_timeout:
@@ -335,7 +339,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         stream = chatgpt.send_message(
             message,
             dialog_messages=messages,
-            chat_mode=chat_mode,
+            system_prompt=system_prompt,
             max_tokens=remaining_tokens if remaining_tokens < chatgpt.MODEL_MAX_TOKENS else None,
             stream=config.STREAM_ENABLED
         )
@@ -434,7 +438,7 @@ async def image_message_handle(update: Update, context: CallbackContext):
     message = strip_command(update.message.text)
     if not message:
         text = _("💡 Please type /image and followed by the image prompt\n\n")
-        text += _("<b>Example:</b> /image a orange cat\n")
+        text += _("<b>Example:</b> /image a cat wearing a spacesuit\n")
         text += _("<b>Price:</b> {} tokens per image").format(used_tokens)
         await update.message.reply_text(text, ParseMode.HTML)
         return
@@ -713,9 +717,10 @@ async def show_earn_handle(update: Update, context: CallbackContext):
     _ = get_text_func(user)
 
     result = await api.earn(user.id)
-    referral_url = result['referral_url']
 
     if result and result["status"] == "OK":
+        referral_url = result['referral_url']
+
         text = _("<b>💰 Earn</b>\n\n")
         # text += "\n\n"
         text += _("Get %s%% rewards from the referred payments\n\n") % (result['commission_rate'] * 100)
@@ -802,4 +807,8 @@ def run_bot() -> None:
 
 
 if __name__ == "__main__":
+    if not config.TELEGRAM_BOT_TOKEN:
+        raise Exception("TELEGRAM_BOT_TOKEN not set")
+    if not config.OPENAI_API_KEY:
+        raise Exception("OPENAI_API_KEY not set")
     run_bot()
