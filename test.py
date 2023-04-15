@@ -2,18 +2,33 @@
 import sys, os, argparse
 sys.path.append('bot')
 import asyncio
+import time
 import config
+import chatgpt
+import tts_helper
+from pygame import mixer
 
 parser = argparse.ArgumentParser(prog='prompt tester')
-parser.add_argument('key')
 parser.add_argument('-p', '--prompts')
+parser.add_argument('-t', '--tts')
 args = parser.parse_args()
 
-config.OPENAI_API_KEY = args.key
 if args.prompts:
     config.CHAT_MODES = config.load_prompts(args.prompts)
 
-import chatgpt
+if args.tts:
+    tts_helper.MODELS = tts_helper.load_models(args.tts)
+
+WAV_OUTPUT_PATH = "tmp.wav"
+
+LINE_LENGTH = 60
+
+def play_audio(file):
+    mixer.init()
+    mixer.music.load(file)
+    mixer.music.play()
+    while mixer.music.get_busy():
+        time.sleep(0.01)
 
 def break_long_lines(text, max_length):
     lines = []
@@ -67,10 +82,9 @@ async def test():
             finished, answer, used_tokens, n_first_dialog_messages_removed = buffer
             if not answer:
                 continue
-            answer = "{}: {}".format(config.CHAT_MODES[role]["name"], answer)
 
             # prevent terminal from printing duplicate lines
-            lines = break_long_lines(answer, 60)
+            lines = break_long_lines(config.CHAT_MODES[role]["name"] + ": " + answer, LINE_LENGTH)
             num_lines = len(lines)
             for i in range(current_line_index, num_lines):
                 if i < num_lines - 1:
@@ -81,8 +95,14 @@ async def test():
         # wrap the last line
         print()
         if answer is not None:
+            output = tts_helper.tts(answer, output=WAV_OUTPUT_PATH, model=role)
+            if output:
+                play_audio(output)
             dialog.append({"user": text, "bot": answer})
 
 if __name__ == "__main__":
     print_roles()
-    asyncio.run(test())
+    try:
+        asyncio.run(test())
+    except KeyboardInterrupt:
+        pass

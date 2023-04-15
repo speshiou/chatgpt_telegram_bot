@@ -143,3 +143,6 @@ mongodb
 # venv
 pyvenv.cfg
 bin
+include
+share
+tmp.wav
