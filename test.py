@@ -4,6 +4,7 @@ sys.path.append('bot')
 import asyncio
 import time
 import config
+import openai_utils
 import chatgpt
 import tts_helper
 from pygame import mixer
@@ -101,6 +102,8 @@ async def test():
             dialog.append({"user": text, "bot": answer})
 
 if __name__ == "__main__":
+    openai_utils.print_gpt_models()
+    print()
     print_roles()
     try:
         asyncio.run(test())
