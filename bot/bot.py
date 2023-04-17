@@ -35,7 +35,7 @@ def get_commands(lang=i18n.DEFAULT_LOCALE):
     _ = i18n.get_text_func(lang)
     return [
         BotCommand("gpt", _("switch to ChatGPT mode")),
-        BotCommand("rephrase", _("switch to Language Expert mode")),
+        BotCommand("proofreader", _("switch to Proofreader")),
         BotCommand("image", _("generate images ({} tokens)").format(config.DALLE_TOKENS)),
         BotCommand("new", _("start a new conversation")),
         BotCommand("retry", _("regenerate last answer")),
@@ -204,17 +204,9 @@ async def group_chat_message_handle(update: Update, context: CallbackContext):
     _ = get_text_func(user)
     chat = update.effective_chat
     if chat.type == Chat.PRIVATE:
-        chat_id = get_chat_id(update)
-        chat_mode = db.get_current_chat_mode(chat_id)
-
-        text = _("🤖 Switch to ChatGPT mode\n\n")
-        if chat_mode != "assistant":
-            db.start_new_dialog(chat_id, "assistant")
-
-        text += _("👥 This command is also for group chats to talk to ChatGPT, please add @{} to a group chat as a group member").format(config.TELEGRAM_BOT_NAME)
-        text += "\n\n"
-        text += _("Now you can ask me anything ...")
+        text = _("👥 This command is also for group chats to talk to ChatGPT, please add @{} to a group chat as a group member").format(config.TELEGRAM_BOT_NAME)
         await update.message.reply_text(text)
+        await set_chat_mode(update, context, "chatgpt")
         return
     
     message = strip_command(update.message.text)
@@ -225,7 +217,7 @@ async def group_chat_message_handle(update: Update, context: CallbackContext):
         return
     await message_handle(update, context, message=message)
 
-async def rephrase_message_handle(update: Update, context: CallbackContext):
+async def proofreader_message_handle(update: Update, context: CallbackContext):
     # check if message is edited
     if update.edited_message is not None:
         await edited_message_handle(update, context)
@@ -237,24 +229,19 @@ async def rephrase_message_handle(update: Update, context: CallbackContext):
 
     _ = get_text_func(user)
 
-    chat_id = get_chat_id(update)
     chat = update.effective_chat
     if chat.type == Chat.PRIVATE:
-        chat_mode = db.get_current_chat_mode(chat_id)
-        if chat_mode != "lang_expert":
-            db.start_new_dialog(chat_id, "lang_expert")
-        text = _("📝 Switch to Language Expert mode\n\n")
-        text += _("Now you can give me any text in any languages, I will help you check grammar, spelling and wording usage, then rephrase it and do proofreading.")
-        await update.message.reply_text(text)
+        await set_chat_mode(update, context, "proofreader")
         return
 
+    # group chat
     message = strip_command(update.message.text)    
     if not message:
-        text = _("💡 Please type /rephrase and followed by the content you want to rephrase\n\n")
-        text += _("<b>Example:</b> /rephrase your sentences")
+        text = _("💡 Please type /proofreader and followed by the content you want to rephrase\n\n")
+        text += _("<b>Example:</b> /proofreader your sentences")
         await update.message.reply_text(text, ParseMode.HTML)
         return
-    await message_handle(update, context, message=message, chat_mode="lang_expert")
+    await message_handle(update, context, message=message, chat_mode="proofreader")
 
 def finalize_message_handle(user_id, chat_id, message, answer, used_tokens, max_message_count: int=-1):
     # update user data
@@ -289,19 +276,25 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     user_id = update.message.from_user.id
     if chat_mode is None:
         chat_mode = db.get_current_chat_mode(chat_id)
+    # load chat history to context
+    messages = db.get_dialog_messages(chat_id)
+    if chat_mode == "proofreader":
+        # to keep the language of input message, not to send chat history to model
+        messages = []
     if chat_mode not in config.CHAT_MODES.keys():
         # fallback to the first mode
         chat_mode = list(config.CHAT_MODES.keys())[0]
+        # lead to timeout process
+        messages = None
+
     system_prompt = config.CHAT_MODES[chat_mode]["prompt"]
 
     # new dialog timeout
     if use_new_dialog_timeout:
-        if (datetime.now() - db.get_user_attribute(user_id, "last_interaction")).seconds > config.NEW_DIALOG_TIMEOUT:
-            db.start_new_dialog(chat_id)
-            text = _("💬 Start a new conversation due to timeout, and the previous messages will no longer be referenced to generate answers.")
-            text += "\n\n"
-            text += _("Now I'm in {} mode").format(_(config.CHAT_MODES[chat_mode]["name"]))
-            await update.message.reply_text(text)
+        if messages is None or (datetime.now() - db.get_user_attribute(user_id, "last_interaction")).seconds > config.NEW_DIALOG_TIMEOUT:
+            await set_chat_mode(update, context, chat_mode, reason="timeout")
+            messages = []
+
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
     # send typing action
@@ -327,15 +320,6 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     max_message_count = -1
 
     try:
-        messages = db.get_dialog_messages(chat_id)
-        if messages is None:
-            logger.warning("missing dialog data, start a new dialog")
-            db.start_new_dialog(chat_id)
-            messages = []
-        if chat_mode == "lang_expert":
-            # to keep the language of input message, not to send chat history to model
-            messages = []
-
         stream = chatgpt.send_message(
             message,
             dialog_messages=messages,
@@ -471,24 +455,7 @@ async def image_message_handle(update: Update, context: CallbackContext):
             await placeholder.edit_text(text)
 
 async def new_dialog_handle(update: Update, context: CallbackContext):
-    user = await register_user_if_not_exists(update, context)
-    chat_id = get_chat_id(update)
-    if not chat_id:
-        return
-    
-    _ = get_text_func(user)
-
-    user_id = update.message.from_user.id
-    db.set_user_attribute(user_id, "last_interaction", datetime.now())
-
-    db.start_new_dialog(chat_id)
-
-    chat_mode = db.get_current_chat_mode(chat_id)
-
-    text = _("💬 Start a new conversation, and the previous messages will no longer be referenced to generate answers.")
-    text += "\n\n"
-    text += _("Now I'm in {} mode").format(_(config.CHAT_MODES[chat_mode]["name"]))
-    await update.message.reply_text(text)
+    await set_chat_mode(update, context, reason="reset")
 
 async def show_chat_modes_handle(update: Update, context: CallbackContext):
     await register_user_if_not_exists(update, context)
@@ -502,27 +469,42 @@ async def show_chat_modes_handle(update: Update, context: CallbackContext):
 
     await update.message.reply_text("Select chat mode:", reply_markup=reply_markup)
 
-
-async def set_chat_mode_handle(update: Update, context: CallbackContext):
-    await register_user_if_not_exists(update, context)
+async def set_chat_mode(update: Update, context: CallbackContext, chat_mode = None, reason: str = None):
+    user = await register_user_if_not_exists(update, context)
     chat_id = get_chat_id(update)
     if not chat_id:
         return
+    
+    _ = get_text_func(user)
 
+    if chat_mode is None:
+        chat_mode = db.get_current_chat_mode(chat_id)
+    
+    if chat_mode not in config.CHAT_MODES:
+        # fallback to ChatGPT mode
+        chat_mode = list(config.CHAT_MODES.keys())[0]
+
+    # reset chat history
+    db.start_new_dialog(chat_id, chat_mode)
+
+    icon_prefix = config.CHAT_MODES[chat_mode]["icon"] + " " if "icon" in config.CHAT_MODES[chat_mode] else ""
+    if reason == "timeout":
+        text = icon_prefix + _("It's been a long time since we talked, and I've forgotten what we talked about before.")
+    elif reason == "reset":
+        text = icon_prefix + _("I have already forgotten what we previously talked about.")
+    elif "greeting" in config.CHAT_MODES[chat_mode]:
+        text = icon_prefix + config.CHAT_MODES[chat_mode]["greeting"]
+    else:
+        text = icon_prefix + _("You're now chatting with {} ...").format(config.CHAT_MODES[chat_mode]["name"])
+
+    await reply_or_edit_text(update, text)
+
+async def set_chat_mode_handle(update: Update, context: CallbackContext):
     query = update.callback_query
     await query.answer()
 
     chat_mode = query.data.split("|")[1]
-
-    db.start_new_dialog(chat_id, chat_mode)
-
-    await query.edit_message_text(
-        f"<b>{config.CHAT_MODES[chat_mode]['name']}</b> chat mode is set",
-        parse_mode=ParseMode.HTML
-    )
-
-    await query.edit_message_text(f"{config.CHAT_MODES[chat_mode]['welcome_message']}", parse_mode=ParseMode.HTML)
-
+    await set_chat_mode(update, context, chat_mode)
 
 async def show_balance_handle(update: Update, context: CallbackContext):
     user = update.message.from_user if update.message else None
@@ -797,7 +779,7 @@ def run_bot() -> None:
     application.add_handler(CommandHandler("language", show_languages_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(set_language_handle, pattern="^set_language"))
     application.add_handler(CommandHandler("gpt", group_chat_message_handle, filters=user_filter))
-    application.add_handler(CommandHandler("rephrase", rephrase_message_handle, filters=user_filter))
+    application.add_handler(CommandHandler("proofreader", proofreader_message_handle, filters=user_filter))
     application.add_handler(CommandHandler("image", image_message_handle, filters=user_filter))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & user_filter, message_handle))
     application.add_error_handler(error_handle)
