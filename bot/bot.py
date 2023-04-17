@@ -235,13 +235,16 @@ async def proofreader_message_handle(update: Update, context: CallbackContext):
 
     _ = get_text_func(user)
 
+    message = strip_command(update.message.text)
     chat = update.effective_chat
     if chat.type == Chat.PRIVATE:
-        await set_chat_mode(update, context, "proofreader")
+        if message:
+            await message_handle(update, context, message=message, chat_mode="proofreader")
+        else:
+            await set_chat_mode(update, context, "proofreader")
         return
 
     # group chat
-    message = strip_command(update.message.text)    
     if not message:
         text = _("💡 Please type /proofreader and followed by the content you want to rephrase\n\n")
         text += _("<b>Example:</b> /proofreader your sentences")
@@ -281,17 +284,6 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
     user_id = update.message.from_user.id
 
-    # telegram flood control limit is 20 messages per minute, we set 12 to leave some budget
-    rate_limit_start, rate_count = db.get_chat_rate_limit(chat_id)
-    if rate_limit_start is None or  (datetime.now() - rate_limit_start).total_seconds() > 60:
-        db.reset_chat_rate_limit(chat_id)
-    else:
-        db.inc_chat_rate_count(chat_id)
-
-    if rate_count >= 12:
-        await update.message.reply_text(_("⚠️ This chat has exceeded the rate limit. Please wait for up to 60 seconds."), parse_mode=ParseMode.HTML)
-        return
-
     if chat_mode is None:
         chat_mode = db.get_current_chat_mode(chat_id)
     # load chat history to context
@@ -309,9 +301,27 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
     # new dialog timeout
     if use_new_dialog_timeout:
-        if messages is None or (datetime.now() - db.get_last_chat_time(chat_id)).total_seconds() > config.NEW_DIALOG_TIMEOUT:
+        last_chat_time = db.get_last_chat_time(chat_id)
+        if messages is None or last_chat_time is None:
+            # first launch
+            await set_chat_mode(update, context, chat_mode)
+            messages = []
+        elif (datetime.now() - last_chat_time).total_seconds() > config.NEW_DIALOG_TIMEOUT:
+            # timeout
             await set_chat_mode(update, context, chat_mode, reason="timeout")
             messages = []
+
+    # flood control, must run after set_chat_mode
+    rate_limit_start, rate_count = db.get_chat_rate_limit(chat_id)
+    if rate_limit_start is None or  (datetime.now() - rate_limit_start).total_seconds() > 60:
+        db.reset_chat_rate_limit(chat_id)
+    else:
+        db.inc_chat_rate_count(chat_id)
+
+    # telegram flood control limit is 20 messages per minute, we set 12 to leave some budget
+    if rate_count >= 12:
+        await update.message.reply_text(_("⚠️ This chat has exceeded the rate limit. Please wait for up to 60 seconds."), parse_mode=ParseMode.HTML)
+        return
 
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 

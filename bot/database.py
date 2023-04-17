@@ -82,7 +82,7 @@ class Database:
 
         ret = []
         for key in keys:
-            ret.append(doc[key] if key in doc else None)
+            ret.append(doc[key] if doc is not None and  key in doc else None)
 
         return ret
     
@@ -109,7 +109,7 @@ class Database:
         self.upsert_chat(chat_id, chat_mode)
 
     def get_last_chat_time(self, chat_id: int):
-        return self.get_chat_attribute(chat_id, 'last_interaction') or 0
+        return self.get_chat_attribute(chat_id, 'last_interaction')
     
     def get_chat_messages(self, chat_id: int):
         return self.get_chat_attribute(chat_id, 'messages')
