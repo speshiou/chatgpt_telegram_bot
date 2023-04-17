@@ -280,6 +280,18 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     _ = get_text_func(user)
 
     user_id = update.message.from_user.id
+
+    # telegram flood control limit is 20 messages per minute, we set 12 to leave some budget
+    rate_limit_start, rate_count = db.get_chat_rate_limit(chat_id)
+    if rate_limit_start is None or  (datetime.now() - rate_limit_start).total_seconds() > 60:
+        db.reset_chat_rate_limit(chat_id)
+    else:
+        db.inc_chat_rate_count(chat_id)
+
+    if rate_count >= 12:
+        await update.message.reply_text(_("⚠️ This chat has exceeded the rate limit. Please wait for up to 60 seconds."), parse_mode=ParseMode.HTML)
+        return
+
     if chat_mode is None:
         chat_mode = db.get_current_chat_mode(chat_id)
     # load chat history to context

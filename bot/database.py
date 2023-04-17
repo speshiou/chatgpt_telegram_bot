@@ -75,8 +75,32 @@ class Database:
         self.chat_collection.update_one(query, update, upsert=True)
 
     def get_chat_attribute(self, chat_id: int, key: str):
-        data = self.chat_collection.find_one({"_id": chat_id})
-        return data[key] if data and key in data else None
+        return self.get_chat_attributes(chat_id, [key])[0]
+    
+    def get_chat_attributes(self, chat_id: int, keys: list):
+        doc = self.chat_collection.find_one({"_id": chat_id})
+
+        ret = []
+        for key in keys:
+            ret.append(doc[key] if key in doc else None)
+
+        return ret
+    
+    def get_chat_rate_limit(self, chat_id: int):
+        rate_limit_start, rate_count = self.get_chat_attributes(chat_id, ["rate_limit_start", "rate_count"])
+        rate_count = rate_count if rate_count is not None else 0
+        return rate_limit_start, rate_count
+    
+    def inc_chat_rate_count(self, chat_id: int):
+        self.chat_collection.update_one({"_id": chat_id}, {"$inc": { 'rate_count': 1}})
+    
+    def reset_chat_rate_limit(self, chat_id: int):
+        self.chat_collection.update_one({"_id": chat_id}, {
+            "$set": { 
+                'rate_limit_start': datetime.now(),
+                'rate_count': 1,
+            }
+        })
 
     def get_current_chat_mode(self, chat_id: int):
         return self.get_chat_attribute(chat_id, 'current_chat_mode') or config.DEFAULT_CHAT_MODE
