@@ -506,7 +506,7 @@ async def set_chat_mode(update: Update, context: CallbackContext, chat_mode = No
     elif reason == "reset":
         text = icon_prefix + _("I have already forgotten what we previously talked about.")
     elif "greeting" in config.CHAT_MODES[chat_mode]:
-        text = icon_prefix + config.CHAT_MODES[chat_mode]["greeting"]
+        text = icon_prefix + _(config.CHAT_MODES[chat_mode]["greeting"])
     else:
         text = icon_prefix + _("You're now chatting with {} ...").format(config.CHAT_MODES[chat_mode]["name"])
 
