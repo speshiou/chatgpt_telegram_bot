@@ -175,13 +175,13 @@ async def retry_handle(update: Update, context: CallbackContext):
     user_id = update.message.from_user.id
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
-    dialog_messages = db.get_dialog_messages(chat_id)
-    if not dialog_messages or len(dialog_messages) == 0:
+    messages = db.get_chat_messages(chat_id)
+    if not messages or len(messages) == 0:
         await update.message.reply_text(_("😅 No conversation history to retry"))
         return
 
-    last_dialog_message = dialog_messages.pop()
-    db.pop_dialog_messages(chat_id)  # last message was removed from the context
+    last_dialog_message = messages.pop()
+    db.pop_chat_messages(chat_id)  # last message was removed from the context
 
     await message_handle(update, context, message=last_dialog_message["user"], use_new_dialog_timeout=False)
 
@@ -246,7 +246,7 @@ async def proofreader_message_handle(update: Update, context: CallbackContext):
 def finalize_message_handle(user_id, chat_id, message, answer, used_tokens, max_message_count: int=-1):
     # update user data
     new_dialog_message = {"user": message, "bot": answer, "date": datetime.now(), "used_tokens": used_tokens}
-    db.push_dialog_messages(
+    db.push_chat_messages(
         chat_id,
         new_dialog_message,
         max_message_count,
@@ -277,7 +277,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     if chat_mode is None:
         chat_mode = db.get_current_chat_mode(chat_id)
     # load chat history to context
-    messages = db.get_dialog_messages(chat_id)
+    messages = db.get_chat_messages(chat_id)
     if chat_mode == "proofreader":
         # to keep the language of input message, not to send chat history to model
         messages = []
@@ -291,7 +291,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
     # new dialog timeout
     if use_new_dialog_timeout:
-        if messages is None or (datetime.now() - db.get_user_attribute(user_id, "last_interaction")).seconds > config.NEW_DIALOG_TIMEOUT:
+        if messages is None or (datetime.now() - db.get_last_chat_time(chat_id)).total_seconds() > config.NEW_DIALOG_TIMEOUT:
             await set_chat_mode(update, context, chat_mode, reason="timeout")
             messages = []
 
@@ -485,7 +485,7 @@ async def set_chat_mode(update: Update, context: CallbackContext, chat_mode = No
         chat_mode = list(config.CHAT_MODES.keys())[0]
 
     # reset chat history
-    db.start_new_dialog(chat_id, chat_mode)
+    db.reset_chat(chat_id, chat_mode)
 
     icon_prefix = config.CHAT_MODES[chat_mode]["icon"] + " " if "icon" in config.CHAT_MODES[chat_mode] else ""
     if reason == "timeout":

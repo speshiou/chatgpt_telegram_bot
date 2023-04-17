@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import Any
 
 import pymongo
-from bson.objectid import ObjectId
 
 import config
 
@@ -14,7 +13,6 @@ class Database:
 
         self.user_collection = self.db["users"]
         self.chat_collection = self.db["chats"]
-        self.dialog_collection = self.db["dialogs"]
         self.stat_collection = self.db["stats"]
 
     def check_if_user_exists(self, user_id: int, raise_exception: bool = False):
@@ -56,7 +54,7 @@ class Database:
 
         self.user_collection.update_one(query, update, upsert=True)
 
-    def upsert_chat(self, chat_id: int, dialog_id: ObjectId, chat_mode=config.DEFAULT_CHAT_MODE):
+    def upsert_chat(self, chat_id: int, chat_mode=config.DEFAULT_CHAT_MODE):
         default_data = {
             "first_seen": datetime.now(),
             "used_tokens": 0,
@@ -64,8 +62,8 @@ class Database:
 
         data = {
             "current_chat_mode": chat_mode,
-            "current_dialog_id": dialog_id,
             "last_interaction": datetime.now(),
+            "messages": [],
         }
 
         query = {"_id": chat_id}
@@ -83,58 +81,46 @@ class Database:
     def get_current_chat_mode(self, chat_id: int):
         return self.get_chat_attribute(chat_id, 'current_chat_mode') or config.DEFAULT_CHAT_MODE
 
-    def get_chat_dialog_id(self, chat_id: int):
-        return self.get_chat_attribute(chat_id, 'current_dialog_id')
+    def reset_chat(self, chat_id: int, chat_mode=None):
+        self.upsert_chat(chat_id, chat_mode)
 
-    def start_new_dialog(self, chat_id: int, chat_mode=None):
-        chat_mode = chat_mode or self.get_current_chat_mode(chat_id)
-        dialog_id = ObjectId()
-        dialog_dict = {
-            "_id": dialog_id,
-            "chat_id": chat_id,
-            "chat_mode": chat_mode,
-            "start_time": datetime.now(),
-            "messages": []
-        }
-
-        # add new dialog
-        self.dialog_collection.insert_one(dialog_dict)
-
-        # update chat dialog
-        self.upsert_chat(chat_id, dialog_id, chat_mode)
-
-        return dialog_id
+    def get_last_chat_time(self, chat_id: int):
+        return self.get_chat_attribute(chat_id, 'last_interaction') or 0
     
-    def get_dialog_messages(self, chat_id: int):
-        dialog_id = self.get_chat_dialog_id(chat_id)
-        if not dialog_id:
-            return None
-        dialog_dict = self.dialog_collection.find_one({"_id": dialog_id, "chat_id": chat_id})               
-        return dialog_dict["messages"] if dialog_dict else None
+    def get_chat_messages(self, chat_id: int):
+        return self.get_chat_attribute(chat_id, 'messages')
 
-    def pop_dialog_messages(self, chat_id: int):
-        dialog_id = self.get_chat_dialog_id(chat_id)
+    def pop_chat_messages(self, chat_id: int):
+        filter = {"_id": chat_id}
         
-        self.dialog_collection.update_one(
-            {"_id": dialog_id, "chat_id": chat_id},
+        self.chat_collection.update_one(
+            filter,
             {"$pop": {"messages": 1}}
         )
 
-    def push_dialog_messages(self, chat_id: int, new_dialog_message, max_message_count: int=-1):
-        dialog_id = self.get_chat_dialog_id(chat_id)
-
+    def push_chat_messages(self, chat_id: int, new_dialog_message, max_message_count: int=-1):
+        filter = {"_id": chat_id}
+        data = {
+            "last_interaction": datetime.now()
+        }
         if max_message_count > 0:
-            self.dialog_collection.update_one(
-                {"_id": dialog_id, "chat_id": chat_id},
-                {"$push": {"messages": {
-                    "$each": [ new_dialog_message ],
-                    "$slice": -max_message_count,
-                }}}
+            self.chat_collection.update_one(
+                filter,
+                {
+                    "$set": data,
+                    "$push": {"messages": {
+                        "$each": [ new_dialog_message ],
+                        "$slice": -max_message_count,
+                    }}
+                }
             )
         else:
-            self.dialog_collection.update_one(
-                {"_id": dialog_id, "chat_id": chat_id},
-                {"$push": {"messages": new_dialog_message}}
+            self.chat_collection.update_one(
+                filter,
+                {
+                    "$set": data,
+                    "$push": {"messages": new_dialog_message}
+                }
             )
 
     def get_user_attribute(self, user_id: int, key: str):
