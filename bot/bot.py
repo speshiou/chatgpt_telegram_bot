@@ -308,6 +308,13 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
     remaining_tokens = db.get_user_remaining_tokens(user_id)
 
+    max_tokens = chatgpt.MODEL_MAX_TOKENS
+    if remaining_tokens < chatgpt.MODEL_MAX_TOKENS:
+        max_tokens = remaining_tokens
+    if remaining_tokens < 10000:
+        # enable token saving mode for low balance users
+        max_tokens = min(max_tokens, 2000)
+
     if remaining_tokens < 0:
         # TODO: show different messages for private and group chats
         await update.message.reply_text(_("⚠️ Insufficient tokens, check /balance"), parse_mode=ParseMode.HTML)
@@ -330,7 +337,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             message,
             dialog_messages=messages,
             system_prompt=system_prompt,
-            max_tokens=remaining_tokens if remaining_tokens < chatgpt.MODEL_MAX_TOKENS else None,
+            max_tokens=max_tokens,
             stream=config.STREAM_ENABLED
         )
 
