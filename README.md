@@ -24,7 +24,7 @@ You can deploy your own bot, or use mine: [@chatgpt_karfly_bot](https://t.me/cha
 
 ## Bot commands
 - `/retry` – Regenerate last bot answer
-- `/new` – Start new dialog
+- `/reset` – Start new dialog
 - `/mode` – Select chat mode
 - `/balance` – Show balance
 - `/help` – Show help

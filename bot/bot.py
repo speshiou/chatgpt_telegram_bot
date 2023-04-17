@@ -35,14 +35,15 @@ def get_commands(lang=i18n.DEFAULT_LOCALE):
     _ = i18n.get_text_func(lang)
     return [
         BotCommand("gpt", _("switch to ChatGPT mode")),
-        BotCommand("proofreader", _("switch to Proofreader")),
+        BotCommand("proofreader", _("switch to Proofreader mode")),
         BotCommand("image", _("generate images ({} tokens)").format(config.DALLE_TOKENS)),
-        BotCommand("new", _("start a new conversation")),
+        BotCommand("reset", _("start a new conversation")),
         BotCommand("retry", _("regenerate last answer")),
         # BotCommand("mode", _("select chat mode")),
         BotCommand("balance", _("check balance")),
         # BotCommand("earn", _("earn rewards by referral")),
         BotCommand("language", _("set UI language")),
+        BotCommand("about", _("about this chatbot")),
     ]
 
 async def register_user_if_not_exists(update: Update, context: CallbackContext, referred_by: int = None):
@@ -114,17 +115,33 @@ async def send_greeting(update: Update, context: CallbackContext, is_new_user=Fa
 
     commands_text = "".join([f"/{c.command} - {c.description}\n" for c in get_commands(lang)])
 
-    reply_text = _("Hi! I'm an AI chatbot powered by OpenAI's GPT-3.5 turbo and DALL·E models.")
-    reply_text += "\n\n"
-    reply_text += _("""By using this chatbot, you agree to our <a href="{}">terms of service</a> and <a href="{}">privacy policy</a>.""").format("https://tgchat.co/terms-of-service", "https://tgchat.co/privacy-policy")
-    reply_text += "\n\n"
-    reply_text += _("<b>Commands</b>")
-    reply_text += "\n"
-    reply_text += commands_text
+    text = _("Hi! I'm an AI chatbot powered by OpenAI's GPT and DALL·E models.")
+    text += "\n\n"
+    text += _("<b>What can I do for you?</b>\n")
+    text += _("🔎 Find answers\n")
+    text += _("🌎 Translate\n")
+    text += _("✉️ Writing\n")
+    text += _("🗂 Summarize\n")
+    text += _("✍️ Proofreading (/proofreader)\n")
+    text += _("💡 Provide ideas and solve problems\n")
+    text += _("💻 Programming and debugging\n")
+    text += _("👨‍🎨 Generate images (/image)\n")
+    text += _("🧙‍♀️ Role-playing\n")
+    text += _("and much more ... (See @ChatGPT_Prompts_Lab)")
+    text += "\n\n"
+    text += _("<b>Commands</b>")
+    text += "\n"
+    text += commands_text
+    text += "\n"
+    text += _("<b>Others</b>\n")
+    text += _("❓ <a href=\"{}\">FAQ</a>\n").format("https://tgchat.co/faq")
+    text += _("🗣 <a href=\"{}\">Feedback</a>\n").format("https://t.me/gpt_chatbot_support")
+    text += "\n"
+    text += _("""By using this chatbot, you agree to our <a href="{}">terms of service</a> and <a href="{}">privacy policy</a>.""").format("https://tgchat.co/terms-of-service", "https://tgchat.co/privacy-policy")
     
     await reply_or_edit_text(
         update,
-        reply_text, 
+        text, 
         parse_mode=ParseMode.HTML,
         disable_web_page_preview=True,
         )
@@ -134,17 +151,6 @@ async def send_greeting(update: Update, context: CallbackContext, is_new_user=Fa
             _("✅ {:,} free tokens have been credited, check /balance").format(config.FREE_QUOTA), 
             parse_mode=ParseMode.HTML,
             )
-    chat_id = get_chat_id(update)
-    if chat_id:
-        text = _("Now you can ask me anything like\n\n")
-        text += _("🔎 Find answers\n")
-        text += _("🌎 Translate\n")
-        text += _("✍️ Writing and proofreading\n")
-        text += _("💡 Provide ideas and solve problems\n")
-        text += _("💻 Programming and debugging\n")
-        text += _("🧙‍♀️ Role-playing\n")
-        text += _("and much more ...\n")
-        await context.bot.send_message(chat_id, text)
 
 async def start_handle(update: Update, context: CallbackContext):
     chat = update.effective_chat
@@ -371,9 +377,9 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         # send warning if some messages were removed from the context
         if num_dialog_messages_removed > 0:
             if num_dialog_messages_removed == 1:
-                text = _("⚠️ The <b>first message</b> was removed from the context due to OpenAI's token amount limit. Use /new to reset")
+                text = _("⚠️ The <b>first message</b> was removed from the context due to OpenAI's token amount limit. Use /reset to reset")
             else:
-                text = _("⚠️ The <b>first {} messages</b> have removed from the context due to OpenAI's token amount limit. Use /new to reset").format(num_dialog_messages_removed)
+                text = _("⚠️ The <b>first {} messages</b> have removed from the context due to OpenAI's token amount limit. Use /reset to reset").format(num_dialog_messages_removed)
 
             max_message_count = len(messages) + 1 - num_dialog_messages_removed
 
@@ -440,7 +446,7 @@ async def image_message_handle(update: Update, context: CallbackContext):
     placeholder = None
     try:
         db.mark_user_is_generating_image(user_id, True)
-        placeholder = await update.message.reply_text("👨‍🎨 painting ...")
+        placeholder = await update.message.reply_text(_("👨‍🎨 painting ..."))
         image_url = await openai_utils.create_image(message)
         await placeholder.delete()
         await update.message.reply_photo(image_url)
@@ -454,7 +460,7 @@ async def image_message_handle(update: Update, context: CallbackContext):
         else:
             await placeholder.edit_text(text)
 
-async def new_dialog_handle(update: Update, context: CallbackContext):
+async def reset_handle(update: Update, context: CallbackContext):
     await set_chat_mode(update, context, reason="reset")
 
 async def show_chat_modes_handle(update: Update, context: CallbackContext):
@@ -527,7 +533,7 @@ async def show_balance_handle(update: Update, context: CallbackContext):
     text = _("👛 <b>Balance</b>\n\n")
     text += _("<b>{:,}</b> tokens left\n").format(db.get_user_remaining_tokens(user.id))
     text += _("<i>You used <b>{:,}</b> tokens</i>\n\n").format(used_tokens)
-    text += _("""<i>💡 The longer conversation would spend more tokens, use /new to reset. (<a href="{}">Learn more</a>)</i>""").format("https://tgchat.co/faq")
+    text += _("""<i>💡 The longer conversation would spend more tokens. /reset the chat. (<a href="{}">Learn more</a>)</i>""").format("https://tgchat.co/faq")
     # text += f"You spent <b>{n_spent_dollars:.03f}$</b>\n"
     # text += f"You used <b>{used_tokens}</b> tokens <i>(price: ${config.TOKEN_PRICE} per 1000 tokens)</i>\n"
 
@@ -768,8 +774,9 @@ def run_bot() -> None:
         user_filter = filters.User(username=config.ALLOWED_TELEGRAM_USERNAMES)
 
     application.add_handler(CommandHandler("start", start_handle, filters=user_filter))
+    application.add_handler(CommandHandler("about", start_handle, filters=user_filter))
     application.add_handler(CommandHandler("retry", retry_handle, filters=user_filter))
-    application.add_handler(CommandHandler("new", new_dialog_handle, filters=user_filter))
+    application.add_handler(CommandHandler("reset", reset_handle, filters=user_filter))
     # application.add_handler(CommandHandler("mode", show_chat_modes_handle, filters=user_filter))
     # application.add_handler(CallbackQueryHandler(set_chat_mode_handle, pattern="^set_chat_mode"))
     application.add_handler(CommandHandler("balance", show_balance_handle, filters=user_filter))
