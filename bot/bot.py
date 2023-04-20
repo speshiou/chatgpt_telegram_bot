@@ -40,7 +40,6 @@ def get_commands(lang=i18n.DEFAULT_LOCALE):
         BotCommand("role", _("list all roles")),
         BotCommand("reset", _("start a new conversation")),
         BotCommand("retry", _("regenerate last answer")),
-        # BotCommand("mode", _("select chat mode")),
         BotCommand("balance", _("check balance")),
         # BotCommand("earn", _("earn rewards by referral")),
         BotCommand("language", _("set UI language")),
@@ -668,25 +667,19 @@ async def show_payment_methods(update: Update, context: CallbackContext):
         await reply_or_edit_text(update, text_not_in_range)
 
     text = _("🛒 Choose the payment method\n\n")
-    text += _("💳 Paypal - Debit or Credit Card\n")
-    text += _("💎 Crypto - BTC, USDT, USDC, TON\n")
+    text += _("💳 Debit or Credit Card - support 200+ countries/regions\n")
+    text += "\n"
+    text += _("💎 Crypto - BTC, USDT, USDC, TON, BNB\n")
     reply_markup = InlineKeyboardMarkup([
-        [InlineKeyboardButton(_("💳 Paypal"), callback_data=f"payment|paypal|{amount}|{tokens_amount}")],
+        [InlineKeyboardButton(_("💳 Debit or Credit Card"), callback_data=f"payment|paypal|{amount}|{tokens_amount}")],
         [InlineKeyboardButton(_("💎 Crypto"), callback_data=f"payment|crypto|{amount}|{tokens_amount}")]
     ])
 
-    if update.message:
-        await update.message.reply_text(
-            text,
-            parse_mode=ParseMode.HTML,
-            reply_markup=reply_markup
-        )
-    else:
-        await query.edit_message_text(
-            text,
-            parse_mode=ParseMode.HTML,
-            reply_markup=reply_markup
-        )
+    await update.effective_message.reply_text(
+        text,
+        parse_mode=ParseMode.HTML,
+        reply_markup=reply_markup
+    )
 
 async def show_invoice(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
@@ -720,7 +713,7 @@ async def show_invoice(update: Update, context: CallbackContext):
         button_text = ""
         if method == "paypal":
             tips.append(_("If you do not have a PayPal account, click on the button located below the login button to pay with cards directly."))
-            button_text = _("💳 Pay with Paypal")
+            button_text = _("💳 Pay with Debit or Credit Card")
         elif method == "crypto":
             tips.append(_("If you have any issues related to crypto payment, please contact the customer service in the payment page, or send messages to {} directly for assistance.").format("@cryptomus_support"))
             button_text = _("💎 Pay with Crypto")
@@ -800,6 +793,7 @@ async def error_handle(update: Update, context: CallbackContext) -> None:
 async def app_post_init(application: Application):
     # setup bot commands
     await application.bot.set_my_commands(get_commands())
+    await application.bot.set_my_commands(get_commands('zh_CN'), language_code="zh")
 
 def run_bot() -> None:
     application = (
