@@ -37,6 +37,7 @@ def get_commands(lang=i18n.DEFAULT_LOCALE):
         BotCommand("gpt", _("switch to ChatGPT mode")),
         BotCommand("proofreader", _("switch to Proofreader mode")),
         BotCommand("image", _("generate images ({} tokens)").format(config.DALLE_TOKENS)),
+        BotCommand("role", _("list all roles")),
         BotCommand("reset", _("start a new conversation")),
         BotCommand("retry", _("regenerate last answer")),
         # BotCommand("mode", _("select chat mode")),
@@ -126,7 +127,7 @@ async def send_greeting(update: Update, context: CallbackContext, is_new_user=Fa
     text += _("💡 Provide ideas and solve problems\n")
     text += _("💻 Programming and debugging\n")
     text += _("👨‍🎨 Generate images (/image)\n")
-    text += _("🧙‍♀️ Role-playing\n")
+    text += _("🧙‍♀️ Role-playing (/role)\n")
     text += _("and much more ... (See @ChatGPT_Prompts_Lab)")
     text += "\n\n"
     text += _("<b>Commands</b>")
@@ -268,7 +269,7 @@ def get_message_chunks(text, chuck_size=config.MESSAGE_MAX_LENGTH):
     return [text[i:i + chuck_size] for i in range(0, len(text), chuck_size)]
 
 async def message_handle(update: Update, context: CallbackContext, message=None, use_new_dialog_timeout=True, chat_mode=None):
-    user = update.message.from_user if update.message else None
+    user = await register_user_if_not_exists(update, context)
     chat_id = get_chat_id(update)
     if not user or not chat_id:
         # sent from a channel
@@ -279,10 +280,9 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         await edited_message_handle(update, context)
         return
         
-    user = await register_user_if_not_exists(update, context)
     _ = get_text_func(user)
 
-    user_id = update.message.from_user.id
+    user_id = user.id
 
     if chat_mode is None:
         chat_mode = db.get_current_chat_mode(chat_id)
@@ -320,13 +320,13 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
     # telegram flood control limit is 20 messages per minute, we set 12 to leave some budget
     if rate_count >= 12:
-        await update.message.reply_text(_("⚠️ This chat has exceeded the rate limit. Please wait for up to 60 seconds."), parse_mode=ParseMode.HTML)
+        await update.effective_message.reply_text(_("⚠️ This chat has exceeded the rate limit. Please wait for up to 60 seconds."), parse_mode=ParseMode.HTML)
         return
 
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
     # send typing action
-    await update.message.chat.send_action(action="typing")
+    await update.effective_chat.send_action(action="typing")
 
     remaining_tokens = db.get_user_remaining_tokens(user_id)
 
@@ -339,10 +339,11 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
     if remaining_tokens < 0:
         # TODO: show different messages for private and group chats
-        await update.message.reply_text(_("⚠️ Insufficient tokens, check /balance"), parse_mode=ParseMode.HTML)
+        await update.effective_message.reply_text(_("⚠️ Insufficient tokens, check /balance"), parse_mode=ParseMode.HTML)
         return
 
-    message = message or update.message.text
+    if message is None:
+        message = update.effective_message.text
     answer = None
     sent_answer = None
     used_tokens = None
@@ -390,7 +391,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
                 message_chunk = answer[start_index:end_index]
                 if current_message_chunk_index < n_message_chunks - 1 or last_answer_message is None:
                     # send a new message chunk
-                    last_answer_message = await update.message.reply_text(message_chunk, parse_mode=parse_mode)
+                    last_answer_message = await update.effective_message.reply_text(message_chunk, parse_mode=parse_mode)
                 elif last_answer_message is not None:
                     # update last message chunk
                     try:
@@ -412,11 +413,11 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
             max_message_count = len(messages) + 1 - num_dialog_messages_removed
 
-            await update.message.reply_text(text, parse_mode=ParseMode.HTML)
+            await update.effective_message.reply_text(text, parse_mode=ParseMode.HTML)
 
         # send warning if the anwser is too long (based on telegram's limit)
         if len(answer) > config.MESSAGE_MAX_LENGTH:
-            await update.message.reply_text(_("⚠️ The answer was too long, has been splitted into multiple unformatted messages"))
+            await update.effective_message.reply_text(_("⚠️ The answer was too long, has been splitted into multiple unformatted messages"))
     except telegram.error.BadRequest as e:
         error_text = f"Errors from Telegram: {e}"
         logger.error(error_text)    
@@ -426,14 +427,14 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             for i in range(current_message_chunk_index + 1, n_message_chunks):
                 chunk = chunks[i]
                 # answer may have invalid characters, so we send it without parse_mode
-                await update.message.reply_text(chunk)
+                await update.effective_message.reply_text(chunk)
             sent_answer = answer
     except ValueError as e:
-        await update.message.reply_text(_("⚠️ Require {} tokens to process the input text, check /balance").format(e.args[1]), parse_mode=ParseMode.HTML)
+        await update.effective_message.reply_text(_("⚠️ Require {} tokens to process the input text, check /balance").format(e.args[1]), parse_mode=ParseMode.HTML)
     except Exception as e:
         error_text = "⚠️ " + _("Temporary OpenAI server failure, please try again later. Reason: {}").format(e)
         logger.error(error_text)
-        await update.message.reply_text(error_text)
+        await update.effective_message.reply_text(error_text)
         # printing stack trace
         traceback.print_exc()
         return
@@ -493,16 +494,23 @@ async def reset_handle(update: Update, context: CallbackContext):
     await set_chat_mode(update, context, reason="reset")
 
 async def show_chat_modes_handle(update: Update, context: CallbackContext):
-    await register_user_if_not_exists(update, context)
+    user = await register_user_if_not_exists(update, context)
     user_id = update.message.from_user.id
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
+    _ = get_text_func(user)
+
     keyboard = []
-    for chat_mode, chat_mode_dict in config.CHAT_MODES.items():
-        keyboard.append([InlineKeyboardButton(chat_mode_dict["name"], callback_data=f"set_chat_mode|{chat_mode}")])
+    for chat_mode, role in config.CHAT_MODES.items():
+        keyboard.append([InlineKeyboardButton(role["icon"] + " " + role["name"], callback_data=f"set_chat_mode|{chat_mode}")])
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    await update.message.reply_text("Select chat mode:", reply_markup=reply_markup)
+    text = _("🤩 Chat with characters in your dreams")
+    text += "\n\n"
+    text += _("🤥 Everything Characters say is made up! Don't trust everything they say or take them too seriously.")
+    text += "\n\n"
+    text += _("💡 More roles are coming soon. Stay tuned!")
+    await update.message.reply_text(text, reply_markup=reply_markup)
 
 async def set_chat_mode(update: Update, context: CallbackContext, chat_mode = None, reason: str = None):
     user = await register_user_if_not_exists(update, context)
@@ -522,6 +530,9 @@ async def set_chat_mode(update: Update, context: CallbackContext, chat_mode = No
     # reset chat history
     db.reset_chat(chat_id, chat_mode)
 
+    # to trigger roles to start the conversation
+    send_empty_message = False
+
     icon_prefix = config.CHAT_MODES[chat_mode]["icon"] + " " if "icon" in config.CHAT_MODES[chat_mode] else ""
     if reason == "timeout":
         text = icon_prefix + _("It's been a long time since we talked, and I've forgotten what we talked about before.")
@@ -531,8 +542,11 @@ async def set_chat_mode(update: Update, context: CallbackContext, chat_mode = No
         text = icon_prefix + _(config.CHAT_MODES[chat_mode]["greeting"])
     else:
         text = icon_prefix + _("You're now chatting with {} ...").format(config.CHAT_MODES[chat_mode]["name"])
+        send_empty_message = True
 
     await reply_or_edit_text(update, text)
+    if send_empty_message:
+        await message_handle(update, context, "")
 
 async def set_chat_mode_handle(update: Update, context: CallbackContext):
     query = update.callback_query
@@ -806,8 +820,8 @@ def run_bot() -> None:
     application.add_handler(CommandHandler("about", start_handle, filters=user_filter))
     application.add_handler(CommandHandler("retry", retry_handle, filters=user_filter))
     application.add_handler(CommandHandler("reset", reset_handle, filters=user_filter))
-    # application.add_handler(CommandHandler("mode", show_chat_modes_handle, filters=user_filter))
-    # application.add_handler(CallbackQueryHandler(set_chat_mode_handle, pattern="^set_chat_mode"))
+    application.add_handler(CommandHandler("role", show_chat_modes_handle, filters=user_filter))
+    application.add_handler(CallbackQueryHandler(set_chat_mode_handle, pattern="^set_chat_mode"))
     application.add_handler(CommandHandler("balance", show_balance_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(show_payment_methods, pattern="^top_up\|(\d)+"))
     application.add_handler(CallbackQueryHandler(show_invoice, pattern="^payment\|"))

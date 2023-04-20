@@ -31,6 +31,8 @@ services:
     build:
       context: "."
       dockerfile: Dockerfile
+      args:
+        - GPT_PROMPTS=${GPT_PROMPTS}
     depends_on:
       - mongo
 

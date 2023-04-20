@@ -15,7 +15,7 @@ parser.add_argument('-t', '--tts')
 args = parser.parse_args()
 
 if args.prompts:
-    config.CHAT_MODES = config.load_prompts(args.prompts)
+    config.CHAT_MODES = { **config.CHAT_MODES, **config.load_prompts(args.prompts) }
 
 if args.tts:
     tts_helper.MODELS = tts_helper.load_models(args.tts)
@@ -53,7 +53,7 @@ def break_long_lines(text, max_length):
 def print_roles():
     print("Available roles:")
     for key in config.CHAT_MODES:
-        print("- " + config.CHAT_MODES[key]["name"])
+        print("{} {}".format(config.CHAT_MODES[key]["icon"], config.CHAT_MODES[key]["name"]))
     print()
 
 async def test():

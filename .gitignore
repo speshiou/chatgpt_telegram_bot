@@ -146,3 +146,6 @@ bin
 include
 share
 tmp.wav
+
+# external settings
+*.tsv
