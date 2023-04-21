@@ -129,7 +129,7 @@ async def send_greeting(update: Update, context: CallbackContext, is_new_user=Fa
     text += _("and much more ... (See @ChatGPT_Prompts_Lab)")
     text += "\n\n"
     text += _("<b>Service</b>\n")
-    text += _("⚙️ check the menu below to see full functions\n")
+    text += _("⚙️ open the menu below to see full functions\n")
     text += _("❓ <a href=\"{}\">FAQ</a>\n").format("https://tgchat.co/faq")
     text += _("🗣 <a href=\"{}\">Feedback</a>\n").format("https://t.me/gpt_chatbot_support")
     text += "\n"

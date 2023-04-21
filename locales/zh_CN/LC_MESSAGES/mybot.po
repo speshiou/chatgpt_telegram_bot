@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-04-21 18:04+0800\n"
+"POT-Creation-Date: 2023-04-21 19:46+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -111,8 +111,8 @@ msgstr "<b>服务</b>\n"
 
 #: ./bot/bot.py:132
 msgid ""
-"⚙️ check the menu below to see full functions\n"
-msgstr "⚙️ 检查下面的菜单以查看完整功能\n"
+"⚙️ open the menu below to see full functions\n"
+msgstr "⚙️ 打开下面的菜单查看全部功能\n"
 
 #: ./bot/bot.py:133
 msgid ""
