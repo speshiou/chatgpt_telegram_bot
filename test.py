@@ -95,10 +95,13 @@ async def test():
                 current_line_index = i
         # wrap the last line
         print()
+
         if answer is not None:
-            output = tts_helper.tts(answer, output=WAV_OUTPUT_PATH, model=role)
-            if output:
-                play_audio(output)
+            if args.tts:
+                output = tts_helper.tts(answer, output=WAV_OUTPUT_PATH, model=role)
+                if output:
+                    play_audio(output)
+            # add messages to context
             dialog.append({"user": text, "bot": answer})
 
 if __name__ == "__main__":
