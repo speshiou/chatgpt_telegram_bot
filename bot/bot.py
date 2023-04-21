@@ -37,7 +37,7 @@ def get_commands(lang=i18n.DEFAULT_LOCALE):
         BotCommand("gpt", _("switch to ChatGPT mode")),
         BotCommand("proofreader", _("switch to Proofreader mode")),
         BotCommand("image", _("generate images ({} tokens)").format(config.DALLE_TOKENS)),
-        BotCommand("role", _("list all roles")),
+        BotCommand("role", _("chat with dream characters")),
         BotCommand("reset", _("start a new conversation")),
         BotCommand("retry", _("regenerate last answer")),
         BotCommand("balance", _("check balance")),
@@ -118,7 +118,6 @@ async def send_greeting(update: Update, context: CallbackContext, is_new_user=Fa
     text = _("Hi! I'm an AI chatbot powered by OpenAI's GPT and DALL·E models.")
     text += "\n\n"
     text += _("<b>What can I do for you?</b>\n")
-    text += _("🔎 Find answers\n")
     text += _("🌎 Translate\n")
     text += _("✉️ Writing\n")
     text += _("🗂 Summarize\n")
@@ -126,14 +125,11 @@ async def send_greeting(update: Update, context: CallbackContext, is_new_user=Fa
     text += _("💡 Provide ideas and solve problems\n")
     text += _("💻 Programming and debugging\n")
     text += _("👨‍🎨 Generate images (/image)\n")
-    text += _("🧙‍♀️ Role-playing (/role)\n")
+    text += _("🧙‍♀️ Chat with dream characters (/role)\n")
     text += _("and much more ... (See @ChatGPT_Prompts_Lab)")
     text += "\n\n"
-    text += _("<b>Commands</b>")
-    text += "\n"
-    text += commands_text
-    text += "\n"
-    text += _("<b>Others</b>\n")
+    text += _("<b>Service</b>\n")
+    text += _("⚙️ check the menu below to see full functions\n")
     text += _("❓ <a href=\"{}\">FAQ</a>\n").format("https://tgchat.co/faq")
     text += _("🗣 <a href=\"{}\">Feedback</a>\n").format("https://t.me/gpt_chatbot_support")
     text += "\n"
