@@ -591,9 +591,9 @@ async def show_balance_handle(update: Update, context: CallbackContext):
             "caption": "-20%",
         },
         {
-            "payment_amount": 11.99,
+            "payment_amount": 13.99,
             "tokens_amount": price_to_tokens(20),
-            "caption": "-40%",
+            "caption": "-30%",
         },
     ]
 
