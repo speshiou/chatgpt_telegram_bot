@@ -23,6 +23,7 @@ services:
       - FREE_QUOTA=${FREE_QUOTA}
       - DALLE_TOKENS=${DALLE_TOKENS}
       - TOKEN_PRICE=${TOKEN_PRICE}
+      - GPT_PROMPTS=${GPT_PROMPTS}
       - API_ENDPOINT=${API_ENDPOINT}
       - BUGREPORT_BOT_TOKEN=${BUGREPORT_BOT_TOKEN}
       - BUGREPORT_CHAT_ID=${BUGREPORT_CHAT_ID}
@@ -31,8 +32,6 @@ services:
     build:
       context: "."
       dockerfile: Dockerfile
-      args:
-        - GPT_PROMPTS=${GPT_PROMPTS}
     depends_on:
       - mongo
 

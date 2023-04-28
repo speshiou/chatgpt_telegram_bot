@@ -52,8 +52,10 @@ def _env_parse_str_array(name, default_value = None):
     return value
 
 def load_prompts(tsv):
+    if not os.path.isfile(tsv):
+        return {}
     prompts = {}
-    with open(tsv) as file:
+    with open(tsv, "r") as file:
         tsv_file = csv.reader(file, delimiter="\t")
         for line in tsv_file:
             icon, role, prompt = line
