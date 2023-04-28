@@ -195,6 +195,23 @@ def strip_command(message):
         return m[2].strip()
     return None
 
+async def send_openai_error(update: Update, context: CallbackContext, e: Exception, placeholder = None):
+    user = await register_user_if_not_exists(update, context)
+    _ = get_text_func(user)
+    text = "⚠️ " + _("Temporary OpenAI server failure, please try again later.")
+    error_msg = f"{e}"
+    if "JSONDecodeError" not in error_msg:
+        # ignore JSONDecodeError content. openai api may response html, which will cause message too long error
+        text += " " + _("Reason: {}").format(error_msg)
+    if placeholder is None:
+        await update.effective_message.reply_text(text)
+    else:
+        await placeholder.edit_text(text)
+
+    logger.error(error_msg)
+    # printing stack trace
+    traceback.print_exc()
+
 async def group_chat_message_handle(update: Update, context: CallbackContext):
     # check if message is edited
     if update.edited_message is not None:
@@ -427,11 +444,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     except ValueError as e:
         await update.effective_message.reply_text(_("⚠️ Require {} tokens to process the input text, check /balance").format(e.args[1]), parse_mode=ParseMode.HTML)
     except Exception as e:
-        error_text = "⚠️ " + _("Temporary OpenAI server failure, please try again later. Reason: {}").format(e)
-        logger.error(error_text)
-        await update.effective_message.reply_text(error_text)
-        # printing stack trace
-        traceback.print_exc()
+        await send_openai_error(update, context, e)
         return
     
     # consume tokens and append the message record to db
@@ -479,11 +492,7 @@ async def image_message_handle(update: Update, context: CallbackContext):
         db.mark_user_is_generating_image(user_id, False)
     except Exception as e:
         db.mark_user_is_generating_image(user_id, False)
-        text = _("Temporary OpenAI server failure, please try again later. Reason: {}").format(e)
-        if placeholder is None:
-            await update.message.reply_text(text)
-        else:
-            await placeholder.edit_text(text)
+        await send_openai_error(update, context, e, placeholder=placeholder)
 
 async def reset_handle(update: Update, context: CallbackContext):
     await set_chat_mode(update, context, reason="reset")
