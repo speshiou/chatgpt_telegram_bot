@@ -764,11 +764,18 @@ async def edited_message_handle(update: Update, context: CallbackContext):
 
 
 async def error_handle(update: Update, context: CallbackContext) -> None:
-    logger.error(msg="Exception while handling an update:", exc_info=context.error)
-
     # collect error message
     tb_list = traceback.format_exception(None, context.error, context.error.__traceback__)
-    chunks = get_message_chunks("".join(tb_list), chuck_size=2000)
+    callstacks = "".join(tb_list)
+
+    if "Message is not modified" in callstacks:
+        # ignore telegram.error.BadRequest: Message is not modified. 
+        # The issue is caused by users clicking inline keyboards repeatedly
+        return
+    
+    logger.error(msg="Exception while handling an update:", exc_info=context.error)
+
+    chunks = get_message_chunks(callstacks, chuck_size=2000)
     update_str = update.to_dict() if isinstance(update, Update) else str(update)
 
     try:
