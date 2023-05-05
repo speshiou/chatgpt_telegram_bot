@@ -122,6 +122,19 @@ class Database:
             {"$pop": {"messages": 1}}
         )
 
+    def update_chat_last_interaction(self, chat_id: int):
+        filter = {"_id": chat_id}
+        data = {
+            "last_interaction": datetime.now()
+        }
+
+        self.chat_collection.update_one(
+            filter,
+            {
+                "$set": data,
+            }
+        )
+
     def push_chat_messages(self, chat_id: int, new_dialog_message, max_message_count: int=-1):
         filter = {"_id": chat_id}
         data = {

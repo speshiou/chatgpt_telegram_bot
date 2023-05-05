@@ -122,11 +122,12 @@ async def send_greeting(update: Update, context: CallbackContext, is_new_user=Fa
     text += _("✉️ Writing\n")
     text += _("🗂 Summarize\n")
     text += _("✍️ Proofreading (/proofreader)\n")
-    text += _("💡 Provide ideas and solve problems\n")
+    text += _("🤔 Provide ideas and solve problems\n")
     text += _("💻 Programming and debugging\n")
     text += _("👨‍🎨 Generate images (/image)\n")
     text += _("🧙‍♀️ Chat with dream characters (/role)\n")
-    text += _("and much more ... (See @ChatGPT_Prompts_Lab)")
+    text += _("👥 To collaborate with a group, you can add @{} to a group chat as a member.\n").format(config.TELEGRAM_BOT_NAME)
+    text += _("💡 Subscribe to @ChatGPT_Prompts_Lab for more inspiration")
     text += "\n\n"
     text += _("<b>Service</b>\n")
     text += _("⚙️ open the menu below to see full functions\n")
@@ -220,21 +221,8 @@ async def group_chat_message_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
     if not user:
         return
-    _ = get_text_func(user)
-    chat = update.effective_chat
-    if chat.type == Chat.PRIVATE:
-        text = _("👥 This command is also for group chats to talk to ChatGPT, please add @{} to a group chat as a group member").format(config.TELEGRAM_BOT_NAME)
-        await update.message.reply_text(text)
-        await set_chat_mode(update, context, "chatgpt")
-        return
     
-    message = strip_command(update.message.text)
-    if not message:
-        text = _("💡 Please type /gpt and followed by your question or topic\n\n")
-        text += _("<b>Example:</b> /gpt what can you do?")
-        await update.message.reply_text(text, ParseMode.HTML)
-        return
-    await message_handle(update, context, message=message)
+    await set_chat_mode(update, context, "chatgpt")
 
 async def proofreader_message_handle(update: Update, context: CallbackContext):
     # check if message is edited
@@ -249,33 +237,11 @@ async def proofreader_message_handle(update: Update, context: CallbackContext):
     _ = get_text_func(user)
 
     message = strip_command(update.message.text)
-    chat = update.effective_chat
-    if chat.type == Chat.PRIVATE:
-        if message:
-            await message_handle(update, context, message=message, chat_mode="proofreader")
-        else:
-            await set_chat_mode(update, context, "proofreader")
-        return
-
-    # group chat
-    if not message:
-        text = _("💡 Please type /proofreader and followed by the content you want to rephrase\n\n")
-        text += _("<b>Example:</b> /proofreader your sentences")
-        await update.message.reply_text(text, ParseMode.HTML)
-        return
-    await message_handle(update, context, message=message, chat_mode="proofreader")
-
-def finalize_message_handle(user_id, chat_id, message, answer, used_tokens, max_message_count: int=-1):
-    # update user data
-    new_dialog_message = {"user": message, "bot": answer, "date": datetime.now(), "used_tokens": used_tokens}
-    db.push_chat_messages(
-        chat_id,
-        new_dialog_message,
-        max_message_count,
-    )
-
-    # IMPORTANT: consume tokens in the end of function call to protect users' credits
-    db.inc_user_used_tokens(user_id, used_tokens)
+    if message:
+        await message_handle(update, context, message=message, chat_mode="proofreader")
+    else:
+        await set_chat_mode(update, context, "proofreader")
+    return
 
 def get_message_chunks(text, chuck_size=config.MESSAGE_MAX_LENGTH):
     return [text[i:i + chuck_size] for i in range(0, len(text), chuck_size)]
@@ -298,16 +264,21 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
     if chat_mode is None:
         chat_mode = db.get_current_chat_mode(chat_id)
-    # load chat history to context
-    messages = db.get_chat_messages(chat_id)
-    if chat_mode == "proofreader":
-        # to keep the language of input message, not to send chat history to model
-        messages = []
+
+    push_new_message = True
+    
     if chat_mode not in config.CHAT_MODES.keys():
         # fallback to the first mode
         chat_mode = list(config.CHAT_MODES.keys())[0]
         # lead to timeout process
         messages = None
+    elif chat_mode == "proofreader":
+        # to keep the language of input message, not to send chat history to model
+        messages = []
+        push_new_message = False
+    else:
+        # load chat history to context
+        messages = db.get_chat_messages(chat_id)
 
     system_prompt = config.CHAT_MODES[chat_mode]["prompt"]
 
@@ -449,7 +420,19 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     
     # consume tokens and append the message record to db
     if sent_answer is not None and used_tokens is not None:
-        finalize_message_handle(user_id, chat_id, message, sent_answer, used_tokens, max_message_count)
+        if push_new_message:
+            # update user data
+            new_dialog_message = {"user": message, "bot": sent_answer, "date": datetime.now(), "used_tokens": used_tokens}
+            db.push_chat_messages(
+                chat_id,
+                new_dialog_message,
+                max_message_count,
+            )
+        else:
+            db.update_chat_last_interaction(chat_id)
+
+        # IMPORTANT: consume tokens in the end of function call to protect users' credits
+        db.inc_user_used_tokens(user_id, used_tokens)
 
 async def image_message_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
@@ -547,6 +530,11 @@ async def set_chat_mode(update: Update, context: CallbackContext, chat_mode = No
     else:
         text = icon_prefix + _("You're now chatting with {} ...").format(config.CHAT_MODES[chat_mode]["name"])
         send_empty_message = True
+
+    chat = update.effective_chat
+    if chat.type != Chat.PRIVATE:
+        text += "\n\n"
+        text += "💡 " + _("To continue the conversation in the group chat, please \"reply\" to my messages.")
 
     await reply_or_edit_text(update, text)
     if send_empty_message:
