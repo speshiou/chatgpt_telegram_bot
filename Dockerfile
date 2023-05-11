@@ -10,8 +10,11 @@ ENV PIP_DEFAULT_TIMEOUT=100
 
 RUN apt-get update
 RUN apt-get install -y python3 python3-pip python-dev build-essential python3-venv
+# for voice decoding
+RUN apt-get install -y ffmpeg
 
 RUN mkdir -p /code
+RUN mkdir -p /code/tmp/voice
 ADD . /code
 WORKDIR /code
 

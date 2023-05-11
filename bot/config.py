@@ -86,6 +86,12 @@ MESSAGE_MAX_LENGTH = 4000
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 # request timeout in seconds
 OPENAI_TIMEOUT = 90
+# whisper api has 25MB of file size limit, set 20MB to maintain buffer
+WHISPER_FILE_SIZE_LIMIT = 20 * 1000 * 1000
+# in seconds
+WHISPER_FREE_QUOTA = 10
+# cost per second
+WHISPER_TOKENS = 100
 STREAM_ENABLED = True
 ALLOWED_TELEGRAM_USERNAMES = _env_parse_str_array('ALLOWED_TELEGRAM_USERNAMES')
 DEFAULT_CHAT_MODE = "assistant"

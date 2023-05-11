@@ -115,3 +115,8 @@ async def create_image(prompt):
         size="1024x1024"
     )
     return response['data'][0]['url']
+
+async def audio_transcribe(filename):
+    audio_file= open(filename, "rb")
+    response = openai.Audio.transcribe("whisper-1", audio_file)
+    return response['text']

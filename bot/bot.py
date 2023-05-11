@@ -1,3 +1,4 @@
+import os
 import logging
 import traceback
 import html
@@ -7,7 +8,7 @@ import math
 from datetime import datetime
 
 import telegram
-from telegram import Chat, BotCommand, Update, User, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Message, Chat, BotCommand, Update, User, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application,
     ApplicationBuilder,
@@ -18,6 +19,8 @@ from telegram.ext import (
     filters
 )
 from telegram.constants import ParseMode, ChatAction
+
+from pydub import AudioSegment
 
 import config
 import database
@@ -246,7 +249,50 @@ async def proofreader_message_handle(update: Update, context: CallbackContext):
 def get_message_chunks(text, chuck_size=config.MESSAGE_MAX_LENGTH):
     return [text[i:i + chuck_size] for i in range(0, len(text), chuck_size)]
 
-async def message_handle(update: Update, context: CallbackContext, message=None, use_new_dialog_timeout=True, chat_mode=None):
+async def voice_message_handle(update: Update, context: CallbackContext):
+    user = await register_user_if_not_exists(update, context)
+    _ = get_text_func(user)
+
+    placeholder = None
+    try:
+        placeholder = await update.effective_message.reply_text("🎙 " + _("Decoding voice message ..."))
+
+        voice = update.message.voice
+        print(voice)
+        duration = voice.duration
+        file_id = voice.file_id
+        type = voice.mime_type.split("/")[1]
+        new_file = await context.bot.get_file(file_id)
+        src_filename = os.path.join('tmp/voice', file_id)
+        filename = src_filename
+        await new_file.download_to_drive(src_filename)
+        if type not in ['m4a', 'mp3', 'webm', 'mp4', 'mpga', 'wav', 'mpeg']:
+            # convert to wav if source format is not supported by OpenAI
+            wav_filename = src_filename + ".wav"
+            seg = AudioSegment.from_file(src_filename, type)
+            seg.export(wav_filename, format='wav')
+            filename = wav_filename
+
+        file_size = os.path.getsize(filename)
+        print(f"size: {file_size}/{config.WHISPER_FILE_SIZE_LIMIT}")
+        if file_size < config.WHISPER_FILE_SIZE_LIMIT:
+            text = await openai_utils.audio_transcribe(filename)
+            if duration > config.WHISPER_FREE_QUOTA:
+                used_tokens = (duration - config.WHISPER_FREE_QUOTA) * config.WHISPER_TOKENS
+                print(f"voice used tokens: {used_tokens}")
+                db.inc_user_used_tokens(user.id, used_tokens)
+            await message_handle(update, context, text, placeholder=placeholder)
+        else:
+            await placeholder.edit_text("⚠️ " + _("Voice data size exceeds 20MB limit"))
+        # clean up
+        os.remove(filename)
+        if os.path.exists(src_filename):
+            os.remove(src_filename)
+        
+    except Exception as e:
+        await send_openai_error(update, context, e, placeholder=placeholder)
+
+async def message_handle(update: Update, context: CallbackContext, message=None, use_new_dialog_timeout=True, chat_mode=None, placeholder: Message=None):
     user = await register_user_if_not_exists(update, context)
     chat_id = get_chat_id(update)
     if not user or not chat_id:
@@ -293,6 +339,8 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             # timeout
             await set_chat_mode(update, context, chat_mode, reason="timeout")
             messages = []
+            # drop placeholder to prevent the answer from showing before the timeout message
+            placeholder = None
 
     # flood control, must run after set_chat_mode
     rate_limit_start, rate_count = db.get_chat_rate_limit(chat_id)
@@ -334,7 +382,6 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     n_message_chunks = 0
     current_message_chunk_index = 0
     n_sent_chunks = 0
-    last_answer_message = None
     # handle too many tokens
     max_message_count = -1
 
@@ -372,13 +419,13 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
                 start_index = chuck_index * config.MESSAGE_MAX_LENGTH
                 end_index = (chuck_index + 1) * config.MESSAGE_MAX_LENGTH
                 message_chunk = answer[start_index:end_index]
-                if current_message_chunk_index < n_message_chunks - 1 or last_answer_message is None:
+                if current_message_chunk_index < n_message_chunks - 1 or placeholder is None:
                     # send a new message chunk
-                    last_answer_message = await update.effective_message.reply_text(message_chunk, parse_mode=parse_mode)
-                elif last_answer_message is not None:
+                    placeholder = await update.effective_message.reply_text(message_chunk, parse_mode=parse_mode)
+                elif placeholder is not None:
                     # update last message chunk
                     try:
-                        await context.bot.edit_message_text(message_chunk, chat_id=chat_id, message_id=last_answer_message.message_id, parse_mode=parse_mode)
+                        await placeholder.edit_text(message_chunk, parse_mode=parse_mode)
                     except telegram.error.BadRequest as e:
                         if str(e).startswith("Message is not modified"):
                             continue
@@ -826,6 +873,7 @@ def run_bot() -> None:
     application.add_handler(CommandHandler("proofreader", proofreader_message_handle, filters=user_filter))
     application.add_handler(CommandHandler("image", image_message_handle, filters=user_filter))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & user_filter, message_handle))
+    application.add_handler(MessageHandler(filters.VOICE & user_filter, voice_message_handle))
     application.add_error_handler(error_handle)
     
     # start the bot
