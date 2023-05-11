@@ -124,12 +124,15 @@ async def send_greeting(update: Update, context: CallbackContext, is_new_user=Fa
     text += _("🌎 Translate\n")
     text += _("✉️ Writing\n")
     text += _("🗂 Summarize\n")
-    text += _("✍️ Proofreading (/proofreader)\n")
     text += _("🤔 Provide ideas and solve problems\n")
     text += _("💻 Programming and debugging\n")
+    text += "\n"
+    text += _("<b>More than ChatGPT</b>\n")
+    text += _("🎙 Support voice messages\n")
+    text += _("✍️ Proofreading (/proofreader)\n")
     text += _("👨‍🎨 Generate images (/image)\n")
     text += _("🧙‍♀️ Chat with dream characters (/role)\n")
-    text += _("👥 To collaborate with a group, you can add @{} to a group chat as a member.\n").format(config.TELEGRAM_BOT_NAME)
+    text += _("👥 Group chat - add @{} to a group chat, then use /gpt to start.\n").format(config.TELEGRAM_BOT_NAME)
     text += _("💡 Subscribe to @ChatGPT_Prompts_Lab for more inspiration")
     text += "\n\n"
     text += _("<b>Service</b>\n")
@@ -248,6 +251,12 @@ async def proofreader_message_handle(update: Update, context: CallbackContext):
 
 def get_message_chunks(text, chuck_size=config.MESSAGE_MAX_LENGTH):
     return [text[i:i + chuck_size] for i in range(0, len(text), chuck_size)]
+
+def build_tips(tips, _):
+    text = "💡 " + _("<b>Tips</b>")
+    text += "\n"
+    text += "\n".join(map(lambda tip: "- " + tip, tips))
+    return text
 
 async def voice_message_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
@@ -581,7 +590,10 @@ async def set_chat_mode(update: Update, context: CallbackContext, chat_mode = No
     chat = update.effective_chat
     if chat.type != Chat.PRIVATE:
         text += "\n\n"
-        text += "💡 " + _("To continue the conversation in the group chat, please \"reply\" to my messages.")
+        text += build_tips([
+            _("To continue the conversation in the group chat, please \"reply\" to my messages."),
+            _("Please slow down your interactions with the chatbot as group chats can easily exceed the Telegram rate limit. "),
+        ], _)
 
     await reply_or_edit_text(update, text)
     if send_empty_message:
