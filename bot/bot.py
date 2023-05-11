@@ -128,7 +128,7 @@ async def send_greeting(update: Update, context: CallbackContext, is_new_user=Fa
     text += _("💻 Programming and debugging\n")
     text += "\n"
     text += _("<b>More than ChatGPT</b>\n")
-    text += _("🎙 Support voice messages\n")
+    text += _("🎙 Support voice messages (100 tokens/s when exceeding 10s)\n")
     text += _("✍️ Proofreading (/proofreader)\n")
     text += _("👨‍🎨 Generate images (/image)\n")
     text += _("🧙‍♀️ Chat with dream characters (/role)\n")
@@ -316,6 +316,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     _ = get_text_func(user)
 
     user_id = user.id
+    chat = update.effective_chat
 
     if chat_mode is None:
         chat_mode = db.get_current_chat_mode(chat_id)
@@ -358,9 +359,11 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     else:
         db.inc_chat_rate_count(chat_id)
 
+    rate_limit = 12 if chat.type == Chat.PRIVATE else 9
     # telegram flood control limit is 20 messages per minute, we set 12 to leave some budget
-    if rate_count >= 12:
-        await update.effective_message.reply_text(_("⚠️ This chat has exceeded the rate limit. Please wait for up to 60 seconds."), parse_mode=ParseMode.HTML)
+    if rate_count >= rate_limit:
+        if rate_count < rate_limit + 3:
+            await update.effective_message.reply_text(_("⚠️ This chat has exceeded the rate limit. Please wait for up to 60 seconds."), parse_mode=ParseMode.HTML)
         return
 
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
@@ -405,6 +408,10 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
         num_dialog_messages_removed = 0
         prev_answer = ""
+        stream_len = 100 if chat.type == Chat.PRIVATE else 150
+
+        if placeholder is None:
+            placeholder = await update.effective_message.reply_text("...")
         
         async for buffer in stream:
             
@@ -412,7 +419,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
             num_dialog_messages_removed += n_first_dialog_messages_removed
 
-            if not finished and len(answer) - len(prev_answer) < 100:
+            if not finished and len(answer) - len(prev_answer) < stream_len:
                 # reduce edit message requests
                 continue
             prev_answer = answer
@@ -428,6 +435,8 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
                 start_index = chuck_index * config.MESSAGE_MAX_LENGTH
                 end_index = (chuck_index + 1) * config.MESSAGE_MAX_LENGTH
                 message_chunk = answer[start_index:end_index]
+                if not finished:
+                    message_chunk += " ..."
                 if current_message_chunk_index < n_message_chunks - 1 or placeholder is None:
                     # send a new message chunk
                     placeholder = await update.effective_message.reply_text(message_chunk, parse_mode=parse_mode)
