@@ -1,5 +1,11 @@
+import os
 import re, csv
+import functools
+import operator
 from TTS.api import TTS
+from pydub import AudioSegment
+
+TEXT_MAX_LENGTH = 250
 
 _models = TTS().list_models()
 
@@ -51,6 +57,22 @@ def _remove_emojis(data):
 def tts(text, output, model=None):
     try:
         text = _remove_emojis(text)
+        if len(text) > TEXT_MAX_LENGTH:
+            chunks = []
+            chunk = ""
+            # TODO: consider question mark as well
+            sentences = text.split(".")
+            for s in sentences:
+                if len(chunk) + len(s) + 1 > TEXT_MAX_LENGTH:
+                    chunks.append(chunk)
+                    chunk = ""
+                chunk += s + "."
+            if chunk:
+                chunks.append(chunk)
+                
+            print(f"text length exceeds coqui limit, split it into {len(chunks)} chunks")
+        else:
+            chunks = [text]
         m = _get_model(model)
         if m:
             is_multi_dataset = "multi-dataset" in m.model_name
@@ -60,12 +82,39 @@ def tts(text, output, model=None):
                 args['speaker'] = m.speakers[0]
             if is_multilingual:
                 args['language'] = m.languages[0]
-            m.tts_to_file(
-                text=text, 
-                file_path=output, 
-                emotion="Happy", 
-                speed=1, 
-                **args)
+
+            if len(chunks) == 1:
+                print(f"tts_to_file len: {len(text)}")
+                m.tts_to_file(
+                    text=text, 
+                    file_path=output, 
+                    emotion="Happy", 
+                    speed=1, 
+                    **args)
+            else:
+                basename, ext = os.path.splitext(output)
+                format = ext[1:]
+                filenames = []
+                for i, chunk in enumerate(chunks):
+                    print(f"tts_to_file len: {len(chunk)}")
+                    filename = f"{basename}{i}{ext}"
+                    m.tts_to_file(
+                        text=chunk, 
+                        file_path=filename, 
+                        emotion="Happy", 
+                        speed=1, 
+                        **args)
+                    filenames.append(filename)
+                    print(f"tts_to_file {filename}")
+
+                print(f"combine {len(filenames)} audios")
+                segments = [AudioSegment.from_file(filename, format=format) for filename in filenames]
+                combined = functools.reduce(operator.add, segments)
+                combined.export(output, format=format)
+
+                # cleanup
+                for filename in filenames:
+                    os.remove(filename)
             return output
     except Exception as e:
         print(e)
