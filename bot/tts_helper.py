@@ -53,26 +53,36 @@ def _remove_emojis(data):
         u"\u3030"
                       "]+", re.UNICODE)
     return re.sub(emoj, '', data)
+
+def _split_text(text, sep, max_length):
+    result = []
+    start = 0
+    while start < len(text):
+        end = min(len(text), start + max_length)
+        if end == len(text):
+            result.append(text[start:end])
+            break
+        elif text[end-1] in sep:
+            result.append(text[start:end])
+            start = end
+        else:
+            found = False
+            for i in range(end-1, start-1, -1):
+                if text[i] in sep:
+                    result.append(text[start:i+1])
+                    start = i+1
+                    found = True
+                    break
+            if not found:
+                result.append(text[start:end])
+                start = end
+    return result
+
     
 def tts(text, output, model=None):
     try:
         text = _remove_emojis(text)
-        if len(text) > TEXT_MAX_LENGTH:
-            chunks = []
-            chunk = ""
-            # TODO: consider question mark as well
-            sentences = text.split(".")
-            for s in sentences:
-                if len(chunk) + len(s) + 1 > TEXT_MAX_LENGTH:
-                    chunks.append(chunk)
-                    chunk = ""
-                chunk += s + "."
-            if chunk:
-                chunks.append(chunk)
-                
-            print(f"text length exceeds coqui limit, split it into {len(chunks)} chunks")
-        else:
-            chunks = [text]
+        chunks = _split_text(text, ['.', '?', '!'], TEXT_MAX_LENGTH)
         m = _get_model(model)
         if m:
             is_multi_dataset = "multi-dataset" in m.model_name
