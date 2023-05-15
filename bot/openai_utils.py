@@ -97,16 +97,18 @@ def reply_content(response, model, stream=False):
         raise NotImplementedError(f"""reply_content() is not implemented for model {model}.""")
     
 async def create_request(prompt, model, max_tokens=None, stream=False):
-    if model == "gpt-3.5-turbo":
-        return await openai.ChatCompletion.acreate(
-            model=model,
-            messages=prompt,
-            # request_timeout=config.OPENAI_TIMEOUT,
-            max_tokens=max_tokens,
-            stream=stream,
-        )
+    args = {}
+    if openai.api_type == "azure":
+        args["engine"] = model
     else:
-        raise NotImplementedError(f"""create_request() is not implemented for model {model}.""")
+        args["model"] = model
+    return await openai.ChatCompletion.acreate(
+        messages=prompt,
+        # request_timeout=config.OPENAI_TIMEOUT,
+        max_tokens=max_tokens,
+        stream=stream,
+        **args,
+    )
     
 async def create_image(prompt):
     response = await openai.Image.acreate(

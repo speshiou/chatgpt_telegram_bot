@@ -8,10 +8,12 @@ import openai_utils
 import chatgpt
 import tts_helper
 from pygame import mixer
+import openai
 
 parser = argparse.ArgumentParser(prog='prompt tester')
 parser.add_argument('-p', '--prompts')
 parser.add_argument('-t', '--tts')
+parser.add_argument('--azure', action='store_true')
 args = parser.parse_args()
 
 if args.prompts:
@@ -19,6 +21,12 @@ if args.prompts:
 
 if args.tts:
     tts_helper.MODELS = tts_helper.load_models(args.tts)
+
+if args.azure:
+    openai.api_type = "azure"
+    openai.api_base = config.AZURE_OPENAI_API_BASE
+    openai.api_version = config.AZURE_OPENAI_API_VERSION
+    openai.api_key = config.AZURE_OPENAI_API_KEY
 
 WAV_OUTPUT_PATH = "tmp.wav"
 

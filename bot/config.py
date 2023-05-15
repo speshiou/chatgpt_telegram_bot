@@ -83,7 +83,12 @@ if os.getenv('GPT_PROMPTS'):
 TELEGRAM_BOT_NAME = os.getenv('TELEGRAM_BOT_NAME')
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 MESSAGE_MAX_LENGTH = 4000
+# OpenAI official API
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+# OpenAI API on Azure
+AZURE_OPENAI_API_BASE = os.getenv('AZURE_OPENAI_API_BASE')
+AZURE_OPENAI_API_VERSION = os.getenv('AZURE_OPENAI_API_VERSION')
+AZURE_OPENAI_API_KEY = os.getenv('AZURE_OPENAI_API_KEY')
 # request timeout in seconds
 OPENAI_TIMEOUT = 90
 # whisper api has 25MB of file size limit, set 20MB to maintain buffer

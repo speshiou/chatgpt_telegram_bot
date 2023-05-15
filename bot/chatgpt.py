@@ -15,6 +15,11 @@ SUPPORTED_CHAT_MODELS = set([
     MODEL_GPT_35_TURBO,
 ])
 
+def _model_name(model):
+    if openai.api_type == "azure":
+        return model.replace(".", "")
+    return model
+
 async def send_message(message, dialog_messages=[], system_prompt=None, max_tokens=MODEL_MAX_TOKENS, stream=False):
     model = OPENAI_CHAT_MODEL
     if max_tokens is None:
@@ -40,7 +45,7 @@ async def send_message(message, dialog_messages=[], system_prompt=None, max_toke
             max_tokens = max_tokens - num_prompt_tokens
             max_tokens = max(MIN_TOKENS, max_tokens)
 
-            r = await openai_utils.create_request(prompt, model, max_tokens=max_tokens, stream=stream)
+            r = await openai_utils.create_request(prompt, _model_name(model), max_tokens=max_tokens, stream=stream)
 
             if stream:
                 async for buffer in r:
