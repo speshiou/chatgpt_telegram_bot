@@ -39,6 +39,7 @@ def get_commands(lang=i18n.DEFAULT_LOCALE):
     return [
         BotCommand("gpt", _("switch to ChatGPT mode")),
         BotCommand("proofreader", _("switch to Proofreader mode")),
+        BotCommand("dictionary", _("switch to Dictionary mode")),
         BotCommand("image", _("generate images ({} tokens)").format(config.DALLE_TOKENS)),
         BotCommand("role", _("chat with dream characters")),
         BotCommand("reset", _("start a new conversation")),
@@ -194,6 +195,14 @@ async def retry_handle(update: Update, context: CallbackContext):
 
     await message_handle(update, context, message=last_dialog_message["user"], use_new_dialog_timeout=False)
 
+def parse_command(message):
+    if not message.strip():
+        return None
+    m = re.match(f"\/([^\s]+)(@{config.TELEGRAM_BOT_NAME})?", message, re.DOTALL)
+    if m:
+        return m[1].strip()
+    return None
+
 def strip_command(message):
     if not message.strip():
         return None
@@ -230,7 +239,7 @@ async def group_chat_message_handle(update: Update, context: CallbackContext):
     
     await set_chat_mode(update, context, "chatgpt")
 
-async def proofreader_message_handle(update: Update, context: CallbackContext):
+async def common_command_handle(update: Update, context: CallbackContext):
     # check if message is edited
     if update.edited_message is not None:
         await edited_message_handle(update, context)
@@ -242,11 +251,19 @@ async def proofreader_message_handle(update: Update, context: CallbackContext):
 
     _ = get_text_func(user)
 
+    command = parse_command(update.message.text)
     message = strip_command(update.message.text)
+
+    chat_mode = command if command in config.CHAT_MODES else None
+
+    if not chat_mode:
+        print(f"WARNING: invalid command: {command}")
+        return
+
     if message:
-        await message_handle(update, context, message=message, chat_mode="proofreader")
+        await message_handle(update, context, message=message, chat_mode=chat_mode)
     else:
-        await set_chat_mode(update, context, "proofreader")
+        await set_chat_mode(update, context, chat_mode)
     return
 
 def get_message_chunks(text, chuck_size=config.MESSAGE_MAX_LENGTH):
@@ -328,7 +345,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         chat_mode = list(config.CHAT_MODES.keys())[0]
         # lead to timeout process
         messages = None
-    elif chat_mode == "proofreader":
+    elif "disable_history" in config.CHAT_MODES[chat_mode]:
         # to keep the language of input message, not to send chat history to model
         messages = []
         push_new_message = False
@@ -891,7 +908,8 @@ def run_bot() -> None:
     application.add_handler(CommandHandler("language", show_languages_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(set_language_handle, pattern="^set_language"))
     application.add_handler(CommandHandler("gpt", group_chat_message_handle, filters=user_filter))
-    application.add_handler(CommandHandler("proofreader", proofreader_message_handle, filters=user_filter))
+    application.add_handler(CommandHandler("proofreader", common_command_handle, filters=user_filter))
+    application.add_handler(CommandHandler("dictionary", common_command_handle, filters=user_filter))
     application.add_handler(CommandHandler("image", image_message_handle, filters=user_filter))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & user_filter, message_handle))
     application.add_handler(MessageHandler(filters.VOICE & user_filter, voice_message_handle))
