@@ -13,6 +13,7 @@ import openai
 parser = argparse.ArgumentParser(prog='prompt tester')
 parser.add_argument('-p', '--prompts')
 parser.add_argument('-t', '--tts')
+parser.add_argument('-r', '--role')
 parser.add_argument('--azure', action='store_true')
 args = parser.parse_args()
 
@@ -66,7 +67,10 @@ def print_roles():
 
 async def test():
     dialog = []
-    role = list(config.CHAT_MODES.keys())[0]
+    if args.role and args.role in config.CHAT_MODES:
+        role = args.role
+    else:
+        role = list(config.CHAT_MODES.keys())[0]
     while True:
         if not dialog:
             print("Now you're talking to {}\n".format(config.CHAT_MODES[role]["name"]))
@@ -109,8 +113,9 @@ async def test():
                 output = tts_helper.tts(answer, output=WAV_OUTPUT_PATH, model=role)
                 if output:
                     play_audio(output)
-            # add messages to context
-            dialog.append({"user": text, "bot": answer})
+            if "disable_history" not in config.CHAT_MODES[role]:
+                # add messages to context
+                dialog.append({"user": text, "bot": answer})
 
 if __name__ == "__main__":
     openai_utils.print_gpt_models()
