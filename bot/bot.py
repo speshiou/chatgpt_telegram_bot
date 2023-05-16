@@ -198,7 +198,7 @@ async def retry_handle(update: Update, context: CallbackContext):
 def parse_command(message):
     if not message.strip():
         return None
-    m = re.match(f"\/([^\s]+)(@{config.TELEGRAM_BOT_NAME})?", message, re.DOTALL)
+    m = re.match(f"\/([^\s@]+)(@{config.TELEGRAM_BOT_NAME})?", message, re.DOTALL)
     if m:
         return m[1].strip()
     return None
@@ -228,17 +228,6 @@ async def send_openai_error(update: Update, context: CallbackContext, e: Excepti
     # printing stack trace
     traceback.print_exc()
 
-async def group_chat_message_handle(update: Update, context: CallbackContext):
-    # check if message is edited
-    if update.edited_message is not None:
-        await edited_message_handle(update, context)
-        return
-    user = await register_user_if_not_exists(update, context)
-    if not user:
-        return
-    
-    await set_chat_mode(update, context, "chatgpt")
-
 async def common_command_handle(update: Update, context: CallbackContext):
     # check if message is edited
     if update.edited_message is not None:
@@ -252,6 +241,8 @@ async def common_command_handle(update: Update, context: CallbackContext):
     _ = get_text_func(user)
 
     command = parse_command(update.message.text)
+    if command == "gpt":
+        command = "chatgpt"
     message = strip_command(update.message.text)
 
     chat_mode = command if command in config.CHAT_MODES else None
@@ -907,7 +898,7 @@ def run_bot() -> None:
     application.add_handler(CommandHandler("earn", show_earn_handle, filters=user_filter))
     application.add_handler(CommandHandler("language", show_languages_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(set_language_handle, pattern="^set_language"))
-    application.add_handler(CommandHandler("gpt", group_chat_message_handle, filters=user_filter))
+    application.add_handler(CommandHandler("gpt", common_command_handle, filters=user_filter))
     application.add_handler(CommandHandler("proofreader", common_command_handle, filters=user_filter))
     application.add_handler(CommandHandler("dictionary", common_command_handle, filters=user_filter))
     application.add_handler(CommandHandler("image", image_message_handle, filters=user_filter))
