@@ -23,12 +23,6 @@ if args.prompts:
 if args.tts:
     config.TTS_MODELS = config.load_tts_models(args.tts)
 
-if args.azure:
-    openai.api_type = "azure"
-    openai.api_base = config.AZURE_OPENAI_API_BASE
-    openai.api_version = config.AZURE_OPENAI_API_VERSION
-    openai.api_key = config.AZURE_OPENAI_API_KEY
-
 WAV_OUTPUT_PATH = "tmp.wav"
 
 LINE_LENGTH = 60
@@ -88,7 +82,12 @@ async def test():
                 continue
 
         system_prompt = config.CHAT_MODES[role]["prompt"]
-        stream = chatgpt.send_message(text, dialog, system_prompt, stream=True)
+
+        api_type = "azure" if args.azure else config.DEFAULT_OPENAI_API_TYPE
+        if api_type != config.DEFAULT_OPENAI_API_TYPE and "api_type" in config.CHAT_MODES[role]:
+            api_type = config.CHAT_MODES[role]["api_type"]
+        
+        stream = chatgpt.send_message(text, dialog, system_prompt, stream=True, api_type=api_type)
         answer = None
         current_line_index = 0
         async for buffer in stream:

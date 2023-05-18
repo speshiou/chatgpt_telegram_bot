@@ -406,12 +406,17 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     max_message_count = -1
 
     try:
+        api_type = config.OPENAI_CHAT_API_TYPE
+        if api_type != config.DEFAULT_OPENAI_API_TYPE and "api_type" in config.CHAT_MODES[chat_mode]:
+            api_type = config.CHAT_MODES[chat_mode]["api_type"]
+
         stream = chatgpt.send_message(
             message,
             dialog_messages=messages,
             system_prompt=system_prompt,
             max_tokens=max_tokens,
-            stream=config.STREAM_ENABLED
+            stream=config.STREAM_ENABLED,
+            api_type=api_type,
         )
 
         num_dialog_messages_removed = 0

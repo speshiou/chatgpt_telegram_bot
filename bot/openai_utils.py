@@ -1,5 +1,6 @@
 import tiktoken
 import openai
+import config
 
 def print_gpt_models():
     # list models
@@ -96,15 +97,22 @@ def reply_content(response, model, stream=False):
     else:
         raise NotImplementedError(f"""reply_content() is not implemented for model {model}.""")
     
-async def create_request(prompt, model, max_tokens=None, stream=False):
+async def create_request(prompt, model, max_tokens=None, stream=False, api_type=None):
     args = {}
-    if openai.api_type == "azure":
+    if api_type == "azure":
         args["engine"] = model
+        args["api_type"] = api_type
+        args["api_base"] = config.AZURE_OPENAI_API_BASE
+        args["api_version"] = config.AZURE_OPENAI_API_VERSION
+        args["api_key"] = config.AZURE_OPENAI_API_KEY
     else:
         args["model"] = model
+        args["api_type"] = config.DEFAULT_OPENAI_API_TYPE
+        args["api_key"] = config.OPENAI_API_KEY
+
     return await openai.ChatCompletion.acreate(
         messages=prompt,
-        # request_timeout=config.OPENAI_TIMEOUT,
+        request_timeout=config.OPENAI_TIMEOUT,
         max_tokens=max_tokens,
         stream=stream,
         **args,
@@ -114,11 +122,18 @@ async def create_image(prompt):
     response = await openai.Image.acreate(
         prompt=prompt,
         n=1,
-        size="1024x1024"
+        size="1024x1024",
+        api_type=config.DEFAULT_OPENAI_API_TYPE,
+        api_key=config.OPENAI_API_KEY,
     )
     return response['data'][0]['url']
 
 async def audio_transcribe(filename):
     audio_file= open(filename, "rb")
-    response = openai.Audio.transcribe("whisper-1", audio_file)
+    response = openai.Audio.transcribe(
+        "whisper-1", 
+        audio_file, 
+        api_type=config.DEFAULT_OPENAI_API_TYPE,
+        api_key=config.OPENAI_API_KEY,
+        )
     return response['text']

@@ -76,11 +76,12 @@ def load_prompts(tsv):
     with open(tsv, "r") as file:
         tsv_file = csv.reader(file, delimiter="\t")
         for line in tsv_file:
-            icon, role, prompt = line
+            icon, role, api_type, prompt = line
             key = role.lower().replace(" ", "_")
             prompts[key] = {
                 "icon": icon,
                 "name": role,
+                "api_type": api_type,
                 "prompt": prompt,
             }
     return prompts
@@ -117,11 +118,18 @@ TELEGRAM_BOT_NAME = os.getenv('TELEGRAM_BOT_NAME')
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 MESSAGE_MAX_LENGTH = 4000
 # OpenAI official API
+DEFAULT_OPENAI_API_TYPE = "open_ai"
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+OPENAI_CHAT_API_TYPE = os.getenv('OPENAI_CHAT_API_TYPE', DEFAULT_OPENAI_API_TYPE)
+if not OPENAI_CHAT_API_TYPE:
+    OPENAI_CHAT_API_TYPE = DEFAULT_OPENAI_API_TYPE
 # OpenAI API on Azure
 AZURE_OPENAI_API_BASE = os.getenv('AZURE_OPENAI_API_BASE')
 AZURE_OPENAI_API_VERSION = os.getenv('AZURE_OPENAI_API_VERSION')
 AZURE_OPENAI_API_KEY = os.getenv('AZURE_OPENAI_API_KEY')
+if not AZURE_OPENAI_API_BASE or not AZURE_OPENAI_API_VERSION or not AZURE_OPENAI_API_KEY:
+    # fallback to official OpenAI base if Azure is not set up properly
+    OPENAI_CHAT_API_TYPE = DEFAULT_OPENAI_API_TYPE
 # request timeout in seconds
 OPENAI_TIMEOUT = 10
 # whisper api has 25MB of file size limit, set 20MB to maintain buffer
