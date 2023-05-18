@@ -21,7 +21,7 @@ if args.prompts:
     config.CHAT_MODES = { **config.CHAT_MODES, **config.load_prompts(args.prompts) }
 
 if args.tts:
-    tts_helper.MODELS = tts_helper.load_models(args.tts)
+    config.TTS_MODELS = config.load_tts_models(args.tts)
 
 if args.azure:
     openai.api_type = "azure"
@@ -109,8 +109,9 @@ async def test():
         print()
 
         if answer is not None:
-            if args.tts:
-                output = tts_helper.tts(answer, output=WAV_OUTPUT_PATH, model=role)
+            if args.tts and role in config.TTS_MODELS:
+                tts_model = config.TTS_MODELS[role]
+                output = tts_helper.tts(answer, output=WAV_OUTPUT_PATH, model=tts_model)
                 if output:
                     play_audio(output)
             if "disable_history" not in config.CHAT_MODES[role]:

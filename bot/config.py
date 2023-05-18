@@ -85,6 +85,16 @@ def load_prompts(tsv):
             }
     return prompts
 
+def load_tts_models(tsv):
+    models = {}
+    with open(tsv) as file:
+        tsv_file = csv.reader(file, delimiter="\t")
+        for line in tsv_file:
+            role, model = line
+            key = role.lower().replace(" ", "_")
+            models[key] = model
+    return models
+
 MONGODB_PORT = os.getenv('MONGODB_PORT', 27017)
 MONGODB_URI = f"mongodb://mongo:{MONGODB_PORT}"
 
@@ -98,6 +108,11 @@ IMAGE_TIMEOUT = _env_parse_int('IMAGE_TIMEOUT', 60)
 if os.getenv('GPT_PROMPTS'):
     CHAT_MODES = { **CHAT_MODES, **load_prompts(os.getenv('GPT_PROMPTS')) }
 
+TTS_MODELS = {}
+# TTS models
+if os.getenv('TTS_MODELS'):
+    TTS_MODELS = { **TTS_MODELS, **load_tts_models(os.getenv('TTS_MODELS')) }
+
 TELEGRAM_BOT_NAME = os.getenv('TELEGRAM_BOT_NAME')
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 MESSAGE_MAX_LENGTH = 4000
@@ -108,13 +123,17 @@ AZURE_OPENAI_API_BASE = os.getenv('AZURE_OPENAI_API_BASE')
 AZURE_OPENAI_API_VERSION = os.getenv('AZURE_OPENAI_API_VERSION')
 AZURE_OPENAI_API_KEY = os.getenv('AZURE_OPENAI_API_KEY')
 # request timeout in seconds
-OPENAI_TIMEOUT = 90
+OPENAI_TIMEOUT = 10
 # whisper api has 25MB of file size limit, set 20MB to maintain buffer
 WHISPER_FILE_SIZE_LIMIT = 20 * 1000 * 1000
 # in seconds
 WHISPER_FREE_QUOTA = 10
 # cost per second
 WHISPER_TOKENS = 100
+# TTS per second
+COQUI_TOKENS = 200
+# duration per character in second
+TTS_ESTIMATED_DURATION_BASE = 0.05
 STREAM_ENABLED = True
 ALLOWED_TELEGRAM_USERNAMES = _env_parse_str_array('ALLOWED_TELEGRAM_USERNAMES')
 DEFAULT_CHAT_MODE = "assistant"
