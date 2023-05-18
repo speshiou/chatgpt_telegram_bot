@@ -131,7 +131,7 @@ if not AZURE_OPENAI_API_BASE or not AZURE_OPENAI_API_VERSION or not AZURE_OPENAI
     # fallback to official OpenAI base if Azure is not set up properly
     OPENAI_CHAT_API_TYPE = DEFAULT_OPENAI_API_TYPE
 # request timeout in seconds
-OPENAI_TIMEOUT = 10
+OPENAI_TIMEOUT = 60
 # whisper api has 25MB of file size limit, set 20MB to maintain buffer
 WHISPER_FILE_SIZE_LIMIT = 20 * 1000 * 1000
 # in seconds
