@@ -272,11 +272,22 @@ async def voice_message_handle(update: Update, context: CallbackContext):
 
     placeholder = None
     try:
-        placeholder = await update.effective_message.reply_text("🎙 " + _("Decoding voice message ..."))
-
         voice = update.message.voice
         print(voice)
         duration = voice.duration
+
+        # check balance
+        used_tokens = 0
+        if duration > config.WHISPER_FREE_QUOTA:
+            used_tokens = (duration - config.WHISPER_FREE_QUOTA) * config.WHISPER_TOKENS
+
+        remaining_tokens = db.get_user_remaining_tokens(user.id)
+        if remaining_tokens < used_tokens:
+            await update.message.reply_text(_("⚠️ Insufficient tokens. You need {} tokens to decode this voice message. Check /balance").format(used_tokens), parse_mode=ParseMode.HTML)
+            return
+        
+        placeholder = await update.effective_message.reply_text("🎙 " + _("Decoding voice message ..."))
+
         file_id = voice.file_id
         type = voice.mime_type.split("/")[1]
         new_file = await context.bot.get_file(file_id)
@@ -294,8 +305,7 @@ async def voice_message_handle(update: Update, context: CallbackContext):
         print(f"size: {file_size}/{config.WHISPER_FILE_SIZE_LIMIT}")
         if file_size < config.WHISPER_FILE_SIZE_LIMIT:
             text = await openai_utils.audio_transcribe(filename)
-            if duration > config.WHISPER_FREE_QUOTA:
-                used_tokens = (duration - config.WHISPER_FREE_QUOTA) * config.WHISPER_TOKENS
+            if used_tokens > 0:
                 print(f"voice used tokens: {used_tokens}")
                 db.inc_user_used_tokens(user.id, used_tokens)
             await message_handle(update, context, text, placeholder=placeholder)
