@@ -504,8 +504,8 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         await update.effective_message.reply_text(_("⚠️ Require {} tokens to process the input text, check /balance").format(e.args[1]), parse_mode=ParseMode.HTML)
     except Exception as e:
         await send_openai_error(update, context, e)
-        return
     
+    # TODO: consume tokens even if an exception occurs
     # consume tokens and append the message record to db
     if sent_answer is not None and used_tokens is not None:
         if push_new_message:
