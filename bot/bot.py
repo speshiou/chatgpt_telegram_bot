@@ -26,6 +26,7 @@ import config
 import database
 import openai_utils
 import chatgpt
+import tts_helper
 import api
 import i18n
 import bugreport
@@ -521,6 +522,20 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
         # IMPORTANT: consume tokens in the end of function call to protect users' credits
         db.inc_user_used_tokens(user_id, used_tokens)
+
+        await send_voice_message(update, context, sent_answer, chat_mode)
+
+async def send_voice_message(update: Update, context: CallbackContext, message: str, chat_mode: str):
+    if chat_mode not in config.TTS_MODELS:
+        return
+    
+    tts_model = config.TTS_MODELS[chat_mode]
+    output = await tts_helper.tts(message, output="test.wav", model=tts_model)
+    if output:
+        seg = AudioSegment.from_wav(output)
+        ogg_filename = os.path.splitext(output)[0] + ".ogg"
+        seg.export(ogg_filename, format='ogg')
+        await update.effective_message.reply_voice(ogg_filename)
 
 async def image_message_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
