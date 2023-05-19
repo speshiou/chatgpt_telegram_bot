@@ -49,6 +49,7 @@ def load_settings(db: Database, chat_id: int, _):
             "hide_tips_bullet": True,
             "value": current_chat_mode,
             "disable_check_mark": True,
+            "num_keyboard_cols": 2,
             "options": _chat_mode_options()
         },
         "voice_mode": {
@@ -72,7 +73,7 @@ def load_settings(db: Database, chat_id: int, _):
             ]
         },
         "timeout": {
-            "icon": "⏱",
+            "icon": "⏳",
             "name": _("Chat Timeout"),
             "desc": _("Setting a proper timeout can help reduce token consumption. When a timeout occurs, the chatbot will not generate an answer based on previous chat history.\n\nYou can also use /reset to clear chat history manually."),
             "value": timeout,
@@ -138,6 +139,14 @@ def build_tips(tips, _, title=None, hide_bullet=False):
     text += "\n".join(map(lambda tip: bullet + tip, tips))
     return text
 
+def build_keyboard_rows(buttons, num_keyboard_cols):
+    keyboard_rows = []
+    num_buttons = len(buttons)
+    for i in range(0, num_buttons, num_keyboard_cols):
+        end = min(i + num_keyboard_cols, num_buttons)
+        keyboard_rows.append(buttons[i:end])
+    return keyboard_rows
+
 def settings(db: Database, chat_id: int, _, data: str = None):
     if data and "|" in data:
         # save settings
@@ -154,25 +163,44 @@ def settings(db: Database, chat_id: int, _, data: str = None):
     segs = data.split(">") if data else []
 
     keyboard = []
+    num_keyboard_cols = 1
 
     title_format = "{} <b>{}</b>"
 
+    text = ""
+    reply_markup = None
+
     if len(segs) <= 1:
         # main setting menu
+        num_keyboard_cols = 2
+
         text = title_format.format("⚙️", _("Settings"))
+        info = []
         for key, setting in settings.items():
             value = setting["value"]
             label = value
             for option in setting["options"]:
                 if value == option["value"]:
                     label = option["label"]
-            keyboard.append([InlineKeyboardButton("{} {} - {}".format(setting["icon"], setting["name"], label), callback_data=f"settings>{key}")])
-        keyboard.append([InlineKeyboardButton("ℹ️ " + _("About"), callback_data=f"about")])
+            keyboard.append(InlineKeyboardButton("{} {}".format(setting["icon"], setting["name"]), callback_data=f"settings>{key}"))
+
+            info.append("<b>{}</b>: {}".format(setting["name"], label))
+        keyboard.append(InlineKeyboardButton("ℹ️ " + _("About"), callback_data=f"about"))
+
+        text += "\n\n"
+        text += "\n".join(info)
+
+        keyboard_rows = build_keyboard_rows(keyboard, num_keyboard_cols=num_keyboard_cols)
+        reply_markup = InlineKeyboardMarkup(keyboard_rows)
     else:
         # sub setting menu
         setting_key = segs[-1]
         if setting_key in settings:
             setting = settings[setting_key]
+
+            if "num_keyboard_cols" in setting:
+                num_keyboard_cols = setting["num_keyboard_cols"]
+
             text = title_format.format(setting["icon"], setting["name"])
 
             if "desc" in setting:
@@ -186,13 +214,14 @@ def settings(db: Database, chat_id: int, _, data: str = None):
 
                 callback_value = option["value"] if option["value"] is not None else ""
                 callback_data = option["callback"] if "callback" in option else f"settings|{setting_key}|{callback_value}"
-                keyboard.append([InlineKeyboardButton(label, callback_data=callback_data)])
+                keyboard.append(InlineKeyboardButton(label, callback_data=callback_data))
 
-            keyboard.append([InlineKeyboardButton("< " + _("Back"), callback_data="settings")])
+            keyboard_rows = build_keyboard_rows(keyboard, num_keyboard_cols=num_keyboard_cols)
+            keyboard_rows.append([InlineKeyboardButton("< " + _("Back"), callback_data="settings")])
+            reply_markup = InlineKeyboardMarkup(keyboard_rows)
         else:
             text = "⚠️ " + _("This setting is outdated")
 
-    reply_markup = InlineKeyboardMarkup(keyboard)
 
     return text, reply_markup
 

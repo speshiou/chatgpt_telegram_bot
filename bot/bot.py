@@ -491,6 +491,7 @@ async def send_voice_message(update: Update, context: CallbackContext, message: 
     if output:
         seg = AudioSegment.from_wav(output)
         ogg_filename = os.path.splitext(output)[0] + ".ogg"
+        # must use OPUS codec to show spectrogram on Telegram
         seg.export(ogg_filename, format='ogg', codec="libopus")
         await update.effective_message.reply_voice(ogg_filename)
 
