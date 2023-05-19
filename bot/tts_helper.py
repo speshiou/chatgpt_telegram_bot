@@ -1,25 +1,14 @@
 import os
 import re
+import aiohttp
+import json
 import functools
 import operator
-from TTS.api import TTS
 from pydub import AudioSegment
 
+import config
+
 TEXT_MAX_LENGTH = 250
-
-_models = TTS().list_models()
-[print(model) for model in _models]
-
-_cache = {}
-
-def _get_model(model):
-    if model not in _cache:
-        full_model_name = model if model in _models else None
-        if full_model_name is None:
-            return None
-        tts = TTS(model_name=full_model_name, progress_bar=False, gpu=False)
-        _cache[model] = tts
-    return _cache[model]
     
 def _remove_emojis(data):
     emoj = re.compile("["
@@ -68,45 +57,59 @@ def _split_text(text, sep, max_length):
                 start = end
     return result
 
+async def _tts(voice_id, text, emotion="Neutral", speed=1):
+    url = 'https://app.coqui.ai/api/v2/samples'
+    headers = {
+        'accept': 'application/json',
+        'authorization': f'Bearer {config.COQUI_STUDIO_TOKEN}',
+        'content-type': 'application/json',
+    }
+    payload = {
+        "emotion": emotion,
+        "speed": speed,
+        "voice_id": voice_id,
+        "text": text
+    }
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, headers=headers, data=json.dumps(payload)) as response:
+            data = await response.json()
+            return data["id"], data["audio_url"]
+
+async def _download(url, filename):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            with open(filename, 'wb') as f:
+                while True:
+                    chunk = await response.content.read(1024)
+                    if not chunk:
+                        break
+                    f.write(chunk)
+
     
-def tts(text, output, model=None):
+async def tts(text, output, model):
     try:
         text = _remove_emojis(text)
         chunks = _split_text(text, ['.', '?', '!'], TEXT_MAX_LENGTH)
-        m = _get_model(model)
-        if not m:
-            return None
-        is_multi_dataset = "multi-dataset" in m.model_name
-        is_multilingual = "multilingual" in m.model_name
-        args = {}
-        if is_multi_dataset:
-            args['speaker'] = m.speakers[0]
-        if is_multilingual:
-            args['language'] = m.languages[0]
+
 
         basename, ext = os.path.splitext(output)
         format = ext[1:]
 
+        emotion = "Happy"
+        speed = 1
+
         if len(chunks) == 1:
             print(f"tts_to_file len: {len(text)}")
-            m.tts_to_file(
-                text=text, 
-                file_path=output, 
-                emotion="Happy", 
-                speed=1, 
-                **args)
+            id, url = await _tts(model, text, emotion=emotion, speed=speed)
+            await _download(url, output)
             final_seg = AudioSegment.from_file(output, format=format)
         else:
             filenames = []
             for i, chunk in enumerate(chunks):
                 print(f"tts_to_file len: {len(chunk)}")
                 filename = f"{basename}{i}{ext}"
-                m.tts_to_file(
-                    text=chunk, 
-                    file_path=filename, 
-                    emotion="Happy", 
-                    speed=1, 
-                    **args)
+                id, url = await _tts(model, chunk, emotion=emotion, speed=speed)
+                await _download(url, filename)
                 filenames.append(filename)
                 print(f"tts_to_file {filename}")
 

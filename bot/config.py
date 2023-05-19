@@ -109,6 +109,8 @@ IMAGE_TIMEOUT = _env_parse_int('IMAGE_TIMEOUT', 60)
 if os.getenv('GPT_PROMPTS'):
     CHAT_MODES = { **CHAT_MODES, **load_prompts(os.getenv('GPT_PROMPTS')) }
 
+# coqui
+COQUI_STUDIO_TOKEN = os.getenv('COQUI_STUDIO_TOKEN')
 TTS_MODELS = {}
 # TTS models
 if os.getenv('TTS_MODELS'):

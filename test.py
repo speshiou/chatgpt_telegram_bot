@@ -110,7 +110,7 @@ async def test():
         if answer is not None:
             if args.tts and role in config.TTS_MODELS:
                 tts_model = config.TTS_MODELS[role]
-                output = tts_helper.tts(answer, output=WAV_OUTPUT_PATH, model=tts_model)
+                output = await tts_helper.tts(answer, output=WAV_OUTPUT_PATH, model=tts_model)
                 if output:
                     play_audio(output)
             if "disable_history" not in config.CHAT_MODES[role]:
