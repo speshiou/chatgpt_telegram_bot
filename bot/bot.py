@@ -47,8 +47,8 @@ def get_commands(lang=i18n.DEFAULT_LOCALE):
         BotCommand("reset", _("start a new conversation")),
         BotCommand("retry", _("regenerate last answer")),
         BotCommand("balance", _("check balance")),
+        BotCommand("settings", _("settings")),
         # BotCommand("earn", _("earn rewards by referral")),
-        BotCommand("settings", _("Settings")),
     ]
 
 async def register_user_if_not_exists(update: Update, context: CallbackContext, referred_by: int = None):
@@ -89,7 +89,7 @@ async def reply_or_edit_text(update: Update, text: str, parse_mode: ParseMode = 
             reply_markup=reply_markup,
             disable_web_page_preview=disable_web_page_preview,
         )
-    else:
+    elif update.callback_query:
         query = update.callback_query
         await query.edit_message_text(
             text,
@@ -731,7 +731,7 @@ async def show_payment_methods(update: Update, context: CallbackContext):
         [InlineKeyboardButton(_("💎 Crypto"), callback_data=f"payment|crypto|{amount}|{tokens_amount}")]
     ])
 
-    await update.effective_message.reply_text(
+    await query.edit_message_text(
         text,
         parse_mode=ParseMode.HTML,
         reply_markup=reply_markup
@@ -795,6 +795,8 @@ async def show_invoice(update: Update, context: CallbackContext):
 async def settings_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
     chat_id = update.effective_chat.id
+    chat_mode = db.get_current_chat_mode(chat_id)
+    db.upsert_chat(chat_id, chat_mode, clear_messages=False)
     _ = get_text_func(user)
 
     query = update.callback_query
@@ -802,29 +804,13 @@ async def settings_handle(update: Update, context: CallbackContext):
         await query.answer()
 
     data = query.data if query else None
-    text, reply_markup = ui.settings(db, chat_id, _, data=data)
 
-    await reply_or_edit_text(update, text, reply_markup=reply_markup)
+    if data and data.startswith("about"):
+        text, reply_markup = ui.about(_)
+    else:
+        text, reply_markup = ui.settings(db, chat_id, _, data=data)
 
-async def about_handle(update: Update, context: CallbackContext):
-    user = await register_user_if_not_exists(update, context)
-    db.set_user_attribute(user.id, "last_interaction", datetime.now())
-    chat_id = update.effective_chat.id
-    _ = get_text_func(user)
-
-    query = update.callback_query
-    if query:
-        await query.answer()
-    
-    text, reply_markup = ui.about(_)
-    
-    await reply_or_edit_text(
-        update,
-        text, 
-        parse_mode=ParseMode.HTML,
-        reply_markup=reply_markup,
-        disable_web_page_preview=True,
-        )
+    await reply_or_edit_text(update, text, reply_markup=reply_markup, disable_web_page_preview=True)
 
 async def show_earn_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
@@ -921,8 +907,7 @@ def run_bot() -> None:
     application.add_handler(CommandHandler("dictionary", common_command_handle, filters=user_filter))
     application.add_handler(CommandHandler("image", image_message_handle, filters=user_filter))
     application.add_handler(CommandHandler("settings", settings_handle, filters=user_filter))
-    application.add_handler(CallbackQueryHandler(settings_handle, pattern="^settings"))
-    application.add_handler(CallbackQueryHandler(about_handle, pattern="^about"))
+    application.add_handler(CallbackQueryHandler(settings_handle, pattern="^(settings|about)"))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & user_filter, message_handle))
     application.add_handler(MessageHandler(filters.VOICE & user_filter, voice_message_handle))
     application.add_error_handler(error_handle)

@@ -54,7 +54,7 @@ class Database:
 
         self.user_collection.update_one(query, update, upsert=True)
 
-    def upsert_chat(self, chat_id: int, chat_mode=config.DEFAULT_CHAT_MODE):
+    def upsert_chat(self, chat_id: int, chat_mode=config.DEFAULT_CHAT_MODE, clear_messages=True):
         default_data = {
             "first_seen": datetime.now(),
             "used_tokens": 0,
@@ -63,8 +63,12 @@ class Database:
         data = {
             "current_chat_mode": chat_mode,
             "last_interaction": datetime.now(),
-            "messages": [],
         }
+
+        if clear_messages:
+            data["messages"] = []
+        else:
+            default_data["messages"] = []
 
         query = {"_id": chat_id}
         update = {
