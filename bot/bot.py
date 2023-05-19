@@ -247,7 +247,7 @@ async def voice_message_handle(update: Update, context: CallbackContext):
         file_id = voice.file_id
         type = voice.mime_type.split("/")[1]
         new_file = await context.bot.get_file(file_id)
-        src_filename = os.path.join('tmp/voice', file_id)
+        src_filename = os.path.join(config.AUDIO_FILE_TMP_DIR, file_id)
         filename = src_filename
         await new_file.download_to_drive(src_filename)
         if type not in ['m4a', 'mp3', 'webm', 'mp4', 'mpga', 'wav', 'mpeg']:
@@ -363,6 +363,8 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
     if message is None:
         message = update.effective_message.text
+
+    voice_placeholder = placeholder    
     answer = None
     sent_answer = None
     used_tokens = None
@@ -480,20 +482,59 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         # IMPORTANT: consume tokens in the end of function call to protect users' credits
         db.inc_user_used_tokens(user_id, used_tokens)
 
-        await send_voice_message(update, context, sent_answer, chat_mode)
+        await send_voice_message(update, context, sent_answer, chat_mode, placeholder=voice_placeholder)
 
-async def send_voice_message(update: Update, context: CallbackContext, message: str, chat_mode: str):
+async def send_voice_message(update: Update, context: CallbackContext, message: str, chat_mode: str, placeholder = None):
     if chat_mode not in config.TTS_MODELS:
         return
     
-    tts_model = config.TTS_MODELS[chat_mode]
-    output = await tts_helper.tts(message, output="test.wav", model=tts_model)
-    if output:
-        seg = AudioSegment.from_wav(output)
-        ogg_filename = os.path.splitext(output)[0] + ".ogg"
-        # must use OPUS codec to show spectrogram on Telegram
-        seg.export(ogg_filename, format='ogg', codec="libopus")
-        await update.effective_message.reply_voice(ogg_filename)
+    user = await register_user_if_not_exists(update, context)
+    chat_id = get_chat_id(update)
+    _ = get_text_func(user)
+
+    limit = 600
+    if len(message) > limit:
+        print("[TTS] message too long")
+        message = message[:limit]
+
+    # estimate token amount
+    used_tokens = config.TTS_ESTIMATED_DURATION_BASE * len(message) * config.COQUI_TOKENS
+    print(f"[TTS] estimated used tokens: {used_tokens}")
+    if used_tokens > db.get_user_remaining_tokens(user.id):
+        await update.effective_message.reply_text("⚠️ " + _("Insufficient tokens. You need {} tokens to generate this voice message. Check /balance").format(used_tokens))
+        return
+
+    if placeholder is None:
+        placeholder = await update.effective_message.reply_text("🗣 " + _("Recording ..."))
+
+    try:
+        tts_model = config.TTS_MODELS[chat_mode]
+        filename = os.path.join(config.AUDIO_FILE_TMP_DIR, "{}-{}-{}.wav".format(chat_id, user.id, datetime.now()))
+        output = await tts_helper.tts(message, output=filename, model=tts_model)
+        if output:
+            seg = AudioSegment.from_wav(output)
+            # recalculate real token amount
+            used_tokens = int(seg.duration_seconds * config.COQUI_TOKENS)
+            ogg_filename = os.path.splitext(output)[0] + ".ogg"
+            # must use OPUS codec to show spectrogram on Telegram
+            seg.export(ogg_filename, format='ogg', codec="libopus")
+            try:
+                # in case the user deletes the placeholders manually
+                if placeholder is not None:
+                    await placeholder.delete()
+            except Exception as e:
+                print(e)
+            await update.effective_message.reply_voice(ogg_filename)
+            db.inc_user_used_tokens(user.id, used_tokens)
+            print(f"[TTS] real used tokens: {used_tokens}")
+            # clean up
+            if os.path.exists(output):
+                os.remove(output)
+            if os.path.exists(ogg_filename):
+                os.remove(ogg_filename)
+    except Exception as e:
+        print(e)
+        await update.effective_message.reply_text("⚠️ " + _("Failed to generate the voice message, please try again later."))
 
 async def image_message_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
@@ -530,7 +571,11 @@ async def image_message_handle(update: Update, context: CallbackContext):
         db.mark_user_is_generating_image(user_id, True)
         placeholder = await update.message.reply_text(_("👨‍🎨 painting ..."))
         image_url = await openai_utils.create_image(message)
-        await placeholder.delete()
+        try:
+            # in case the user deletes the placeholders manually
+            await placeholder.delete()
+        except Exception as e:
+            print(e)
         await update.message.reply_photo(image_url)
         db.inc_user_used_tokens(user_id, used_tokens)
         db.mark_user_is_generating_image(user_id, False)

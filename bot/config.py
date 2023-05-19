@@ -117,6 +117,7 @@ TTS_MODELS = {}
 # TTS models
 if os.getenv('TTS_MODELS'):
     TTS_MODELS = { **TTS_MODELS, **load_tts_models(os.getenv('TTS_MODELS')) }
+AUDIO_FILE_TMP_DIR = 'tmp/voice'
 
 TELEGRAM_BOT_NAME = os.getenv('TELEGRAM_BOT_NAME')
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
