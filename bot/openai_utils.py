@@ -112,7 +112,7 @@ async def create_request(prompt, model, max_tokens=None, stream=False, api_type=
 
     return await openai.ChatCompletion.acreate(
         messages=prompt,
-        request_timeout=config.OPENAI_TIMEOUT,
+        # request_timeout=config.OPENAI_TIMEOUT,
         max_tokens=max_tokens,
         stream=stream,
         **args,
