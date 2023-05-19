@@ -93,6 +93,13 @@ class Database:
     
     def inc_chat_rate_count(self, chat_id: int):
         self.chat_collection.update_one({"_id": chat_id}, {"$inc": { 'rate_count': 1}})
+
+    def set_chat_attribute(self, chat_id: int, field: str, value):
+        self.chat_collection.update_one({"_id": chat_id}, {
+            "$set": { 
+                field: value,
+            }
+        })
     
     def reset_chat_rate_limit(self, chat_id: int):
         self.chat_collection.update_one({"_id": chat_id}, {
@@ -104,6 +111,16 @@ class Database:
 
     def get_current_chat_mode(self, chat_id: int):
         return self.get_chat_attribute(chat_id, 'current_chat_mode') or config.DEFAULT_CHAT_MODE
+    
+    def get_chat_voice_mode(self, chat_id: int):
+        return self.get_chat_attribute(chat_id, 'voice_mode') or "text"
+    
+    def get_chat_timeout(self, chat_id: int):
+        timeout = self.get_chat_attribute(chat_id, 'timeout')
+        return timeout if timeout is not None else config.DEFAULT_CHAT_TIMEOUT
+    
+    def get_chat_lang(self, chat_id: int):
+        return self.get_chat_attribute(chat_id, 'lang')
 
     def reset_chat(self, chat_id: int, chat_mode=None):
         self.upsert_chat(chat_id, chat_mode)

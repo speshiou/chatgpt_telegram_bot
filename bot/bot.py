@@ -28,6 +28,7 @@ import openai_utils
 import chatgpt
 import tts_helper
 import api
+import ui
 import i18n
 import bugreport
 
@@ -47,8 +48,7 @@ def get_commands(lang=i18n.DEFAULT_LOCALE):
         BotCommand("retry", _("regenerate last answer")),
         BotCommand("balance", _("check balance")),
         # BotCommand("earn", _("earn rewards by referral")),
-        BotCommand("language", _("set UI language")),
-        BotCommand("about", _("about this chatbot")),
+        BotCommand("settings", _("Settings")),
     ]
 
 async def register_user_if_not_exists(update: Update, context: CallbackContext, referred_by: int = None):
@@ -113,50 +113,6 @@ def get_text_func(user):
         lang = None
     return i18n.get_text_func(lang)
 
-async def send_greeting(update: Update, context: CallbackContext, is_new_user=False):
-    user = await register_user_if_not_exists(update, context)
-    lang = db.get_user_preferred_language(user.id) or user.language_code
-    _ = i18n.get_text_func(lang)
-
-    commands_text = "".join([f"/{c.command} - {c.description}\n" for c in get_commands(lang)])
-
-    text = _("Hi! I'm an AI chatbot powered by OpenAI's GPT and DALL·E models.")
-    text += "\n\n"
-    text += _("<b>What can I do for you?</b>\n")
-    text += _("🌎 Translate\n")
-    text += _("✉️ Writing\n")
-    text += _("🗂 Summarize\n")
-    text += _("🤔 Provide ideas and solve problems\n")
-    text += _("💻 Programming and debugging\n")
-    text += "\n"
-    text += _("<b>More than ChatGPT</b>\n")
-    text += _("🎙 Support voice messages (100 tokens/s when exceeding 10s)\n")
-    text += _("✍️ Proofreading (/proofreader)\n")
-    text += _("👨‍🎨 Generate images (/image)\n")
-    text += _("🧙‍♀️ Chat with dream characters (/role)\n")
-    text += _("👥 Group chat - add @{} to a group chat, then use /gpt to start.\n").format(config.TELEGRAM_BOT_NAME)
-    text += _("💡 Subscribe to @ChatGPT_Prompts_Lab for more inspiration")
-    text += "\n\n"
-    text += _("<b>Service</b>\n")
-    text += _("⚙️ open the menu below to see full functions\n")
-    text += _("❓ <a href=\"{}\">FAQ</a>\n").format("https://tgchat.co/faq")
-    text += _("🗣 <a href=\"{}\">Feedback</a>\n").format("https://t.me/gpt_chatbot_support")
-    text += "\n"
-    text += _("""By using this chatbot, you agree to our <a href="{}">terms of service</a> and <a href="{}">privacy policy</a>.""").format("https://tgchat.co/terms-of-service", "https://tgchat.co/privacy-policy")
-    
-    await reply_or_edit_text(
-        update,
-        text, 
-        parse_mode=ParseMode.HTML,
-        disable_web_page_preview=True,
-        )
-    
-    if is_new_user and update.message:
-        await update.message.reply_text(
-            _("✅ {:,} free tokens have been credited, check /balance").format(config.FREE_QUOTA), 
-            parse_mode=ParseMode.HTML,
-            )
-
 async def start_handle(update: Update, context: CallbackContext):
     chat = update.effective_chat
     if chat.type != Chat.PRIVATE:
@@ -170,11 +126,16 @@ async def start_handle(update: Update, context: CallbackContext):
     m = re.match("\/start u(\d+)", message_text)
     referred_by = int(m[1]) if m else None
 
-    await register_user_if_not_exists(update, context, referred_by=referred_by)
+    user = await register_user_if_not_exists(update, context, referred_by=referred_by)
+    _ = get_text_func(user)
 
-    db.set_user_attribute(user_id, "last_interaction", datetime.now())
-    
-    await send_greeting(update, context, is_new_user=is_new_user)
+    await about_handle(update, context)
+
+    if is_new_user and update.message:
+        await update.message.reply_text(
+            _("✅ {:,} free tokens have been credited, check /balance").format(config.FREE_QUOTA), 
+            parse_mode=ParseMode.HTML,
+            )
 
 async def retry_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
@@ -351,6 +312,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         # to keep the language of input message, not to send chat history to model
         messages = []
         push_new_message = False
+        use_new_dialog_timeout = False
     else:
         # load chat history to context
         messages = db.get_chat_messages(chat_id)
@@ -360,11 +322,12 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     # new dialog timeout
     if use_new_dialog_timeout:
         last_chat_time = db.get_last_chat_time(chat_id)
+        timeout = db.get_chat_timeout(chat_id)
         if messages is None or last_chat_time is None:
             # first launch
             await set_chat_mode(update, context, chat_mode)
             messages = []
-        elif (datetime.now() - last_chat_time).total_seconds() > config.NEW_DIALOG_TIMEOUT:
+        elif timeout > 0 and (datetime.now() - last_chat_time).total_seconds() > timeout:
             # timeout
             await set_chat_mode(update, context, chat_mode, reason="timeout")
             messages = []
@@ -709,45 +672,6 @@ async def show_balance_handle(update: Update, context: CallbackContext):
 
     await update.message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=reply_markup, disable_web_page_preview=True)
 
-async def show_languages_handle(update: Update, context: CallbackContext):
-    user = await register_user_if_not_exists(update, context)
-    _ = get_text_func(user)
-
-    chat = update.effective_chat
-    if chat.type != Chat.PRIVATE:
-        text = _("💡 Please contact @{} directly to set UI language").format(config.TELEGRAM_BOT_NAME)
-        await update.message.reply_text(text)
-        return
-
-    reply_markup = InlineKeyboardMarkup([
-        [
-            InlineKeyboardButton("English", callback_data="set_language|en"),
-        ],
-        [
-            InlineKeyboardButton("简体中文", callback_data="set_language|zh_CN"),
-        ],
-        [
-            InlineKeyboardButton("繁體中文", callback_data="set_language|zh_TW"),
-        ],
-    ])
-
-    await reply_or_edit_text(
-        update,
-        _("🌐 Select preferred UI language"),
-        reply_markup=reply_markup,
-    )
-
-async def set_language_handle(update: Update, context: CallbackContext):
-    user = await register_user_if_not_exists(update, context)
-
-    query = update.callback_query
-    await query.answer()
-    language = query.data.split("|")[1]
-
-    db.set_user_attribute(user.id, 'preferred_lang', language)
-
-    await send_greeting(update, context)
-
 def price_to_tokens(price: float):
     return int(price / config.TOKEN_PRICE * 1000)
 
@@ -835,6 +759,40 @@ async def show_invoice(update: Update, context: CallbackContext):
         reply_markup=reply_markup
     )
 
+async def settings_handle(update: Update, context: CallbackContext):
+    user = await register_user_if_not_exists(update, context)
+    chat_id = update.effective_chat.id
+    _ = get_text_func(user)
+
+    query = update.callback_query
+    if query:
+        await query.answer()
+
+    data = query.data if query else None
+    text, reply_markup = ui.settings(db, chat_id, _, data=data)
+
+    await reply_or_edit_text(update, text, reply_markup=reply_markup)
+
+async def about_handle(update: Update, context: CallbackContext):
+    user = await register_user_if_not_exists(update, context)
+    db.set_user_attribute(user.id, "last_interaction", datetime.now())
+    chat_id = update.effective_chat.id
+    _ = get_text_func(user)
+
+    query = update.callback_query
+    if query:
+        await query.answer()
+    
+    text, reply_markup = ui.about(_)
+    
+    await reply_or_edit_text(
+        update,
+        text, 
+        parse_mode=ParseMode.HTML,
+        reply_markup=reply_markup,
+        disable_web_page_preview=True,
+        )
+
 async def show_earn_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
     _ = get_text_func(user)
@@ -917,7 +875,6 @@ def run_bot() -> None:
         user_filter = filters.User(username=config.ALLOWED_TELEGRAM_USERNAMES)
 
     application.add_handler(CommandHandler("start", start_handle, filters=user_filter))
-    application.add_handler(CommandHandler("about", start_handle, filters=user_filter))
     application.add_handler(CommandHandler("retry", retry_handle, filters=user_filter))
     application.add_handler(CommandHandler("reset", reset_handle, filters=user_filter))
     application.add_handler(CommandHandler("role", show_chat_modes_handle, filters=user_filter))
@@ -926,12 +883,13 @@ def run_bot() -> None:
     application.add_handler(CallbackQueryHandler(show_payment_methods, pattern="^top_up\|(\d)+"))
     application.add_handler(CallbackQueryHandler(show_invoice, pattern="^payment\|"))
     application.add_handler(CommandHandler("earn", show_earn_handle, filters=user_filter))
-    application.add_handler(CommandHandler("language", show_languages_handle, filters=user_filter))
-    application.add_handler(CallbackQueryHandler(set_language_handle, pattern="^set_language"))
     application.add_handler(CommandHandler("gpt", common_command_handle, filters=user_filter))
     application.add_handler(CommandHandler("proofreader", common_command_handle, filters=user_filter))
     application.add_handler(CommandHandler("dictionary", common_command_handle, filters=user_filter))
     application.add_handler(CommandHandler("image", image_message_handle, filters=user_filter))
+    application.add_handler(CommandHandler("settings", settings_handle, filters=user_filter))
+    application.add_handler(CallbackQueryHandler(settings_handle, pattern="^settings"))
+    application.add_handler(CallbackQueryHandler(about_handle, pattern="^about"))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & user_filter, message_handle))
     application.add_handler(MessageHandler(filters.VOICE & user_filter, voice_message_handle))
     application.add_error_handler(error_handle)
