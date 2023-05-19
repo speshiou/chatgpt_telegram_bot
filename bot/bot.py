@@ -222,12 +222,6 @@ async def common_command_handle(update: Update, context: CallbackContext):
 def get_message_chunks(text, chuck_size=config.MESSAGE_MAX_LENGTH):
     return [text[i:i + chuck_size] for i in range(0, len(text), chuck_size)]
 
-def build_tips(tips, _):
-    text = "💡 " + _("<b>Tips</b>")
-    text += "\n"
-    text += "\n".join(map(lambda tip: "- " + tip, tips))
-    return text
-
 async def voice_message_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
     _ = get_text_func(user)
@@ -552,18 +546,10 @@ async def show_chat_modes_handle(update: Update, context: CallbackContext):
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
     _ = get_text_func(user)
+    chat_id = get_chat_id(update)
 
-    keyboard = []
-    for chat_mode, role in config.CHAT_MODES.items():
-        keyboard.append([InlineKeyboardButton(role["icon"] + " " + role["name"], callback_data=f"set_chat_mode|{chat_mode}")])
-    reply_markup = InlineKeyboardMarkup(keyboard)
-
-    text = _("🤩 Chat with characters in your dreams")
-    text += "\n\n"
-    text += _("🤥 Everything Characters say is made up! Don't trust everything they say or take them too seriously.")
-    text += "\n\n"
-    text += _("💡 More roles are coming soon. Stay tuned!")
-    await update.message.reply_text(text, reply_markup=reply_markup)
+    text, reply_markup = ui.settings(db, chat_id, _, "settings>current_chat_mode")
+    await update.message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=reply_markup)
 
 async def set_chat_mode(update: Update, context: CallbackContext, chat_mode = None, reason: str = None):
     user = await register_user_if_not_exists(update, context)
@@ -589,6 +575,7 @@ async def set_chat_mode(update: Update, context: CallbackContext, chat_mode = No
     icon_prefix = config.CHAT_MODES[chat_mode]["icon"] + " " if "icon" in config.CHAT_MODES[chat_mode] else ""
     if reason == "timeout":
         text = icon_prefix + _("It's been a long time since we talked, and I've forgotten what we talked about before.")
+        text += " " + _("(set timeout in /settings)")
     elif reason == "reset":
         text = icon_prefix + _("I have already forgotten what we previously talked about.")
     elif "greeting" in config.CHAT_MODES[chat_mode]:
@@ -600,7 +587,7 @@ async def set_chat_mode(update: Update, context: CallbackContext, chat_mode = No
     chat = update.effective_chat
     if chat.type != Chat.PRIVATE:
         text += "\n\n"
-        text += build_tips([
+        text += ui.build_tips([
             _("To continue the conversation in the group chat, please \"reply\" to my messages."),
             _("Please slow down your interactions with the chatbot as group chats can easily exceed the Telegram rate limit. "),
         ], _)

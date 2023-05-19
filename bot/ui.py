@@ -4,6 +4,27 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 import config
 from database import Database
 
+def _chat_mode_options():
+    options = []
+    for chat_mode, role in config.CHAT_MODES.items():
+        label = "{} {}".format(role["icon"], role["name"])
+        bonus = []
+        if chat_mode in config.TTS_MODELS:
+            bonus.append("🗣")
+        if "disable_history" in role:
+            bonus.append("🌱")
+        if chat_mode in config.DEFAULT_CHAT_MODES:
+            bonus.append("⚡")
+
+        if len(bonus) > 0:
+            label += " ({})".format("".join(bonus))
+        options.append({ 
+            "label": label, 
+            "value": chat_mode, "callback": "set_chat_mode|" + chat_mode 
+        })
+    return options
+
+
 def load_settings(db: Database, chat_id: int, _):
     current_chat_mode = db.get_current_chat_mode(chat_id)
     if current_chat_mode not in config.CHAT_MODES:
@@ -17,9 +38,18 @@ def load_settings(db: Database, chat_id: int, _):
         "current_chat_mode": {
             "icon": "💬",
             "name": _("Chat Mode"),
+            "desc": build_tips([
+                _("⚡ Instant access, ex. /dictionary cat"),
+                _("🌱 Low token consumption, no chat history"),
+                _("🗣 Voice messages, check /settings"),
+            ], _, hide_bullet=True, title=_("<b>Features</b>")) + "\n\n" + build_tips([
+                _("🤥 Some characters are made up! Don't take them too seriously."),
+                _("🤩 More roles are coming soon. Stay tuned!"),
+            ], _, hide_bullet=True),
+            "hide_tips_bullet": True,
             "value": current_chat_mode,
             "disable_check_mark": True,
-            "options": [ { "label": "{} {}".format(role["icon"], role["name"]), "value": chat_mode, "callback": "set_chat_mode|" + chat_mode } for chat_mode, role in config.CHAT_MODES.items()]
+            "options": _chat_mode_options()
         },
         "voice_mode": {
             "icon": "🗣",
@@ -96,6 +126,17 @@ def load_settings(db: Database, chat_id: int, _):
     }
 
     return settings
+
+def build_tips(tips, _, title=None, hide_bullet=False):
+    bullet = "- " if not hide_bullet else ""
+
+    if title is None:
+        title = _("<b>Tips</b>")
+
+    text = title
+    text += "\n"
+    text += "\n".join(map(lambda tip: bullet + tip, tips))
+    return text
 
 def settings(db: Database, chat_id: int, _, data: str = None):
     if data and "|" in data:

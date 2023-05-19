@@ -4,7 +4,7 @@ import os, csv
 def _(text):
     return text
 
-CHAT_MODES = {
+DEFAULT_CHAT_MODES = {
     "chatgpt": {
         "icon": "🤖",
         "name": "ChatGPT",
@@ -40,6 +40,8 @@ list 5 of example sentences.
         """,
     },
 }
+
+CHAT_MODES = { **DEFAULT_CHAT_MODES }
 
 def _env_parse_int(name, default_value = None):
     value = os.getenv(name, default_value)
