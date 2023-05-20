@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-05-16 11:36+0800\n"
+"POT-Creation-Date: 2023-05-20 10:07+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,396 +15,300 @@ msgstr ""
 "Generated-By: pygettext.py 1.5\n"
 
 
-#: ./bot/bot.py:40
+#: ./bot/bot.py:42
 msgid "switch to ChatGPT mode"
 msgstr ""
 
-#: ./bot/bot.py:41
+#: ./bot/bot.py:43
 msgid "switch to Proofreader mode"
 msgstr ""
 
-#: ./bot/bot.py:42
+#: ./bot/bot.py:44
 msgid "switch to Dictionary mode"
 msgstr ""
 
-#: ./bot/bot.py:43
+#: ./bot/bot.py:45
 msgid "generate images ({} tokens)"
 msgstr ""
 
-#: ./bot/bot.py:44
+#: ./bot/bot.py:46
 msgid "chat with dream characters"
 msgstr ""
 
-#: ./bot/bot.py:45
+#: ./bot/bot.py:47
 msgid "start a new conversation"
 msgstr ""
 
-#: ./bot/bot.py:46
+#: ./bot/bot.py:48
 msgid "regenerate last answer"
 msgstr ""
 
-#: ./bot/bot.py:47
+#: ./bot/bot.py:49
 msgid "check balance"
 msgstr ""
 
-#: ./bot/bot.py:49
-msgid "set UI language"
-msgstr ""
-
 #: ./bot/bot.py:50
-msgid "about this chatbot"
-msgstr ""
-
-#: ./bot/bot.py:122
-msgid "Hi! I'm an AI chatbot powered by OpenAI's GPT and DALL·E models."
-msgstr ""
-
-#: ./bot/bot.py:124
-msgid ""
-"<b>What can I do for you?</b>\n"
-msgstr ""
-
-#: ./bot/bot.py:125
-msgid ""
-"🌎 Translate\n"
-msgstr ""
-
-#: ./bot/bot.py:126
-msgid ""
-"✉️ Writing\n"
-msgstr ""
-
-#: ./bot/bot.py:127
-msgid ""
-"🗂 Summarize\n"
-msgstr ""
-
-#: ./bot/bot.py:128
-msgid ""
-"🤔 Provide ideas and solve problems\n"
+msgid "settings"
 msgstr ""
 
 #: ./bot/bot.py:129
-msgid ""
-"💻 Programming and debugging\n"
-msgstr ""
-
-#: ./bot/bot.py:131
-msgid ""
-"<b>More than ChatGPT</b>\n"
-msgstr ""
-
-#: ./bot/bot.py:132
-msgid ""
-"🎙 Support voice messages (100 tokens/s when exceeding 10s)\n"
-msgstr ""
-
-#: ./bot/bot.py:133
-msgid ""
-"✍️ Proofreading (/proofreader)\n"
-msgstr ""
-
-#: ./bot/bot.py:134
-msgid ""
-"👨‍🎨 Generate images (/image)\n"
-msgstr ""
-
-#: ./bot/bot.py:135
-msgid ""
-"🧙‍♀️ Chat with dream characters (/role)\n"
-msgstr ""
-
-#: ./bot/bot.py:136
-msgid ""
-"👥 Group chat - add @{} to a group chat, then use /gpt to start.\n"
-msgstr ""
-
-#: ./bot/bot.py:137
-msgid "💡 Subscribe to @ChatGPT_Prompts_Lab for more inspiration"
-msgstr ""
-
-#: ./bot/bot.py:139
-msgid ""
-"<b>Service</b>\n"
-msgstr ""
-
-#: ./bot/bot.py:140
-msgid ""
-"⚙️ open the menu below to see full functions\n"
-msgstr ""
-
-#: ./bot/bot.py:141
-msgid ""
-"❓ <a href=\"{}\">FAQ</a>\n"
-msgstr ""
-
-#: ./bot/bot.py:142
-msgid ""
-"🗣 <a href=\"{}\">Feedback</a>\n"
-msgstr ""
-
-#: ./bot/bot.py:144
-msgid "By using this chatbot, you agree to our <a href=\"{}\">terms of service</a> and <a href=\"{}\">privacy policy</a>."
-msgstr ""
-
-#: ./bot/bot.py:155
 msgid "✅ {:,} free tokens have been credited, check /balance"
 msgstr ""
 
-#: ./bot/bot.py:190
+#: ./bot/bot.py:143
 msgid "😅 No conversation history to retry"
 msgstr ""
 
-#: ./bot/bot.py:217
+#: ./bot/bot.py:171
 msgid "Temporary OpenAI server failure, please try again later."
 msgstr ""
 
-#: ./bot/bot.py:221
+#: ./bot/bot.py:175
 msgid "Reason: {}"
 msgstr ""
 
-#: ./bot/bot.py:264
-msgid "<b>Tips</b>"
+#: ./bot/bot.py:236
+msgid "⚠️ Insufficient tokens. You need {} tokens to decode this voice message. Check /balance"
 msgstr ""
 
-#: ./bot/bot.py:275
+#: ./bot/bot.py:239
 msgid "Decoding voice message ..."
 msgstr ""
 
-#: ./bot/bot.py:303
+#: ./bot/bot.py:263
 msgid "Voice data size exceeds 20MB limit"
 msgstr ""
 
-#: ./bot/bot.py:374
+#: ./bot/bot.py:334
 msgid "⚠️ This chat has exceeded the rate limit. Please wait for up to 60 seconds."
 msgstr ""
 
-#: ./bot/bot.py:393
+#: ./bot/bot.py:353
 msgid "⚠️ Insufficient tokens, check /balance"
 msgstr ""
 
-#: ./bot/bot.py:466
+#: ./bot/bot.py:437
 msgid "⚠️ The <b>first message</b> was removed from the context due to OpenAI's token amount limit. Use /reset to reset"
 msgstr ""
 
-#: ./bot/bot.py:468
+#: ./bot/bot.py:439
 msgid "⚠️ The <b>first {} messages</b> have removed from the context due to OpenAI's token amount limit. Use /reset to reset"
 msgstr ""
 
-#: ./bot/bot.py:476
+#: ./bot/bot.py:447
 msgid "⚠️ The answer was too long, has been splitted into multiple unformatted messages"
 msgstr ""
 
-#: ./bot/bot.py:489
+#: ./bot/bot.py:460
 msgid "⚠️ Require {} tokens to process the input text, check /balance"
 msgstr ""
 
-#: ./bot/bot.py:524
+#: ./bot/bot.py:501
+msgid "Insufficient tokens. You need {} tokens to generate this voice message. Check /balance"
+msgstr ""
+
+#: ./bot/bot.py:505
+msgid "Recording ..."
+msgstr ""
+
+#: ./bot/bot.py:533
+msgid "The voice message could not be created. Voice messages are only valid in English."
+msgstr ""
+
+#: ./bot/bot.py:543
+msgid "Failed to generate the voice message, please try again later."
+msgstr ""
+
+#: ./bot/bot.py:556
 msgid ""
 "💡 Please type /image and followed by the image prompt\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:525
+#: ./bot/bot.py:557
 msgid ""
 "<b>Example:</b> /image a cat wearing a spacesuit\n"
 msgstr ""
 
-#: ./bot/bot.py:526
+#: ./bot/bot.py:558
 msgid "<b>Price:</b> {} tokens per image"
 msgstr ""
 
-#: ./bot/bot.py:532
+#: ./bot/bot.py:564
 msgid "⚠️ Insufficient tokens. To generate an image, it will cost {} tokens. Check /balance"
 msgstr ""
 
-#: ./bot/bot.py:537
+#: ./bot/bot.py:569
 msgid "⚠️ It is only possible to generate one image at a time. Please wait for {} seconds to retry."
 msgstr ""
 
-#: ./bot/bot.py:543
+#: ./bot/bot.py:575
 msgid "👨‍🎨 painting ..."
 msgstr ""
 
-#: ./bot/bot.py:568
-msgid "🤩 Chat with characters in your dreams"
-msgstr ""
-
-#: ./bot/bot.py:570
-msgid "🤥 Everything Characters say is made up! Don't trust everything they say or take them too seriously."
-msgstr ""
-
-#: ./bot/bot.py:572
-msgid "💡 More roles are coming soon. Stay tuned!"
-msgstr ""
-
-#: ./bot/bot.py:598
+#: ./bot/bot.py:622
 msgid "It's been a long time since we talked, and I've forgotten what we talked about before."
 msgstr ""
 
-#: ./bot/bot.py:600
+#: ./bot/bot.py:623
+msgid "(/settings to change timeout)"
+msgstr ""
+
+#: ./bot/bot.py:625
 msgid "I have already forgotten what we previously talked about."
 msgstr ""
 
-#: ./bot/bot.py:604
+#: ./bot/bot.py:629
 msgid "You're now chatting with {} ..."
 msgstr ""
 
-#: ./bot/bot.py:611
+#: ./bot/bot.py:636
 msgid "To continue the conversation in the group chat, please \"reply\" to my messages."
 msgstr ""
 
-#: ./bot/bot.py:612
+#: ./bot/bot.py:637
 msgid "Please slow down your interactions with the chatbot as group chats can easily exceed the Telegram rate limit. "
 msgstr ""
 
-#: ./bot/bot.py:635
+#: ./bot/bot.py:661
 msgid "🔒 For privacy reason, your balance won't show in a group chat. Please contact @{} directly."
 msgstr ""
 
-#: ./bot/bot.py:644
+#: ./bot/bot.py:670
 msgid ""
 "👛 <b>Balance</b>\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:645
+#: ./bot/bot.py:671
 msgid ""
 "<b>{:,}</b> tokens left\n"
 msgstr ""
 
-#: ./bot/bot.py:646
+#: ./bot/bot.py:672
 msgid ""
 "<i>You used <b>{:,}</b> tokens</i>\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:647
+#: ./bot/bot.py:673
 msgid "<i>💡 The longer conversation would spend more tokens. /reset the chat. (<a href=\"{}\">Learn more</a>)</i>"
 msgstr ""
 
-#: ./bot/bot.py:688
-msgid "💡 Please contact @{} directly to set UI language"
-msgstr ""
-
-#: ./bot/bot.py:706
-msgid "🌐 Select preferred UI language"
-msgstr ""
-
-#: ./bot/bot.py:735
+#: ./bot/bot.py:723
 msgid "💡 Only accept number between 0.1 to 100"
 msgstr ""
 
-#: ./bot/bot.py:738
+#: ./bot/bot.py:726
 msgid ""
 "🛒 Choose the payment method\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:739
+#: ./bot/bot.py:727
 msgid ""
 "💳 Debit or Credit Card - support 200+ countries/regions\n"
 msgstr ""
 
-#: ./bot/bot.py:741
+#: ./bot/bot.py:729
 msgid ""
 "💎 Crypto - BTC, USDT, USDC, TON, BNB\n"
 msgstr ""
 
-#: ./bot/bot.py:743
+#: ./bot/bot.py:731
 msgid "💳 Debit or Credit Card"
 msgstr ""
 
-#: ./bot/bot.py:744
+#: ./bot/bot.py:732
 msgid "💎 Crypto"
 msgstr ""
 
-#: ./bot/bot.py:766
+#: ./bot/bot.py:755
 msgid "📋 Creating an invoice ..."
 msgstr ""
 
-#: ./bot/bot.py:773
+#: ./bot/bot.py:762
 msgid ""
 "📋 <b>Your invoice</b>:\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:778
+#: ./bot/bot.py:767
 msgid ""
 "💡 <b>Tips</b>:\n"
 msgstr ""
 
-#: ./bot/bot.py:784
+#: ./bot/bot.py:773
 msgid "If you do not have a PayPal account, click on the button located below the login button to pay with cards directly."
 msgstr ""
 
-#: ./bot/bot.py:785
+#: ./bot/bot.py:774
 msgid "💳 Pay with Debit or Credit Card"
 msgstr ""
 
-#: ./bot/bot.py:787
+#: ./bot/bot.py:776
 msgid "If you have any issues related to crypto payment, please contact the customer service in the payment page, or send messages to {} directly for assistance."
 msgstr ""
 
-#: ./bot/bot.py:788
+#: ./bot/bot.py:777
 msgid "💎 Pay with Crypto"
 msgstr ""
 
-#: ./bot/bot.py:790
+#: ./bot/bot.py:779
 msgid "Tokens will be credited within 10 minutes of payment."
 msgstr ""
 
-#: ./bot/bot.py:791
+#: ./bot/bot.py:780
 msgid "Please contact @gpt_chatbot_support if tokens are not received after 1 hour of payment."
 msgstr ""
 
-#: ./bot/bot.py:799
+#: ./bot/bot.py:788
 msgid "⚠️ Failed to create an invoice, please try again later."
 msgstr ""
 
-#: ./bot/bot.py:817
+#: ./bot/bot.py:828
 msgid ""
 "<b>💰 Earn</b>\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:819
+#: ./bot/bot.py:830
 msgid ""
 "Get %s%% rewards from the referred payments\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:820
+#: ./bot/bot.py:831
 msgid ""
 "Unused rewards: ${:,.2f}\n"
 msgstr ""
 
-#: ./bot/bot.py:821
+#: ./bot/bot.py:832
 msgid ""
 "Total earned: ${:,.2f}\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:822
+#: ./bot/bot.py:833
 msgid ""
 "Referral link:\n"
 msgstr ""
 
-#: ./bot/bot.py:824
+#: ./bot/bot.py:835
 msgid ""
 "<i>You have referred {:,} new users</i>\n"
 "\n"
 msgstr ""
 
-#: ./bot/bot.py:825
+#: ./bot/bot.py:836
 msgid "<i>💡 Refer the new users via your referral link, and you'll get a reward when they make a payment.</i>"
 msgstr ""
 
-#: ./bot/bot.py:827
+#: ./bot/bot.py:838
 msgid "⚠️ Server error, please try again later."
 msgstr ""
 
-#: ./bot/bot.py:835
+#: ./bot/bot.py:847
 msgid "💡 Edited messages won't take effects"
 msgstr ""
 
@@ -426,5 +330,204 @@ msgstr ""
 
 #: ./bot/config.py:29
 msgid "This is a dictionary where you can search for any words or phrases in various languages."
+msgstr ""
+
+#: ./bot/ui.py:40
+msgid "Chat Mode"
+msgstr ""
+
+#: ./bot/ui.py:42
+msgid "⚡ Instant access, ex. /dictionary cat"
+msgstr ""
+
+#: ./bot/ui.py:43
+msgid "🌱 Low cost, no chat history"
+msgstr ""
+
+#: ./bot/ui.py:44
+msgid "🗣 Voice messages (English), check /settings"
+msgstr ""
+
+#: ./bot/ui.py:45
+msgid "<b>Features</b>"
+msgstr ""
+
+#: ./bot/ui.py:46
+msgid "🤥 Some characters are made up! Don't take them too seriously."
+msgstr ""
+
+#: ./bot/ui.py:47
+msgid "🤩 More roles are coming soon. Stay tuned!"
+msgstr ""
+
+#: ./bot/ui.py:57
+msgid "Chat Voice"
+msgstr ""
+
+#: ./bot/ui.py:58
+msgid "This setting only applies to the character with 🗣 icon, see /role."
+msgstr ""
+
+#: ./bot/ui.py:60
+msgid "<b>Price:</b> {} tokens per second"
+msgstr ""
+
+#: ./bot/ui.py:63
+msgid "English only, please speak English to characters once you enable voice messages"
+msgstr ""
+
+#: ./bot/ui.py:64
+msgid "It costs roughly 500,000 tokens to have a 30-minute voice chat."
+msgstr ""
+
+#: ./bot/ui.py:69
+msgid "Text Only"
+msgstr ""
+
+#: ./bot/ui.py:77
+msgid "Text and Voice"
+msgstr ""
+
+#: ./bot/ui.py:84
+msgid "Chat Timeout"
+msgstr ""
+
+#: ./bot/ui.py:85
+msgid ""
+"Setting a proper timeout can help reduce token consumption. When a timeout occurs, the chatbot will not generate an answer based on previous chat history.\n"
+"\n"
+"You can also use /reset to clear chat history manually."
+msgstr ""
+
+#: ./bot/ui.py:89
+msgid "1 Hour"
+msgstr ""
+
+#: ./bot/ui.py:93
+msgid "6 Hours"
+msgstr ""
+
+#: ./bot/ui.py:97
+msgid "12 Hours"
+msgstr ""
+
+#: ./bot/ui.py:101
+msgid "24 Hours"
+msgstr ""
+
+#: ./bot/ui.py:105
+msgid "Never"
+msgstr ""
+
+#: ./bot/ui.py:112
+msgid "UI Language"
+msgstr ""
+
+#: ./bot/ui.py:113
+msgid "This setting won't effect the answers from the chatbot"
+msgstr ""
+
+#: ./bot/ui.py:129
+msgid "Not specify"
+msgstr ""
+
+#: ./bot/ui.py:142
+msgid "<b>Tips</b>"
+msgstr ""
+
+#: ./bot/ui.py:184 ./bot/ui.py:256
+msgid "Settings"
+msgstr ""
+
+#: ./bot/ui.py:195
+msgid "About"
+msgstr ""
+
+#: ./bot/ui.py:227
+msgid "Back"
+msgstr ""
+
+#: ./bot/ui.py:230
+msgid "This setting is outdated"
+msgstr ""
+
+#: ./bot/ui.py:236
+msgid "Hi! I'm an AI chatbot powered by OpenAI's GPT and DALL·E models."
+msgstr ""
+
+#: ./bot/ui.py:238
+msgid ""
+"<b>What can I do for you?</b>\n"
+msgstr ""
+
+#: ./bot/ui.py:239
+msgid ""
+"🌎 Translate\n"
+msgstr ""
+
+#: ./bot/ui.py:240
+msgid ""
+"✉️ Writing\n"
+msgstr ""
+
+#: ./bot/ui.py:241
+msgid ""
+"🗂 Summarize\n"
+msgstr ""
+
+#: ./bot/ui.py:242
+msgid ""
+"🤔 Provide ideas and solve problems\n"
+msgstr ""
+
+#: ./bot/ui.py:243
+msgid ""
+"💻 Programming and debugging\n"
+msgstr ""
+
+#: ./bot/ui.py:245
+msgid ""
+"<b>More than ChatGPT</b>\n"
+msgstr ""
+
+#: ./bot/ui.py:246
+msgid ""
+"🎙 Support voice messages (100 tokens/s when exceeding 10s)\n"
+msgstr ""
+
+#: ./bot/ui.py:247
+msgid ""
+"✍️ Proofreading (/proofreader)\n"
+msgstr ""
+
+#: ./bot/ui.py:248
+msgid ""
+"👨‍🎨 Generate images (/image)\n"
+msgstr ""
+
+#: ./bot/ui.py:249
+msgid ""
+"🧙‍♀️ Chat with dream characters (/role)\n"
+msgstr ""
+
+#: ./bot/ui.py:250
+msgid ""
+"👥 Group chat - add @{} to a group chat, then use /gpt to start.\n"
+msgstr ""
+
+#: ./bot/ui.py:251
+msgid "💡 Subscribe to @ChatGPT_Prompts_Lab for more inspiration"
+msgstr ""
+
+#: ./bot/ui.py:253
+msgid "By using this chatbot, you agree to our <a href=\"{}\">terms of service</a> and <a href=\"{}\">privacy policy</a>."
+msgstr ""
+
+#: ./bot/ui.py:258
+msgid "FAQ"
+msgstr ""
+
+#: ./bot/ui.py:259
+msgid "Feedback"
 msgstr ""
 

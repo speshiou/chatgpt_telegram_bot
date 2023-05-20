@@ -40,7 +40,7 @@ def load_settings(db: Database, chat_id: int, _):
             "name": _("Chat Mode"),
             "desc": build_tips([
                 _("⚡ Instant access, ex. /dictionary cat"),
-                _("🌱 Low token consumption, no chat history"),
+                _("🌱 Low cost, no chat history"),
                 _("🗣 Voice messages (English), check /settings"),
             ], _, hide_bullet=True, title=_("<b>Features</b>")) + "\n\n" + build_tips([
                 _("🤥 Some characters are made up! Don't take them too seriously."),
@@ -60,7 +60,8 @@ def load_settings(db: Database, chat_id: int, _):
                     + _("<b>Price:</b> {} tokens per second").format(config.COQUI_TOKENS)
                     + "\n\n"
                     + build_tips([
-                        _("English only, please speak English to characters once you enable voice messages")
+                        _("English only, please speak English to characters once you enable voice messages"),
+                        _("It costs roughly 500,000 tokens to have a 30-minute voice chat."),
                     ], _),
             "value": voice_mode,
             "options": [
