@@ -540,7 +540,9 @@ async def send_voice_message(update: Update, context: CallbackContext, message: 
                 await update.effective_message.reply_text(text)
     except Exception as e:
         print(e)
-        await update.effective_message.reply_text("⚠️ " + _("Failed to generate the voice message, please try again later."))
+        text = "⚠️ " + _("Failed to generate the voice message, please try again later.")
+        text += " " + _("Reason: {}").format(e)
+        await update.effective_message.reply_text(text)
 
 async def image_message_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)

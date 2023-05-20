@@ -72,8 +72,13 @@ async def _tts(voice_id, text, emotion="Neutral", speed=1):
     }
     async with aiohttp.ClientSession() as session:
         async with session.post(url, headers=headers, data=json.dumps(payload)) as response:
-            data = await response.json()
-            return data["id"], data["audio_url"]
+            if response.status == 200:
+                data = await response.json()
+                return data["id"], data["audio_url"]
+            else:
+                content = await response.text()
+                print(content)
+                raise Exception("temporary failure with the TTS server")
 
 async def _download(url, filename):
     async with aiohttp.ClientSession() as session:
@@ -87,45 +92,42 @@ async def _download(url, filename):
 
     
 async def tts(text, output, model):
-    try:
-        text = _remove_emojis(text)
-        chunks = _split_text(text, ['.', '?', '!'], TEXT_MAX_LENGTH)
+    text = _remove_emojis(text)
+    chunks = _split_text(text, ['.', '?', '!'], TEXT_MAX_LENGTH)
 
+    basename, ext = os.path.splitext(output)
+    format = ext[1:]
 
-        basename, ext = os.path.splitext(output)
-        format = ext[1:]
+    emotion = "Happy"
+    speed = 1
 
-        emotion = "Happy"
-        speed = 1
+    if len(chunks) == 0:
+        raise Exception("Voice messages only support English")
+    elif len(chunks) == 1:
+        print(f"tts_to_file len: {len(text)}")
+        id, url = await _tts(model, text, emotion=emotion, speed=speed)
+        await _download(url, output)
+        final_seg = AudioSegment.from_file(output, format=format)
+    else:
+        filenames = []
+        for i, chunk in enumerate(chunks):
+            print(f"tts_to_file len: {len(chunk)}")
+            filename = f"{basename}{i}{ext}"
+            id, url = await _tts(model, chunk, emotion=emotion, speed=speed)
+            await _download(url, filename)
+            filenames.append(filename)
+            print(f"tts_to_file {filename}")
 
-        if len(chunks) == 1:
-            print(f"tts_to_file len: {len(text)}")
-            id, url = await _tts(model, text, emotion=emotion, speed=speed)
-            await _download(url, output)
-            final_seg = AudioSegment.from_file(output, format=format)
-        else:
-            filenames = []
-            for i, chunk in enumerate(chunks):
-                print(f"tts_to_file len: {len(chunk)}")
-                filename = f"{basename}{i}{ext}"
-                id, url = await _tts(model, chunk, emotion=emotion, speed=speed)
-                await _download(url, filename)
-                filenames.append(filename)
-                print(f"tts_to_file {filename}")
+        print(f"combine {len(filenames)} audios")
+        segments = [AudioSegment.from_file(filename, format=format) for filename in filenames]
+        combined = functools.reduce(operator.add, segments)
+        combined.export(output, format=format)
+        final_seg = combined
 
-            print(f"combine {len(filenames)} audios")
-            segments = [AudioSegment.from_file(filename, format=format) for filename in filenames]
-            combined = functools.reduce(operator.add, segments)
-            combined.export(output, format=format)
-            final_seg = combined
+        # cleanup
+        for filename in filenames:
+            os.remove(filename)
 
-            # cleanup
-            for filename in filenames:
-                os.remove(filename)
-
-        print(f"tts_to_file len: {len(text)}, duration: {final_seg.duration_seconds}s")
-        return output
-    except Exception as e:
-        print(e)
-    return None
+    print(f"tts_to_file len: {len(text)}, duration: {final_seg.duration_seconds}s")
+    return output
 

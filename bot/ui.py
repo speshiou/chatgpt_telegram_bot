@@ -62,6 +62,7 @@ def load_settings(db: Database, chat_id: int, _):
                     + build_tips([
                         _("English only, please speak English to characters once you enable voice messages"),
                         _("It costs roughly 500,000 tokens to have a 30-minute voice chat."),
+                        _("The maximum length of the text is 600 characters."),
                     ], _),
             "value": voice_mode,
             "options": [
