@@ -433,14 +433,13 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
         # send warning if some messages were removed from the context
         if num_dialog_messages_removed > 0:
-            if num_dialog_messages_removed == 1:
-                text = _("⚠️ The <b>first message</b> was removed from the context due to OpenAI's token amount limit. Use /reset to reset")
-            else:
-                text = _("⚠️ The <b>first {} messages</b> have removed from the context due to OpenAI's token amount limit. Use /reset to reset").format(num_dialog_messages_removed)
+            # if num_dialog_messages_removed == 1:
+            #     text = _("⚠️ The <b>first message</b> was removed from the context due to OpenAI's token amount limit. Use /reset to reset")
+            # else:
+            #     text = _("⚠️ The <b>first {} messages</b> have removed from the context due to OpenAI's token amount limit. Use /reset to reset").format(num_dialog_messages_removed)
+            # await update.effective_message.reply_text(text, parse_mode=ParseMode.HTML)
 
             max_message_count = len(messages) + 1 - num_dialog_messages_removed
-
-            await update.effective_message.reply_text(text, parse_mode=ParseMode.HTML)
 
         # send warning if the anwser is too long (based on telegram's limit)
         if len(answer) > config.MESSAGE_MAX_LENGTH:
