@@ -283,6 +283,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     user_id = user.id
     chat = update.effective_chat
 
+    voice_mode = db.get_chat_voice_mode(chat_id)
     if chat_mode is None:
         chat_mode = db.get_current_chat_mode(chat_id)
 
@@ -326,7 +327,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     else:
         db.inc_chat_rate_count(chat_id)
 
-    rate_limit = 12 if chat.type == Chat.PRIVATE else 9
+    rate_limit = 10 if chat.type == Chat.PRIVATE else 8
     # telegram flood control limit is 20 messages per minute, we set 12 to leave some budget
     if rate_count >= rate_limit:
         if rate_count < rate_limit + 3:
@@ -382,7 +383,11 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
         num_dialog_messages_removed = 0
         prev_answer = ""
-        stream_len = 100 if chat.type == Chat.PRIVATE else 150
+        
+        if api_type == "azure":
+            stream_len = 150 if chat.type == Chat.PRIVATE else 200
+        else:
+            stream_len = 100 if chat.type == Chat.PRIVATE else 150
 
         if placeholder is None:
             placeholder = await update.effective_message.reply_text("...")
@@ -473,7 +478,8 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         # IMPORTANT: consume tokens in the end of function call to protect users' credits
         db.inc_user_used_tokens(user_id, used_tokens)
 
-        await send_voice_message(update, context, sent_answer, chat_mode, placeholder=voice_placeholder)
+        if voice_mode != "text":
+            await send_voice_message(update, context, sent_answer, chat_mode, placeholder=voice_placeholder)
 
 async def send_voice_message(update: Update, context: CallbackContext, message: str, chat_mode: str, placeholder = None):
     if chat_mode not in config.TTS_MODELS:
@@ -523,6 +529,15 @@ async def send_voice_message(update: Update, context: CallbackContext, message: 
                 os.remove(output)
             if os.path.exists(ogg_filename):
                 os.remove(ogg_filename)
+        else:
+            text = "⚠️ " + _("The voice message could not be created. Voice messages are only valid in English.")
+            try:
+                # in case the user deletes the placeholders manually
+                if placeholder is not None:
+                    await placeholder.edit_text(text)
+            except Exception as e:
+                print(e)
+                await update.effective_message.reply_text(text)
     except Exception as e:
         print(e)
         await update.effective_message.reply_text("⚠️ " + _("Failed to generate the voice message, please try again later."))

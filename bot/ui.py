@@ -41,7 +41,7 @@ def load_settings(db: Database, chat_id: int, _):
             "desc": build_tips([
                 _("⚡ Instant access, ex. /dictionary cat"),
                 _("🌱 Low token consumption, no chat history"),
-                _("🗣 Voice messages, check /settings"),
+                _("🗣 Voice messages (English), check /settings"),
             ], _, hide_bullet=True, title=_("<b>Features</b>")) + "\n\n" + build_tips([
                 _("🤥 Some characters are made up! Don't take them too seriously."),
                 _("🤩 More roles are coming soon. Stay tuned!"),
@@ -55,17 +55,23 @@ def load_settings(db: Database, chat_id: int, _):
         "voice_mode": {
             "icon": "🗣",
             "name": _("Chat Voice"),
-            "desc": _("This setting only applies to the character with 🗣 icon, see /role.\n\n<b>Price:</b> {} tokens per second").format(config.COQUI_TOKENS),
+            "desc": _("This setting only applies to the character with 🗣 icon, see /role.")
+                    + "\n\n"
+                    + _("<b>Price:</b> {} tokens per second").format(config.COQUI_TOKENS)
+                    + "\n\n"
+                    + build_tips([
+                        _("English only, please speak English to characters once you enable voice messages")
+                    ], _),
             "value": voice_mode,
             "options": [
                 {
                     "label": _("Text Only"),
                     "value": "text",
                 },
-                {
-                    "label": _("Voice Only"),
-                    "value": "voice",
-                },
+                # {
+                #     "label": _("Voice Only"),
+                #     "value": "voice",
+                # },
                 {
                     "label": _("Text and Voice"),
                     "value": "text_and_voice",
