@@ -98,17 +98,9 @@ async def reply_or_edit_text(update: Update, text: str, parse_mode: ParseMode = 
             disable_web_page_preview=disable_web_page_preview,
         )
 
-def get_chat_id(update: Update):
-    chat_id = None
-    if update.message:
-        chat_id = update.message.chat_id
-    elif update.callback_query:
-        chat_id = update.effective_chat.id
-    return chat_id
-
-def get_text_func(user):
+def get_text_func(user, chat_id):
     if user:
-        lang = db.get_user_preferred_language(user.id) or user.language_code
+        lang = db.get_chat_lang(chat_id) or user.language_code
     else:
         lang = None
     return i18n.get_text_func(lang)
@@ -127,9 +119,10 @@ async def start_handle(update: Update, context: CallbackContext):
     referred_by = int(m[1]) if m else None
 
     user = await register_user_if_not_exists(update, context, referred_by=referred_by)
-    _ = get_text_func(user)
+    chat_id = update.effective_chat.id
+    _ = get_text_func(user, chat_id)
 
-    await about_handle(update, context)
+    await settings_handle(update, context, data="about")
 
     if is_new_user and update.message:
         await update.message.reply_text(
@@ -139,10 +132,8 @@ async def start_handle(update: Update, context: CallbackContext):
 
 async def retry_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
-    chat_id = get_chat_id(update)
-    if not chat_id:
-        return
-    _ = get_text_func(user)
+    chat_id = update.effective_chat.id
+    _ = get_text_func(user, chat_id)
     
     user_id = update.message.from_user.id
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
@@ -175,7 +166,8 @@ def strip_command(message):
 
 async def send_openai_error(update: Update, context: CallbackContext, e: Exception, placeholder = None):
     user = await register_user_if_not_exists(update, context)
-    _ = get_text_func(user)
+    chat_id = update.effective_chat.id
+    _ = get_text_func(user, chat_id)
     text = "⚠️ " + _("Temporary OpenAI server failure, please try again later.")
     error_msg = f"{e}"
     if "JSONDecodeError" not in error_msg:
@@ -199,8 +191,9 @@ async def common_command_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
     if not user:
         return
+    chat_id = update.effective_chat.id
 
-    _ = get_text_func(user)
+    _ = get_text_func(user, chat_id)
 
     command = parse_command(update.message.text)
     if command == "gpt":
@@ -224,7 +217,8 @@ def get_message_chunks(text, chuck_size=config.MESSAGE_MAX_LENGTH):
 
 async def voice_message_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
-    _ = get_text_func(user)
+    chat_id = update.effective_chat.id
+    _ = get_text_func(user, chat_id)
 
     placeholder = None
     try:
@@ -277,17 +271,14 @@ async def voice_message_handle(update: Update, context: CallbackContext):
 
 async def message_handle(update: Update, context: CallbackContext, message=None, use_new_dialog_timeout=True, chat_mode=None, placeholder: Message=None):
     user = await register_user_if_not_exists(update, context)
-    chat_id = get_chat_id(update)
-    if not user or not chat_id:
-        # sent from a channel
-        return
+    chat_id = update.effective_chat.id
     
     # check if message is edited
     if update.edited_message is not None:
         await edited_message_handle(update, context)
         return
         
-    _ = get_text_func(user)
+    _ = get_text_func(user, chat_id)
 
     user_id = user.id
     chat = update.effective_chat
@@ -364,7 +355,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     if message is None:
         message = update.effective_message.text
 
-    voice_placeholder = placeholder    
+    voice_placeholder = None    
     answer = None
     sent_answer = None
     used_tokens = None
@@ -489,8 +480,8 @@ async def send_voice_message(update: Update, context: CallbackContext, message: 
         return
     
     user = await register_user_if_not_exists(update, context)
-    chat_id = get_chat_id(update)
-    _ = get_text_func(user)
+    chat_id = update.effective_chat.id
+    _ = get_text_func(user, chat_id)
 
     limit = 600
     if len(message) > limit:
@@ -538,12 +529,9 @@ async def send_voice_message(update: Update, context: CallbackContext, message: 
 
 async def image_message_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
-    chat_id = get_chat_id(update)
-    if not chat_id:
-        return
-    
-    _ = get_text_func(user)
-    user_id = update.message.from_user.id
+    chat_id = update.effective_chat.id
+    _ = get_text_func(user, chat_id)
+    user_id = user.id
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
     used_tokens = config.DALLE_TOKENS
@@ -590,20 +578,16 @@ async def show_chat_modes_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
     user_id = update.message.from_user.id
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
-
-    _ = get_text_func(user)
-    chat_id = get_chat_id(update)
+    chat_id = update.effective_chat.id
+    _ = get_text_func(user, chat_id)
 
     text, reply_markup = ui.settings(db, chat_id, _, "settings>current_chat_mode")
     await update.message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=reply_markup)
 
 async def set_chat_mode(update: Update, context: CallbackContext, chat_mode = None, reason: str = None):
     user = await register_user_if_not_exists(update, context)
-    chat_id = get_chat_id(update)
-    if not chat_id:
-        return
-    
-    _ = get_text_func(user)
+    chat_id = update.effective_chat.id
+    _ = get_text_func(user, chat_id)
 
     if chat_mode is None:
         chat_mode = db.get_current_chat_mode(chat_id)
@@ -621,7 +605,7 @@ async def set_chat_mode(update: Update, context: CallbackContext, chat_mode = No
     icon_prefix = config.CHAT_MODES[chat_mode]["icon"] + " " if "icon" in config.CHAT_MODES[chat_mode] else ""
     if reason == "timeout":
         text = icon_prefix + _("It's been a long time since we talked, and I've forgotten what we talked about before.")
-        text += " " + _("(set timeout in /settings)")
+        text += " " + _("(/settings to change timeout)")
     elif reason == "reset":
         text = icon_prefix + _("I have already forgotten what we previously talked about.")
     elif "greeting" in config.CHAT_MODES[chat_mode]:
@@ -655,7 +639,8 @@ async def show_balance_handle(update: Update, context: CallbackContext):
         # sent from a channel
         return
     user = await register_user_if_not_exists(update, context)
-    _ = get_text_func(user)
+    chat_id = update.effective_chat.id
+    _ = get_text_func(user, chat_id)
     chat = update.effective_chat
     if chat.type != Chat.PRIVATE:
         text = _("🔒 For privacy reason, your balance won't show in a group chat. Please contact @{} directly.").format(config.TELEGRAM_BOT_NAME)
@@ -710,7 +695,8 @@ def price_to_tokens(price: float):
 
 async def show_payment_methods(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
-    _ = get_text_func(user)
+    chat_id = update.effective_chat.id
+    _ = get_text_func(user, chat_id)
 
     query = update.callback_query
     await query.answer()
@@ -739,7 +725,8 @@ async def show_payment_methods(update: Update, context: CallbackContext):
 
 async def show_invoice(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
-    _ = get_text_func(user)
+    chat_id = update.effective_chat.id
+    _ = get_text_func(user, chat_id)
 
     query = update.callback_query
     await query.answer()
@@ -792,18 +779,19 @@ async def show_invoice(update: Update, context: CallbackContext):
         reply_markup=reply_markup
     )
 
-async def settings_handle(update: Update, context: CallbackContext):
+async def settings_handle(update: Update, context: CallbackContext, data: str = None):
     user = await register_user_if_not_exists(update, context)
     chat_id = update.effective_chat.id
     chat_mode = db.get_current_chat_mode(chat_id)
     db.upsert_chat(chat_id, chat_mode, clear_messages=False)
-    _ = get_text_func(user)
+    _ = get_text_func(user, chat_id)
 
     query = update.callback_query
     if query:
         await query.answer()
 
-    data = query.data if query else None
+    if data is None:
+        data = query.data if query else None
 
     if data and data.startswith("about"):
         text, reply_markup = ui.about(_)
@@ -814,7 +802,8 @@ async def settings_handle(update: Update, context: CallbackContext):
 
 async def show_earn_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
-    _ = get_text_func(user)
+    chat_id = update.effective_chat.id
+    _ = get_text_func(user, chat_id)
 
     result = await api.earn(user.id)
 
@@ -837,7 +826,8 @@ async def show_earn_handle(update: Update, context: CallbackContext):
 
 async def edited_message_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
-    _ = get_text_func(user)
+    chat_id = update.effective_chat.id
+    _ = get_text_func(user, chat_id)
 
     text = _("💡 Edited messages won't take effects")
     await update.edited_message.reply_text(text, parse_mode=ParseMode.HTML)
