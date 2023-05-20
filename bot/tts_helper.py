@@ -72,7 +72,7 @@ async def _tts(voice_id, text, emotion="Neutral", speed=1):
     }
     async with aiohttp.ClientSession() as session:
         async with session.post(url, headers=headers, data=json.dumps(payload)) as response:
-            if response.status == 200:
+            if response.status >= 200 and response.status < 300:
                 data = await response.json()
                 return data["id"], data["audio_url"]
             else:
