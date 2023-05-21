@@ -571,6 +571,10 @@ async def send_voice_message(update: Update, context: CallbackContext, message: 
         await update.effective_message.reply_text(text)
 
 async def image_message_handle(update: Update, context: CallbackContext):
+    if update.edited_message is not None:
+        await edited_message_handle(update, context)
+        return
+    
     user = await register_user_if_not_exists(update, context)
     chat_id = update.effective_chat.id
     _ = get_text_func(user, chat_id)
@@ -578,36 +582,56 @@ async def image_message_handle(update: Update, context: CallbackContext):
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
     used_tokens = config.DALLE_TOKENS
+
+    cached_msg_id = None
+    if update.callback_query:
+        # from retry
+        query = update.callback_query
+        await query.answer()
+        action, cached_msg_id = query.data.split("|")
+        full_message = db.get_cached_message(cached_msg_id)
+
+        if not full_message:
+            # remove the retry button
+            await update.effective_message.edit_caption(reply_markup=None)
+            return
+    else:
+        full_message = update.message.text
     
-    message = strip_command(update.message.text)
+    message = strip_command(full_message)
     if not message:
         text = _("💡 Please type /image and followed by the image prompt\n\n")
         text += _("<b>Example:</b> /image a cat wearing a spacesuit\n")
         text += _("<b>Price:</b> {} tokens per image").format(used_tokens)
-        await update.message.reply_text(text, ParseMode.HTML)
+        await update.effective_message.reply_text(text, ParseMode.HTML)
         return
     
     remaining_tokens = db.get_user_remaining_tokens(user_id)
     if remaining_tokens < used_tokens:
-        await update.message.reply_text(_("⚠️ Insufficient tokens. To generate an image, it will cost {} tokens. Check /balance").format(used_tokens), parse_mode=ParseMode.HTML)
+        await update.effective_message.reply_text(_("⚠️ Insufficient tokens. To generate an image, it will cost {} tokens. Check /balance").format(used_tokens), parse_mode=ParseMode.HTML)
         return
     
     remaing_time = db.is_user_generating_image(user_id)
     if remaing_time:
-        await update.message.reply_text(_("⚠️ It is only possible to generate one image at a time. Please wait for {} seconds to retry.").format(int(remaing_time)), parse_mode=ParseMode.HTML)
+        await update.effective_message.reply_text(_("⚠️ It is only possible to generate one image at a time. Please wait for {} seconds to retry.").format(int(remaing_time)), parse_mode=ParseMode.HTML)
         return
     
     placeholder = None
     try:
         db.mark_user_is_generating_image(user_id, True)
-        placeholder = await update.message.reply_text(_("👨‍🎨 painting ..."))
+        placeholder = await update.effective_message.reply_text(_("👨‍🎨 painting ..."))
         image_url = await openai_utils.create_image(message)
         try:
             # in case the user deletes the placeholders manually
             await placeholder.delete()
         except Exception as e:
             print(e)
-        await update.message.reply_photo(image_url)
+        if cached_msg_id is None:
+            cached_msg_id = db.cache_chat_message(full_message)
+        reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton(_("Retry"), callback_data=f"image|{cached_msg_id}")]
+        ])
+        await update.effective_message.reply_photo(image_url, reply_markup=reply_markup)
         db.inc_user_used_tokens(user_id, used_tokens)
         db.mark_user_is_generating_image(user_id, False)
     except Exception as e:
@@ -939,6 +963,7 @@ def run_bot() -> None:
     application.add_handler(CommandHandler("dictionary", common_command_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(common_command_handle, pattern="^retry"))
     application.add_handler(CommandHandler("image", image_message_handle, filters=user_filter))
+    application.add_handler(CallbackQueryHandler(image_message_handle, pattern="^image"))
     application.add_handler(CommandHandler("settings", settings_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(settings_handle, pattern="^(settings|about)"))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & user_filter, message_handle))
