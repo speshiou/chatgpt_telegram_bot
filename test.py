@@ -64,7 +64,7 @@ async def test():
     if args.role and args.role in config.CHAT_MODES:
         role = args.role
     else:
-        role = list(config.CHAT_MODES.keys())[0]
+        role = config.DEFAULT_CHAT_MODE
     while True:
         if not dialog:
             print("Now you're talking to {}\n".format(config.CHAT_MODES[role]["name"]))

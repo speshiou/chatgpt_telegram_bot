@@ -28,7 +28,7 @@ def _chat_mode_options():
 def load_settings(db: Database, chat_id: int, _):
     current_chat_mode = db.get_current_chat_mode(chat_id)
     if current_chat_mode not in config.CHAT_MODES:
-        current_chat_mode = list(config.CHAT_MODES.keys())[0]
+        current_chat_mode = config.DEFAULT_CHAT_MODE
 
     voice_mode = db.get_chat_voice_mode(chat_id)
     timeout = db.get_chat_timeout(chat_id)
@@ -157,6 +157,7 @@ def build_keyboard_rows(buttons, num_keyboard_cols):
 
 def settings(db: Database, chat_id: int, _, data: str = None):
     if data and "|" in data:
+        # TODO: move to update handle function
         # save settings
         segs = data.split("|")
         setting_key, value = segs[1:]

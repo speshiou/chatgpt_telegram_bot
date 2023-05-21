@@ -289,9 +289,9 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
     push_new_message = True
     
-    if chat_mode not in config.CHAT_MODES.keys():
+    if chat_mode not in config.CHAT_MODES:
         # fallback to the first mode
-        chat_mode = list(config.CHAT_MODES.keys())[0]
+        chat_mode = config.DEFAULT_CHAT_MODE
         # lead to timeout process
         messages = None
     elif "disable_history" in config.CHAT_MODES[chat_mode]:
@@ -610,7 +610,7 @@ async def set_chat_mode(update: Update, context: CallbackContext, chat_mode = No
     
     if chat_mode not in config.CHAT_MODES:
         # fallback to ChatGPT mode
-        chat_mode = list(config.CHAT_MODES.keys())[0]
+        chat_mode = config.DEFAULT_CHAT_MODE
 
     # reset chat history
     db.reset_chat(chat_id, chat_mode)
