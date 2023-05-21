@@ -344,8 +344,8 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     max_tokens = chatgpt.MODEL_MAX_TOKENS
     if remaining_tokens < chatgpt.MODEL_MAX_TOKENS:
         max_tokens = remaining_tokens
-    if remaining_tokens < 10000:
-        # enable token saving mode for low balance users
+    if remaining_tokens < 10000 or chat_mode not in config.DEFAULT_CHAT_MODES:
+        # enable token saving mode for low balance users and external modes
         max_tokens = min(max_tokens, 2000)
 
     if remaining_tokens < 0:
@@ -438,7 +438,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             # else:
             #     text = _("⚠️ The <b>first {} messages</b> have removed from the context due to OpenAI's token amount limit. Use /reset to reset").format(num_dialog_messages_removed)
             # await update.effective_message.reply_text(text, parse_mode=ParseMode.HTML)
-
+            print(f"removed {num_dialog_messages_removed} messages from context")
             max_message_count = len(messages) + 1 - num_dialog_messages_removed
 
         # send warning if the anwser is too long (based on telegram's limit)
