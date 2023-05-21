@@ -45,7 +45,6 @@ def get_commands(lang=i18n.DEFAULT_LOCALE):
         BotCommand("image", _("generate images ({} tokens)").format(config.DALLE_TOKENS)),
         BotCommand("role", _("chat with dream characters")),
         BotCommand("reset", _("start a new conversation")),
-        BotCommand("retry", _("regenerate last answer")),
         BotCommand("balance", _("check balance")),
         BotCommand("settings", _("settings")),
         # BotCommand("earn", _("earn rewards by referral")),
@@ -192,13 +191,26 @@ async def common_command_handle(update: Update, context: CallbackContext):
     if not user:
         return
     chat_id = update.effective_chat.id
-
     _ = get_text_func(user, chat_id)
 
-    command = parse_command(update.message.text)
+    cached_msg_id = None
+
+    if update.callback_query:
+        query = update.callback_query
+        await query.answer()
+        action, cached_msg_id = query.data.split("|")
+        message = db.get_cached_message(cached_msg_id)
+
+        if not message:
+            await update.effective_message.edit_text(update.effective_message.text, parse_mode=ParseMode.MARKDOWN, reply_markup=None)
+            return
+    else:
+        message = update.message.text
+
+    command = parse_command(message)
     if command == "gpt":
         command = "chatgpt"
-    message = strip_command(update.message.text)
+    message = strip_command(message)
 
     chat_mode = command if command in config.CHAT_MODES else None
 
@@ -207,7 +219,7 @@ async def common_command_handle(update: Update, context: CallbackContext):
         return
 
     if message:
-        await message_handle(update, context, message=message, chat_mode=chat_mode)
+        await message_handle(update, context, message=message, chat_mode=chat_mode, cached_msg_id=cached_msg_id)
     else:
         await set_chat_mode(update, context, chat_mode)
     return
@@ -269,7 +281,7 @@ async def voice_message_handle(update: Update, context: CallbackContext):
     except Exception as e:
         await send_openai_error(update, context, e, placeholder=placeholder)
 
-async def message_handle(update: Update, context: CallbackContext, message=None, use_new_dialog_timeout=True, chat_mode=None, placeholder: Message=None):
+async def message_handle(update: Update, context: CallbackContext, message=None, use_new_dialog_timeout=True, chat_mode=None, placeholder: Message=None, cached_msg_id=None):
     user = await register_user_if_not_exists(update, context)
     chat_id = update.effective_chat.id
     
@@ -282,6 +294,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
     user_id = user.id
     chat = update.effective_chat
+    reply_markup = None
 
     voice_mode = db.get_chat_voice_mode(chat_id)
     if chat_mode is None:
@@ -299,6 +312,11 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         messages = []
         push_new_message = False
         use_new_dialog_timeout = False
+        if cached_msg_id is None:
+            cached_msg_id = db.cache_chat_message(update.effective_message.text)
+        reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton(_("Retry"), callback_data=f"retry|{cached_msg_id}")]
+        ])
     else:
         # load chat history to context
         messages = db.get_chat_messages(chat_id)
@@ -402,7 +420,13 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
                 # reduce edit message requests
                 continue
             prev_answer = answer
-            parse_mode = ParseMode.MARKDOWN if finished else None
+
+            if finished:
+                parse_mode = ParseMode.MARKDOWN
+                final_reply_markup = reply_markup
+            else:
+                parse_mode = None
+                final_reply_markup = None
 
             # send warning if the anwser is too long (based on telegram's limit)
             if len(answer) > config.MESSAGE_MAX_LENGTH:
@@ -418,11 +442,11 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
                     message_chunk += " ..."
                 if current_message_chunk_index < n_message_chunks - 1 or placeholder is None:
                     # send a new message chunk
-                    placeholder = await update.effective_message.reply_text(message_chunk, parse_mode=parse_mode)
+                    placeholder = await update.effective_message.reply_text(message_chunk, parse_mode=parse_mode, reply_markup=final_reply_markup)
                 elif placeholder is not None:
                     # update last message chunk
                     try:
-                        await placeholder.edit_text(message_chunk, parse_mode=parse_mode)
+                        await placeholder.edit_text(message_chunk, parse_mode=parse_mode, reply_markup=final_reply_markup)
                     except telegram.error.BadRequest as e:
                         if str(e).startswith("Message is not modified"):
                             continue
@@ -453,7 +477,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             for i in range(current_message_chunk_index + 1, n_message_chunks):
                 chunk = chunks[i]
                 # answer may have invalid characters, so we send it without parse_mode
-                await update.effective_message.reply_text(chunk)
+                await update.effective_message.reply_text(chunk, reply_markup=final_reply_markup)
             sent_answer = answer
     except ValueError as e:
         await update.effective_message.reply_text(_("⚠️ Require {} tokens to process the input text, check /balance").format(e.args[1]), parse_mode=ParseMode.HTML)
@@ -900,7 +924,6 @@ def run_bot() -> None:
         user_filter = filters.User(username=config.ALLOWED_TELEGRAM_USERNAMES)
 
     application.add_handler(CommandHandler("start", start_handle, filters=user_filter))
-    application.add_handler(CommandHandler("retry", retry_handle, filters=user_filter))
     application.add_handler(CommandHandler("reset", reset_handle, filters=user_filter))
     application.add_handler(CommandHandler("role", show_chat_modes_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(set_chat_mode_handle, pattern="^set_chat_mode"))
@@ -911,6 +934,7 @@ def run_bot() -> None:
     application.add_handler(CommandHandler("gpt", common_command_handle, filters=user_filter))
     application.add_handler(CommandHandler("proofreader", common_command_handle, filters=user_filter))
     application.add_handler(CommandHandler("dictionary", common_command_handle, filters=user_filter))
+    application.add_handler(CallbackQueryHandler(common_command_handle, pattern="^retry"))
     application.add_handler(CommandHandler("image", image_message_handle, filters=user_filter))
     application.add_handler(CommandHandler("settings", settings_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(settings_handle, pattern="^(settings|about)"))

@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Any
 
 import pymongo
+from bson import ObjectId
 
 import config
 
@@ -13,6 +14,7 @@ class Database:
 
         self.user_collection = self.db["users"]
         self.chat_collection = self.db["chats"]
+        self.message_collection = self.db["chat_messages"]
         self.stat_collection = self.db["stats"]
 
     def check_if_user_exists(self, user_id: int, raise_exception: bool = False):
@@ -231,6 +233,21 @@ class Database:
     def set_user_attribute(self, user_id: int, key: str, value: Any):
         self.check_if_user_exists(user_id, raise_exception=True)
         self.user_collection.update_one({"_id": user_id}, {"$set": {key: value}})
+
+    def cache_chat_message(self, message):
+        data = {
+            '_id': ObjectId(),
+            'message': message,
+            "date": datetime.now(),
+        }
+
+        result = self.message_collection.insert_one(data)
+        new_doc_id = result.inserted_id
+        return new_doc_id
+    
+    def get_cached_message(self, id):
+        doc = self.message_collection.find_one({ '_id': ObjectId(id) })
+        return doc["message"] if doc else None
 
     def inc_stats(self, field: str, amount: int = 1):
         today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
