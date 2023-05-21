@@ -313,7 +313,10 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         push_new_message = False
         use_new_dialog_timeout = False
         if cached_msg_id is None:
-            cached_msg_id = db.cache_chat_message(update.effective_message.text)
+            cached_message = update.effective_message.text
+            if not cached_message.startswith("/"):
+                cached_message = "/{} {}".format(chat_mode, cached_message)
+            cached_msg_id = db.cache_chat_message(cached_message)
         reply_markup = InlineKeyboardMarkup([
             [InlineKeyboardButton(_("Retry"), callback_data=f"retry|{cached_msg_id}")]
         ])
