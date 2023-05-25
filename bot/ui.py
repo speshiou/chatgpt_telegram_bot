@@ -260,7 +260,7 @@ def about(_):
         [InlineKeyboardButton("⚙️ " + _("Settings"), callback_data="settings")],
         [
             InlineKeyboardButton("❓ " + _("FAQ"), url="https://tgchat.co/faq"),
-            InlineKeyboardButton("✉️ " + _("Feedback"), url="https://t.me/gpt_chatbot_support"),
+            InlineKeyboardButton("✉️ " + _("Feedback"), url="https://t.me/{}".format(config.SUPPORT_USER_NAME)),
         ]
     ])
 

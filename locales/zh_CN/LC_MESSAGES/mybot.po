@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-05-25 11:02+0800\n"
+"POT-Creation-Date: 2023-05-25 11:16+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -263,8 +263,8 @@ msgid "Tokens will be credited within 10 minutes of payment."
 msgstr "标记额度将在付款后 10 分钟内存入。"
 
 #: ./bot/bot.py:873
-msgid "Please contact @gpt_chatbot_support if tokens are not received after 1 hour of payment."
-msgstr "如果在付款 1 小时后仍未收到标记额度，请联系 @gpt_chatbot_support。"
+msgid "Please contact @{} if tokens are not received after 1 hour of payment."
+msgstr "如果付款 1 小时后仍未收到标记额度，请联系 @{}。"
 
 #: ./bot/bot.py:881
 msgid "⚠️ Failed to create an invoice, please try again later."
@@ -336,206 +336,206 @@ msgstr "字典"
 msgid "This is a dictionary where you can search for any words or phrases in various languages."
 msgstr "这是一本字典，您可以在其中搜索各种语言的任何单词或短语。"
 
-#: ./bot/ui.py:39
+#: ./bot/ui.py:40
 msgid "Chat Mode"
 msgstr "聊天模式"
 
-#: ./bot/ui.py:41
+#: ./bot/ui.py:42
 msgid "⚡ Instant access, ex. /dictionary cat"
 msgstr "⚡ 即时访问，例如。 /dictionary 猫"
 
-#: ./bot/ui.py:42
+#: ./bot/ui.py:43
 msgid "🌱 Low cost, no chat history"
 msgstr "🌱 低成本，无聊天记录"
 
-#: ./bot/ui.py:43
+#: ./bot/ui.py:44
 msgid "🗣 Voice messages (English), check /settings"
 msgstr "🗣 语音消息（英语），检查 /settings"
 
-#: ./bot/ui.py:44
+#: ./bot/ui.py:45
 msgid "<b>Features</b>"
 msgstr "<b>特点</b>"
 
-#: ./bot/ui.py:45
+#: ./bot/ui.py:46
 msgid "🤥 Some characters are made up! Don't take them too seriously."
 msgstr "🤥 有些角色是虚构的！不要把他们太当回事。"
 
-#: ./bot/ui.py:46
+#: ./bot/ui.py:47
 msgid "🤩 More roles are coming soon. Stay tuned!"
 msgstr "🤩 更多角色即将推出。敬请关注！"
 
-#: ./bot/ui.py:56
+#: ./bot/ui.py:57
 msgid "Chat Voice"
 msgstr "聊天语音"
 
-#: ./bot/ui.py:57
+#: ./bot/ui.py:58
 msgid "This setting only applies to the character with 🗣 icon, see /role."
 msgstr "此设置仅适用于带有 🗣 图标的角色，参见 /role。"
 
-#: ./bot/ui.py:59
+#: ./bot/ui.py:60
 msgid "<b>Price:</b> {} tokens per second"
 msgstr "<b>价格：</b> 每秒 {} 个标记"
 
-#: ./bot/ui.py:62
+#: ./bot/ui.py:63
 msgid "English only, please speak English to characters once you enable voice messages"
 msgstr "只有英语，请在启用语音消息后对角色说英语"
 
-#: ./bot/ui.py:63
+#: ./bot/ui.py:64
 msgid "It costs roughly 500,000 tokens to have a 30-minute voice chat."
 msgstr "进行 30 分钟的语音聊天大约需要 500,000 个标记。"
 
-#: ./bot/ui.py:64
+#: ./bot/ui.py:65
 msgid "The maximum length of the text is 600 characters."
 msgstr "文本的最大长度为 600 个字符。"
 
-#: ./bot/ui.py:69
+#: ./bot/ui.py:70
 msgid "Text Only"
 msgstr "纯文本"
 
-#: ./bot/ui.py:77
+#: ./bot/ui.py:78
 msgid "Text and Voice"
 msgstr "文本和语音"
 
-#: ./bot/ui.py:84
+#: ./bot/ui.py:85
 msgid "Chat Timeout"
 msgstr "聊天超时"
 
-#: ./bot/ui.py:85
+#: ./bot/ui.py:86
 msgid ""
 "Setting a proper timeout can help reduce token consumption. When a timeout occurs, the chatbot will not generate an answer based on previous chat history.\n"
 "\n"
 "You can also use /reset to clear chat history manually."
 msgstr "设置适当的超时可以帮助减少标记消耗。当超时发生时，聊天机器人将不会根据之前的聊天记录生成答案。\n\n您也可以使用 /reset 手动清除聊天记录。"
 
-#: ./bot/ui.py:89
+#: ./bot/ui.py:90
 msgid "1 Hour"
 msgstr "1小时"
 
-#: ./bot/ui.py:93
+#: ./bot/ui.py:94
 msgid "6 Hours"
 msgstr "6个小时"
 
-#: ./bot/ui.py:97
+#: ./bot/ui.py:98
 msgid "12 Hours"
 msgstr "12小时"
 
-#: ./bot/ui.py:101
+#: ./bot/ui.py:102
 msgid "24 Hours"
 msgstr "24小时"
 
-#: ./bot/ui.py:105
+#: ./bot/ui.py:106
 msgid "Never"
 msgstr "绝不"
 
-#: ./bot/ui.py:112
+#: ./bot/ui.py:113
 msgid "UI Language"
 msgstr "界面语言"
 
-#: ./bot/ui.py:113
+#: ./bot/ui.py:114
 msgid "This setting won't effect the answers from the chatbot"
 msgstr "此设置不会影响聊天机器人的回答"
 
-#: ./bot/ui.py:129
+#: ./bot/ui.py:130
 msgid "Not specify"
 msgstr "不指定"
 
-#: ./bot/ui.py:142
+#: ./bot/ui.py:143
 msgid "<b>Tips</b>"
 msgstr "<b>提示</b>"
 
-#: ./bot/ui.py:185 ./bot/ui.py:257
+#: ./bot/ui.py:188 ./bot/ui.py:260
 msgid "Settings"
 msgstr "设置"
 
-#: ./bot/ui.py:196
+#: ./bot/ui.py:199
 msgid "About"
 msgstr "关于"
 
-#: ./bot/ui.py:228
+#: ./bot/ui.py:231
 msgid "Back"
 msgstr "返回"
 
-#: ./bot/ui.py:231
+#: ./bot/ui.py:234
 msgid "This setting is outdated"
 msgstr "此设置已过时"
 
-#: ./bot/ui.py:237
+#: ./bot/ui.py:240
 msgid "Hi! I'm an AI chatbot powered by OpenAI's GPT and DALL·E models."
 msgstr "你好！我是一个由 OpenAI 的 GPT 和 DALL·E 模型提供支持的 AI 聊天机器人。"
 
-#: ./bot/ui.py:239
+#: ./bot/ui.py:242
 msgid ""
 "<b>What can I do for you?</b>\n"
 msgstr "<b>我能为您做什么？</b>\n"
 
-#: ./bot/ui.py:240
+#: ./bot/ui.py:243
 msgid ""
 "🌎 Translate\n"
 msgstr "🌎 翻译\n"
 
-#: ./bot/ui.py:241
+#: ./bot/ui.py:244
 msgid ""
 "✉️ Writing\n"
 msgstr "✉️ 写作\n"
 
-#: ./bot/ui.py:242
+#: ./bot/ui.py:245
 msgid ""
 "🗂 Summarize\n"
 msgstr "🗂 总结\n"
 
-#: ./bot/ui.py:243
+#: ./bot/ui.py:246
 msgid ""
 "🤔 Provide ideas and solve problems\n"
 msgstr "🤔 提供思路，解决问题\n"
 
-#: ./bot/ui.py:244
+#: ./bot/ui.py:247
 msgid ""
 "💻 Programming and debugging\n"
 msgstr "💻 编程和调试\n"
 
-#: ./bot/ui.py:246
+#: ./bot/ui.py:249
 msgid ""
 "<b>More than ChatGPT</b>\n"
 msgstr "<b>不仅仅是 ChatGPT</b>\n"
 
-#: ./bot/ui.py:247
+#: ./bot/ui.py:250
 msgid ""
 "🎙 Support voice messages (100 tokens/s when exceeding 10s)\n"
 msgstr "🎙 支持语音信息（超过 10 秒时，每秒 100 标记）\n"
 
-#: ./bot/ui.py:248
+#: ./bot/ui.py:251
 msgid ""
 "✍️ Proofreading (/proofreader)\n"
 msgstr "✍️ 校对 (/proofreader)\n"
 
-#: ./bot/ui.py:249
+#: ./bot/ui.py:252
 msgid ""
 "👨‍🎨 Generate images (/image)\n"
 msgstr "👨‍🎨 生成图片 (/image)\n"
 
-#: ./bot/ui.py:250
+#: ./bot/ui.py:253
 msgid ""
 "🧙‍♀️ Chat with dream characters (/role)\n"
 msgstr "🧙‍♀️ 与梦想中的角色聊天 (/role)\n"
 
-#: ./bot/ui.py:251
+#: ./bot/ui.py:254
 msgid ""
 "👥 Group chat - add @{} to a group chat, then use /gpt to start.\n"
 msgstr "👥 群聊 - 添加 @{} 到群聊，然后使用 /gpt 开始。\n"
 
-#: ./bot/ui.py:252
+#: ./bot/ui.py:255
 msgid "💡 Subscribe to @ChatGPT_Prompts_Lab for more inspiration"
 msgstr "💡 订阅 @ChatGPT_Prompts_Lab 获取更多灵感"
 
-#: ./bot/ui.py:254
+#: ./bot/ui.py:257
 msgid "By using this chatbot, you agree to our <a href=\"{}\">terms of service</a> and <a href=\"{}\">privacy policy</a>."
 msgstr "使用此聊天机器人即表示您同意我们的<a href=\"{}\">服务条款</a>和<a href=\"{}\">隐私政策</a>。"
 
-#: ./bot/ui.py:259
+#: ./bot/ui.py:262
 msgid "FAQ"
 msgstr "常问问题"
 
-#: ./bot/ui.py:260
+#: ./bot/ui.py:263
 msgid "Feedback"
 msgstr "反馈"
 

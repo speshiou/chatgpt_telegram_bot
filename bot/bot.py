@@ -870,7 +870,7 @@ async def show_invoice(update: Update, context: CallbackContext):
             button_text = _("💎 Pay with Crypto")
 
         tips.append(_("Tokens will be credited within 10 minutes of payment."))
-        tips.append(_("Please contact @gpt_chatbot_support if tokens are not received after 1 hour of payment."))
+        tips.append(_("Please contact @{} if tokens are not received after 1 hour of payment.").format(config.SUPPORT_USER_NAME))
 
         text += "\n\n".join(map(lambda s: "• " + s, tips))
 
