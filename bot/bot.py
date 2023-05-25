@@ -289,7 +289,6 @@ def _build_youtube_prompt(url, _):
     print(f"parsing youtube {video_id} transcript ...")
     try:
         transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
-        print(transcript_list)
         for transcript in transcript_list:
             # the Transcript object provides metadata properties
             print(
@@ -305,7 +304,8 @@ def _build_youtube_prompt(url, _):
             )
 
             transcript_json = transcript.fetch()
-            text = f"summarize the transcript from {url} containing abstract, list of key points and the summary\n\ntranscript:\n{transcript_json}"
+            prompt_pattern = _("summarize the transcript from {} containing abstract, list of key points and the conclusion\n\ntranscript:\n{}")
+            text = prompt_pattern.format(url, transcript_json)
             return text
     except _errors.TranscriptsDisabled as e:
         print("Youtube error: transcripts are disabled")

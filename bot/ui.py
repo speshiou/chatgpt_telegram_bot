@@ -1,13 +1,13 @@
-import telegram
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 import config
+import i18n
 from database import Database
 
-def _chat_mode_options():
+def _chat_mode_options(_):
     options = []
     for chat_mode, role in config.CHAT_MODES.items():
-        label = "{} {}".format(role["icon"], role["name"])
+        label = "{} {}".format(role["icon"], _(role["name"]))
         bonus = []
         if chat_mode in config.TTS_MODELS:
             bonus.append("🗣")
@@ -50,7 +50,7 @@ def load_settings(db: Database, chat_id: int, _):
             "value": current_chat_mode,
             "disable_check_mark": True,
             "num_keyboard_cols": 2,
-            "options": _chat_mode_options()
+            "options": _chat_mode_options(_)
         },
         "voice_mode": {
             "icon": "🗣",
@@ -166,6 +166,8 @@ def settings(db: Database, chat_id: int, _, data: str = None):
         elif value.isnumeric():
             value = int(value)
         db.set_chat_attribute(chat_id, setting_key, value)
+        if setting_key == 'lang':
+            _ = i18n.get_text_func(value)
 
     settings = load_settings(db, chat_id, _)
 
