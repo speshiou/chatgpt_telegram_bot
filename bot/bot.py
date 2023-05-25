@@ -304,6 +304,11 @@ def _build_youtube_prompt(url, _):
             )
 
             transcript_json = transcript.fetch()
+            # strip redundant data to reduce prompt token usage
+            for line in transcript_json:
+                if "duration" in line:
+                    del line["duration"]
+
             prompt_pattern = _("summarize the transcript from {} containing abstract, list of key points and the conclusion\n\ntranscript:\n{}")
             text = prompt_pattern.format(url, transcript_json)
             return text
