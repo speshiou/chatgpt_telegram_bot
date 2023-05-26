@@ -9,6 +9,7 @@ import chatgpt
 import tts_helper
 from pygame import mixer
 from youtube_transcript_api import YouTubeTranscriptApi, _errors
+import trafilatura
 import helper
 
 parser = argparse.ArgumentParser(prog='prompt tester')
@@ -128,6 +129,10 @@ async def test():
                     print("Youtube error: transcripts are disabled")
                 except Exception as e:
                     print(e)
+            else:
+                downloaded = trafilatura.fetch_url(url)
+                result = trafilatura.extract(downloaded, include_comments=False)
+                text = f"summarize the content from {url} containing abstract, list of key points and the summary, all responses in Chinese\n\ntranscript:\n{result}"
 
         system_prompt = config.CHAT_MODES[role]["prompt"]
 

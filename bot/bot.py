@@ -23,6 +23,7 @@ from telegram.constants import ParseMode, ChatAction
 from pydub import AudioSegment
 
 from youtube_transcript_api import YouTubeTranscriptApi, _errors
+import trafilatura
 
 import config
 import database
@@ -422,6 +423,14 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             if message is None:
                 await update.effective_message.reply_text(_("⚠️ Transcripts for this video are not available, possibly due to access restrictions or transcript disablement."), parse_mode=ParseMode.HTML)
                 return
+        else:
+            downloaded = trafilatura.fetch_url(url)
+            result = trafilatura.extract(downloaded, include_comments=False)
+            if result is None:
+                await update.effective_message.reply_text(_("⚠️ Failed to fetch the website content, possibly due to access restrictions."), parse_mode=ParseMode.HTML)
+                return
+            prompt_pattern = _("summarize the content from {} containing abstract, list of key points and the conclusion\n\noriginal content:\n{}")
+            message = prompt_pattern.format(url, result)
 
     voice_placeholder = None    
     answer = None
