@@ -4,26 +4,62 @@ import config
 import i18n
 from database import Database
 
+def _chat_mode_features(chat_mode=None):
+    if chat_mode is None:
+        return ["🗣", "🌱", "⚡"]
+    bonus = []
+    role = config.CHAT_MODES[chat_mode]
+    if chat_mode in config.TTS_MODELS:
+        bonus.append("🗣")
+    if "disable_history" in role:
+        bonus.append("🌱")
+    if chat_mode in config.DEFAULT_CHAT_MODES:
+        bonus.append("⚡")
+    return bonus
+
 def _chat_mode_options(_):
     options = []
     for chat_mode, role in config.CHAT_MODES.items():
         label = "{} {}".format(role["icon"], _(role["name"]))
-        bonus = []
-        if chat_mode in config.TTS_MODELS:
-            bonus.append("🗣")
-        if "disable_history" in role:
-            bonus.append("🌱")
-        if chat_mode in config.DEFAULT_CHAT_MODES:
-            bonus.append("⚡")
+        features = _chat_mode_features(chat_mode)
 
-        if len(bonus) > 0:
-            label += " ({})".format("".join(bonus))
+        if len(features) > 0:
+            label += " ({})".format("".join(features))
         options.append({ 
             "label": label, 
             "value": chat_mode, "callback": "set_chat_mode|" + chat_mode 
         })
     return options
 
+def chat_mode_tips(chat_mode, _):
+    features = _chat_mode_features(chat_mode)
+    tips = []
+    for feature in features:
+        tip = None
+        if feature == "⚡":
+            example = "/dictionary flower"
+            if chat_mode == "gpt":
+                example = "/gpt what can you do?"
+            elif chat_mode == "proofreader":
+                example = "/proofreader any text"
+            tip = _("Instant access, ex: {}").format(example)
+        elif feature == "🌱":
+            tip = _("Low cost, no chat history")
+        elif feature == "🗣":
+            tip = _("Voice messages (English), check /settings")
+        if tip is not None:
+            tips.append(feature + " " + tip)
+
+    if len(tips) == 0:
+        return ""
+    text = build_tips(tips, _, hide_bullet=True, title=_("<b>Features</b>"))
+    if chat_mode is not None and "⚡" in features:
+        text += "\n\n"
+        text += build_tips([
+            _("desktop: type /{}, then press TAB key").format(chat_mode[0]),
+            _("mobile: type /{}, then long press the command").format(chat_mode[0]),
+        ], _, title=_("<b>How to do instant access?</b>"))
+    return text
 
 def load_settings(db: Database, chat_id: int, _):
     current_chat_mode = db.get_current_chat_mode(chat_id)
@@ -38,11 +74,7 @@ def load_settings(db: Database, chat_id: int, _):
         "current_chat_mode": {
             "icon": "💬",
             "name": _("Chat Mode"),
-            "desc": build_tips([
-                _("⚡ Instant access, ex. /dictionary cat"),
-                _("🌱 Low cost, no chat history"),
-                _("🗣 Voice messages (English), check /settings"),
-            ], _, hide_bullet=True, title=_("<b>Features</b>")) + "\n\n" + build_tips([
+            "desc": chat_mode_tips(None, _) + "\n\n" + build_tips([
                 _("🤥 Some characters are made up! Don't take them too seriously."),
                 _("🤩 More roles are coming soon. Stay tuned!"),
             ], _, hide_bullet=True),
@@ -249,6 +281,8 @@ def about(_):
     text += _("<b>More than ChatGPT</b>\n")
     text += _("🎙 Support voice messages (100 tokens/s when exceeding 10s)\n")
     text += _("✍️ Proofreading (/proofreader)\n")
+    text += _("📔 Dictionary (/dictionary)\n")
+    text += _("🌐 Summarize websites and Youtube videos (under 5min)")
     text += _("👨‍🎨 Generate images (/image)\n")
     text += _("🧙‍♀️ Chat with dream characters (/role)\n")
     text += _("👥 Group chat - add @{} to a group chat, then use /gpt to start.\n").format(config.TELEGRAM_BOT_NAME)

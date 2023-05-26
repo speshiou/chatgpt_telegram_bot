@@ -5,7 +5,7 @@ def _(text):
     return text
 
 DEFAULT_CHAT_MODES = {
-    "chatgpt": {
+    "gpt": {
         "icon": "🤖",
         "name": "ChatGPT",
         "greeting": _("Hello! How can I assist you today?"),

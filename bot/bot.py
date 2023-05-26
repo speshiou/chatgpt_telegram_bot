@@ -736,12 +736,17 @@ async def set_chat_mode(update: Update, context: CallbackContext, chat_mode = No
         text = icon_prefix + _("You're now chatting with {} ...").format(config.CHAT_MODES[chat_mode]["name"])
         send_empty_message = True
 
+    tips = ui.chat_mode_tips(chat_mode, _)
+    if tips:
+        text += "\n\n" + tips
+
     chat = update.effective_chat
     if chat.type != Chat.PRIVATE:
         text += "\n\n"
         text += ui.build_tips([
             _("To continue the conversation in the group chat, please \"reply\" to my messages."),
-            _("Please slow down your interactions with the chatbot as group chats can easily exceed the Telegram rate limit. "),
+            _("Please \"SLOW DOWN\" interactions with the chatbot as group chats can easily exceed the Telegram rate limit. "),
+            _("Once this chat exceeds the rate limit, the chatbot won't respond temporarily."),
         ], _)
 
     await reply_or_edit_text(update, text)
