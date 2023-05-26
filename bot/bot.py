@@ -212,8 +212,6 @@ async def common_command_handle(update: Update, context: CallbackContext):
         message = update.message.text
 
     command = parse_command(message)
-    if command == "gpt":
-        command = "chatgpt"
     message = strip_command(message)
 
     chat_mode = command if command in config.CHAT_MODES else None
