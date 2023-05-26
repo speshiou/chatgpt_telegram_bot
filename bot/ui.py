@@ -282,7 +282,7 @@ def about(_):
     text += _("🎙 Support voice messages (100 tokens/s when exceeding 10s)\n")
     text += _("✍️ Proofreading (/proofreader)\n")
     text += _("📔 Dictionary (/dictionary)\n")
-    text += _("🌐 Summarize websites and Youtube videos (under 5min)")
+    text += _("🌐 Summarize websites and Youtube videos (under 5min)") + "\n"
     text += _("👨‍🎨 Generate images (/image)\n")
     text += _("🧙‍♀️ Chat with dream characters (/role)\n")
     text += _("👥 Group chat - add @{} to a group chat, then use /gpt to start.\n").format(config.TELEGRAM_BOT_NAME)
