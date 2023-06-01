@@ -721,33 +721,41 @@ async def set_chat_mode(update: Update, context: CallbackContext, chat_mode = No
 
     # to trigger roles to start the conversation
     send_empty_message = False
-
+    reply_markup = None
+    keyborad_rows = [
+        [InlineKeyboardButton("💬 " + _("Change chat mode"), callback_data="settings>current_chat_mode")]
+    ]
     icon_prefix = config.CHAT_MODES[chat_mode]["icon"] + " " if "icon" in config.CHAT_MODES[chat_mode] else ""
     if reason == "timeout":
         text = icon_prefix + _("It's been a long time since we talked, and I've forgotten what we talked about before.")
-        text += " " + _("(/settings to change timeout)")
+        keyborad_rows.append([InlineKeyboardButton("⏳ " + _("Timeout settings"), callback_data="settings>timeout")])
     elif reason == "reset":
         text = icon_prefix + _("I have already forgotten what we previously talked about.")
+        keyborad_rows = []
     elif "greeting" in config.CHAT_MODES[chat_mode]:
         text = icon_prefix + _(config.CHAT_MODES[chat_mode]["greeting"])
     else:
         text = icon_prefix + _("You're now chatting with {} ...").format(config.CHAT_MODES[chat_mode]["name"])
         send_empty_message = True
 
-    tips = ui.chat_mode_tips(chat_mode, _)
-    if tips:
-        text += "\n\n" + tips
+    if reason is None:
+        tips = ui.chat_mode_tips(chat_mode, _)
+        if tips:
+            text += "\n\n" + tips
 
-    chat = update.effective_chat
-    if chat.type != Chat.PRIVATE:
-        text += "\n\n"
-        text += ui.build_tips([
-            _("To continue the conversation in the group chat, please \"reply\" to my messages."),
-            _("Please \"SLOW DOWN\" interactions with the chatbot as group chats can easily exceed the Telegram rate limit. "),
-            _("Once this chat exceeds the rate limit, the chatbot won't respond temporarily."),
-        ], _)
+        chat = update.effective_chat
+        if chat.type != Chat.PRIVATE:
+            text += "\n\n"
+            text += ui.build_tips([
+                _("To continue the conversation in the group chat, please \"reply\" to my messages."),
+                _("Please \"SLOW DOWN\" interactions with the chatbot as group chats can easily exceed the Telegram rate limit. "),
+                _("Once this chat exceeds the rate limit, the chatbot won't respond temporarily."),
+            ], _)
 
-    await reply_or_edit_text(update, text)
+    if keyborad_rows:
+        reply_markup = InlineKeyboardMarkup(keyborad_rows)
+
+    await reply_or_edit_text(update, text, reply_markup=reply_markup)
     if send_empty_message:
         await message_handle(update, context, "")
 
@@ -779,8 +787,15 @@ async def show_balance_handle(update: Update, context: CallbackContext):
 
     text = _("👛 <b>Balance</b>\n\n")
     text += _("<b>{:,}</b> tokens left\n").format(db.get_user_remaining_tokens(user.id))
-    text += _("<i>You used <b>{:,}</b> tokens</i>\n\n").format(used_tokens)
-    text += _("""<i>💡 The longer conversation would spend more tokens. /reset the chat. (<a href="{}">Learn more</a>)</i>""").format("https://tgchat.co/faq")
+    text += _("<i>You used <b>{:,}</b> tokens</i>").format(used_tokens)
+    text += "\n\n"
+    text += ui.build_tips(
+        [
+            _("The longer conversation would spend more tokens"),
+            _("/reset to clear history manually"),
+            _("Most users spend fewer than 200,000 tokens per month"),
+        ], _
+    )
     # text += f"You spent <b>{n_spent_dollars:.03f}$</b>\n"
     # text += f"You used <b>{used_tokens}</b> tokens <i>(price: ${config.TOKEN_PRICE} per 1000 tokens)</i>\n"
 
