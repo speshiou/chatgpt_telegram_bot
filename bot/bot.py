@@ -347,7 +347,6 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         # to keep the language of input message, not to send chat history to model
         messages = []
         push_new_message = False
-        use_new_dialog_timeout = False
         if cached_msg_id is None:
             cached_message = update.effective_message.text
             if not cached_message.startswith("/"):
@@ -719,8 +718,14 @@ async def set_chat_mode(update: Update, context: CallbackContext, chat_mode = No
     # reset chat history
     db.reset_chat(chat_id, chat_mode)
 
+    show_tips = reason is None
+    if reason is not None and "disable_history" in config.CHAT_MODES[chat_mode]:
+        # info the current mode only
+        reason = None
+        show_tips = False
+
     # to trigger roles to start the conversation
-    send_empty_message = False
+    send_empty_message = "greeting" not in config.CHAT_MODES[chat_mode] and reason is None
     reply_markup = None
     keyborad_rows = [
         [InlineKeyboardButton("💬 " + _("Change chat mode"), callback_data="settings>current_chat_mode")]
@@ -732,13 +737,12 @@ async def set_chat_mode(update: Update, context: CallbackContext, chat_mode = No
     elif reason == "reset":
         text = icon_prefix + _("I have already forgotten what we previously talked about.")
         keyborad_rows = []
-    elif "greeting" in config.CHAT_MODES[chat_mode]:
+    elif show_tips and "greeting" in config.CHAT_MODES[chat_mode]:
         text = icon_prefix + _(config.CHAT_MODES[chat_mode]["greeting"])
     else:
         text = icon_prefix + _("You're now chatting with {} ...").format(config.CHAT_MODES[chat_mode]["name"])
-        send_empty_message = True
 
-    if reason is None:
+    if show_tips:
         tips = ui.chat_mode_tips(chat_mode, _)
         if tips:
             text += "\n\n" + tips
