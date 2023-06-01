@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-06-01 13:05+0800\n"
+"POT-Creation-Date: 2023-06-01 13:35+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -470,119 +470,122 @@ msgid "UI Language"
 msgstr "界面语言"
 
 #: ./bot/ui.py:146
-msgid "This setting won't effect the answers from the chatbot"
-msgstr "此设置不会影响聊天机器人的回答"
+msgid ""
+"This setting won't effect the answers from the chatbot.\n"
+"\n"
+"Please feedback to @{} if there is any translation errors."
+msgstr "此设置不会影响聊天机器人的回答。\n\n如果有任何翻译错误，请反馈给 @{}。"
 
-#: ./bot/ui.py:162
+#: ./bot/ui.py:170
 msgid "Not specify"
 msgstr "不指定"
 
-#: ./bot/ui.py:175
+#: ./bot/ui.py:183
 msgid "<b>Tips</b>"
 msgstr "<b>提示</b>"
 
-#: ./bot/ui.py:220 ./bot/ui.py:294
+#: ./bot/ui.py:228 ./bot/ui.py:302
 msgid "Settings"
 msgstr "设置"
 
-#: ./bot/ui.py:231
+#: ./bot/ui.py:239
 msgid "About"
 msgstr "关于"
 
-#: ./bot/ui.py:263
+#: ./bot/ui.py:271
 msgid "Back"
 msgstr "返回"
 
-#: ./bot/ui.py:266
+#: ./bot/ui.py:274
 msgid "This setting is outdated"
 msgstr "此设置已过时"
 
-#: ./bot/ui.py:272
-msgid "Hi! I'm an AI chatbot powered by OpenAI's GPT and DALL·E models."
-msgstr "你好！我是一个由 OpenAI 的 GPT 和 DALL·E 模型提供支持的 AI 聊天机器人。"
+#: ./bot/ui.py:280
+msgid "Hi! My name is Nexia, an AI chatbot powered by OpenAI's GPT and DALL·E models."
+msgstr "你好！我的名字是 Nexia，一个由 OpenAI 的 GPT 和 DALL·E 模型驱动的人工智能聊天机器人。"
 
-#: ./bot/ui.py:274
+#: ./bot/ui.py:282
 msgid ""
 "<b>What can I do for you?</b>\n"
 msgstr "<b>我能为您做什么？</b>\n"
 
-#: ./bot/ui.py:275
+#: ./bot/ui.py:283
 msgid ""
 "🌎 Translate\n"
 msgstr "🌎 翻译\n"
 
-#: ./bot/ui.py:276
+#: ./bot/ui.py:284
 msgid ""
 "✉️ Writing\n"
 msgstr "✉️ 写作\n"
 
-#: ./bot/ui.py:277
+#: ./bot/ui.py:285
 msgid ""
 "🗂 Summarize\n"
 msgstr "🗂 总结\n"
 
-#: ./bot/ui.py:278
+#: ./bot/ui.py:286
 msgid ""
 "🤔 Provide ideas and solve problems\n"
 msgstr "🤔 提供思路，解决问题\n"
 
-#: ./bot/ui.py:279
+#: ./bot/ui.py:287
 msgid ""
 "💻 Programming and debugging\n"
 msgstr "💻 编程和调试\n"
 
-#: ./bot/ui.py:281
+#: ./bot/ui.py:289
 msgid ""
 "<b>More than ChatGPT</b>\n"
 msgstr "<b>不仅仅是 ChatGPT</b>\n"
 
-#: ./bot/ui.py:282
+#: ./bot/ui.py:290
 msgid ""
 "🎙 Support voice messages (100 tokens/s when exceeding 10s)\n"
 msgstr "🎙 支持语音信息（超过 10 秒时，每秒 100 标记）\n"
 
-#: ./bot/ui.py:283
+#: ./bot/ui.py:291
 msgid ""
 "✍️ Proofreading (/proofreader)\n"
 msgstr "✍️ 校对 (/proofreader)\n"
 
-#: ./bot/ui.py:284
+#: ./bot/ui.py:292
 msgid ""
 "📔 Dictionary (/dictionary)\n"
 msgstr "📔 词典（/dictionary）\n"
 
-#: ./bot/ui.py:285
+#: ./bot/ui.py:293
 msgid "🌐 Summarize websites and Youtube videos (under 5min)"
 msgstr "🌐 总结网站和 Youtube 视频（5 分钟以下）"
 
-#: ./bot/ui.py:286
+#: ./bot/ui.py:294
 msgid ""
 "👨‍🎨 Generate images (/image)\n"
 msgstr "👨‍🎨 生成图片 (/image)\n"
 
-#: ./bot/ui.py:287
+#: ./bot/ui.py:295
 msgid ""
 "🧙‍♀️ Chat with dream characters (/role)\n"
 msgstr "🧙‍♀️ 与梦想中的角色聊天 (/role)\n"
 
-#: ./bot/ui.py:288
+#: ./bot/ui.py:296
 msgid ""
 "👥 Group chat - add @{} to a group chat, then use /gpt to start.\n"
 msgstr "👥 群聊 - 添加 @{} 到群聊，然后使用 /gpt 开始。\n"
 
-#: ./bot/ui.py:289
+#: ./bot/ui.py:297
 msgid "💡 Subscribe to @ChatGPT_Prompts_Lab for more inspiration"
 msgstr "💡 订阅 @ChatGPT_Prompts_Lab 获取更多灵感"
 
-#: ./bot/ui.py:291
+#: ./bot/ui.py:299
 msgid "By using this chatbot, you agree to our <a href=\"{}\">terms of service</a> and <a href=\"{}\">privacy policy</a>."
 msgstr "使用此聊天机器人即表示您同意我们的<a href=\"{}\">服务条款</a>和<a href=\"{}\">隐私政策</a>。"
 
-#: ./bot/ui.py:296
+#: ./bot/ui.py:304
 msgid "FAQ"
 msgstr "常问问题"
 
-#: ./bot/ui.py:297
+#: ./bot/ui.py:305
 msgid "Feedback"
 msgstr "反馈"
 

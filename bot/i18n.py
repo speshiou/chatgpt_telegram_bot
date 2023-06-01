@@ -3,6 +3,8 @@ import gettext
 DEFAULT_LOCALE = "en"
 
 SUPPORTED_LOCALES = set([
+    'es',
+    'fr',
     'zh_TW',
     'zh_CN',
     DEFAULT_LOCALE,

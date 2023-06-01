@@ -143,12 +143,20 @@ def load_settings(db: Database, chat_id: int, _):
         "lang": {
             "icon": "🌐",
             "name": _("UI Language"),
-            "desc": _("This setting won't effect the answers from the chatbot"),
+            "desc": _("This setting won't effect the answers from the chatbot.\n\nPlease feedback to @{} if there is any translation errors.").format(config.SUPPORT_USER_NAME),
             "value": lang,
             "options": [
                 {
                     "label": "English",
                     "value": "en",
+                },
+                {
+                    "label": "Español",
+                    "value": "es",
+                },
+                {
+                    "label": "Français",
+                    "value": "fr",
                 },
                 {
                     "label": "简体中文",
@@ -269,7 +277,7 @@ def settings(db: Database, chat_id: int, _, data: str = None):
     return text, reply_markup
 
 def about(_):
-    text = _("Hi! I'm an AI chatbot powered by OpenAI's GPT and DALL·E models.")
+    text = _("Hi! My name is Nexia, an AI chatbot powered by OpenAI's GPT and DALL·E models.")
     text += "\n\n"
     text += _("<b>What can I do for you?</b>\n")
     text += _("🌎 Translate\n")

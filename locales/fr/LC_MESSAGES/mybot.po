@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-06-01 13:05+0800\n"
+"POT-Creation-Date: 2023-06-01 13:35+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -470,119 +470,122 @@ msgid "UI Language"
 msgstr "Langue de l'interface utilisateur"
 
 #: ./bot/ui.py:146
-msgid "This setting won't effect the answers from the chatbot"
-msgstr "Ce paramètre n'affectera pas les réponses du chatbot"
+msgid ""
+"This setting won't effect the answers from the chatbot.\n"
+"\n"
+"Please feedback to @{} if there is any translation errors."
+msgstr "Ce paramètre n'affectera pas les réponses du chatbot.\n\nVeuillez faire part de vos commentaires à @{} en cas d'erreurs de traduction."
 
-#: ./bot/ui.py:162
+#: ./bot/ui.py:170
 msgid "Not specify"
 msgstr "Ne pas préciser"
 
-#: ./bot/ui.py:175
+#: ./bot/ui.py:183
 msgid "<b>Tips</b>"
 msgstr "<b>Conseils</b>"
 
-#: ./bot/ui.py:220 ./bot/ui.py:294
+#: ./bot/ui.py:228 ./bot/ui.py:302
 msgid "Settings"
 msgstr "Paramètres"
 
-#: ./bot/ui.py:231
+#: ./bot/ui.py:239
 msgid "About"
 msgstr "À propos"
 
-#: ./bot/ui.py:263
+#: ./bot/ui.py:271
 msgid "Back"
 msgstr "Dos"
 
-#: ./bot/ui.py:266
+#: ./bot/ui.py:274
 msgid "This setting is outdated"
 msgstr "Ce paramètre est obsolète"
 
-#: ./bot/ui.py:272
-msgid "Hi! I'm an AI chatbot powered by OpenAI's GPT and DALL·E models."
-msgstr "Salut! Je suis un chatbot IA propulsé par les modèles GPT et DALL·E d'OpenAI."
+#: ./bot/ui.py:280
+msgid "Hi! My name is Nexia, an AI chatbot powered by OpenAI's GPT and DALL·E models."
+msgstr "Salut! Je m'appelle Nexia, un chatbot IA propulsé par les modèles GPT et DALL·E d'OpenAI."
 
-#: ./bot/ui.py:274
+#: ./bot/ui.py:282
 msgid ""
 "<b>What can I do for you?</b>\n"
 msgstr "<b>Que puis-je faire pour vous ?</b>\n"
 
-#: ./bot/ui.py:275
+#: ./bot/ui.py:283
 msgid ""
 "🌎 Translate\n"
 msgstr "🌎 Traduire\n"
 
-#: ./bot/ui.py:276
+#: ./bot/ui.py:284
 msgid ""
 "✉️ Writing\n"
 msgstr "✉️ Écrire\n"
 
-#: ./bot/ui.py:277
+#: ./bot/ui.py:285
 msgid ""
 "🗂 Summarize\n"
 msgstr "🗂 Résumer\n"
 
-#: ./bot/ui.py:278
+#: ./bot/ui.py:286
 msgid ""
 "🤔 Provide ideas and solve problems\n"
 msgstr "🤔 Fournir des idées et résoudre des problèmes\n"
 
-#: ./bot/ui.py:279
+#: ./bot/ui.py:287
 msgid ""
 "💻 Programming and debugging\n"
 msgstr "💻 Programmation et débogage\n"
 
-#: ./bot/ui.py:281
+#: ./bot/ui.py:289
 msgid ""
 "<b>More than ChatGPT</b>\n"
 msgstr "<b>Plus que ChatGPT</b>\n"
 
-#: ./bot/ui.py:282
+#: ./bot/ui.py:290
 msgid ""
 "🎙 Support voice messages (100 tokens/s when exceeding 10s)\n"
 msgstr "🎙 Prise en charge des messages vocaux (100 jetons/s en cas de dépassement de 10 s)\n"
 
-#: ./bot/ui.py:283
+#: ./bot/ui.py:291
 msgid ""
 "✍️ Proofreading (/proofreader)\n"
 msgstr "✍️ Relecture (/proofreader)\n"
 
-#: ./bot/ui.py:284
+#: ./bot/ui.py:292
 msgid ""
 "📔 Dictionary (/dictionary)\n"
 msgstr "📔 Dictionnaire (/dictionary)\n"
 
-#: ./bot/ui.py:285
+#: ./bot/ui.py:293
 msgid "🌐 Summarize websites and Youtube videos (under 5min)"
 msgstr "🌐 Résumez des sites Web et des vidéos Youtube (moins de 5min)"
 
-#: ./bot/ui.py:286
+#: ./bot/ui.py:294
 msgid ""
 "👨‍🎨 Generate images (/image)\n"
 msgstr "👨‍🎨 Générer des images (/image)\n"
 
-#: ./bot/ui.py:287
+#: ./bot/ui.py:295
 msgid ""
 "🧙‍♀️ Chat with dream characters (/role)\n"
 msgstr "🧙‍♀️ Discutez avec des personnages de rêve (/role)\n"
 
-#: ./bot/ui.py:288
+#: ./bot/ui.py:296
 msgid ""
 "👥 Group chat - add @{} to a group chat, then use /gpt to start.\n"
 msgstr "👥 Chat de groupe : ajoutez @{} à un chat de groupe, puis utilisez /gpt pour commencer.\n"
 
-#: ./bot/ui.py:289
+#: ./bot/ui.py:297
 msgid "💡 Subscribe to @ChatGPT_Prompts_Lab for more inspiration"
 msgstr "💡 Abonnez-vous à @ChatGPT_Prompts_Lab pour plus d'inspiration"
 
-#: ./bot/ui.py:291
+#: ./bot/ui.py:299
 msgid "By using this chatbot, you agree to our <a href=\"{}\">terms of service</a> and <a href=\"{}\">privacy policy</a>."
 msgstr "En utilisant ce chatbot, vous acceptez nos <a href=\"{}\">conditions d'utilisation</a> et notre <a href=\"{}\">politique de confidentialité</a>."
 
-#: ./bot/ui.py:296
+#: ./bot/ui.py:304
 msgid "FAQ"
 msgstr "FAQ"
 
-#: ./bot/ui.py:297
+#: ./bot/ui.py:305
 msgid "Feedback"
 msgstr "Retour"
 
