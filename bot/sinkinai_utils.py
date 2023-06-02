@@ -23,7 +23,7 @@ def _(text):
 # keep model key short to prevent callback_data from exceeding size limit
 MODELS = {
     "majic": {
-        "name": _("Realistic"),
+        "name": _("Photorealistic"),
         "model_id": "yBG2r9O",
         "version": "5",
         "negative_prompt": "ng_deepnegative_v1_75t, (badhandv4:1.2), (worst quality:2), (low quality:2), (normal quality:2), lowres, bad anatomy, bad hands, ((monochrome)), ((grayscale)) watermark, moles",

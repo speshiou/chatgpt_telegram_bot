@@ -193,7 +193,7 @@ def load_settings(db: Database, chat_id: int, _):
         },
         "lang": {
             "icon": "🌐",
-            "name": _("UI Language"),
+            "name": _("Language"),
             "desc": _("This setting won't effect the answers from the chatbot.\n\nPlease feedback to @{} if there is any translation errors.").format(config.SUPPORT_USER_NAME),
             "value": lang,
             "options": [
@@ -452,7 +452,7 @@ def image_menu(_, path = None):
             **options,
             "dalle": {
                 "icon": "🎨",
-                "name": _("DALL·E"),
+                "name": "DALL·E (OpenAI)",
                 "desc": desc_select_size,
                 "args": {
                     "m": "dalle",
