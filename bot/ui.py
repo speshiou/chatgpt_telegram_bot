@@ -436,7 +436,7 @@ def image_menu(_, path = None):
         options[key] = { 
             "icon": "🎨",
             "name": _(value["name"]),
-            "desc": desc_select_size,
+            "desc": desc_select_size + "\n\n" + build_tips([ _("The price is for 2 images") ], _),
             "options": size_options,
             "args": {
                 "m": key,

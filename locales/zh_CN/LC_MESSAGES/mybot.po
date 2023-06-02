@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-06-02 16:09+0800\n"
+"POT-Creation-Date: 2023-06-02 16:14+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -596,6 +596,10 @@ msgstr "反馈"
 #: ./bot/ui.py:417
 msgid "Select the image size (width x height)"
 msgstr "选择图像尺寸（宽 x 高）"
+
+#: ./bot/ui.py:439
+msgid "The price is for 2 images"
+msgstr "价格为 2 张图片"
 
 #: ./bot/ui.py:448
 msgid "Generate images"
