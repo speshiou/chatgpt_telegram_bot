@@ -6,6 +6,7 @@ BASE_TOKENS = 1600
 DEFAULT_NUM_IMAGES = 2
 
 INFERENCE_ENDPOINT = "https://sinkin.ai/m/inference"
+LORA_DETAILER_ID = "647944c3911a6fa8a2e2712b"
 
 BASE_FORM_DATA = {
     "user_email": config.SINKIN_ACCOUNT,
@@ -36,10 +37,13 @@ MODELS = {
         "name": _("Anime"),
         "model_id": "vln8Nwr",
         "version": "10",
+        "negative_prompt": "(worst quality, low quality:1.4), (zombie, sketch, interlocked fingers, comic),",
         "steps": 20,
-        "scale": "7.5",
+        "scale": "7",
         "scheduler": "K_EULER_ANCESTRAL",
-        "use_default_neg": "true",
+        "use_default_neg": "false",
+        "lora": LORA_DETAILER_ID, 
+        "lora_scale": "0.3",
     },
 }
 
