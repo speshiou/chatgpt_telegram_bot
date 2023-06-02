@@ -656,9 +656,19 @@ async def image_message_handle(update: Update, context: CallbackContext):
         full_message = update.message.text
         message = strip_command(full_message)
         if not message:
-            text = _("💡 Please type /image and followed by the image prompt\n\n")
-            text += _("<b>Example:</b>\n") + " /image a man wears spacesuit"
-            await update.effective_message.reply_text(text, ParseMode.HTML)
+            text = _("💡 Please type /image and followed by the image prompt")
+            text += "\n\n"
+            text += ui.build_tips([
+                _("<b>Example:</b>") + " /image a man wears spacesuit",
+                _("Some AI Models only support English prompt"),
+            ], _)
+
+            reply_markup = InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("💡 " + _("Learn"), url="https://t.me/sd_prompts_lab"),
+                ],
+            ])
+            await update.effective_message.reply_text(text, ParseMode.HTML, reply_markup=reply_markup)
             return
         result = await openai_utils.moderation(message)
         if not result:

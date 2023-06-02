@@ -397,12 +397,14 @@ def about(_):
     text += _("👨‍🎨 Generate images (/image)\n")
     text += _("🧙‍♀️ Chat with dream characters (/role)\n")
     text += _("👥 Group chat - add @{} to a group chat, then use /gpt to start.\n").format(config.TELEGRAM_BOT_NAME)
-    text += _("💡 Subscribe to @ChatGPT_Prompts_Lab for more inspiration")
     text += "\n\n"
     text += _("""By using this chatbot, you agree to our <a href="{}">terms of service</a> and <a href="{}">privacy policy</a>.""").format("https://tgchat.co/terms-of-service", "https://tgchat.co/privacy-policy")
 
     reply_markup = InlineKeyboardMarkup([
-        [InlineKeyboardButton("⚙️ " + _("Settings"), callback_data="settings")],
+        [
+            InlineKeyboardButton("⚙️ " + _("Settings"), callback_data="settings"),
+            InlineKeyboardButton("💡 " + _("Learn"), url="https://t.me/ChatGPT_Prompts_Lab"),
+        ],
         [
             InlineKeyboardButton("❓ " + _("FAQ"), url="https://tgchat.co/faq"),
             InlineKeyboardButton("✉️ " + _("Feedback"), url="https://t.me/{}".format(config.SUPPORT_USER_NAME)),
