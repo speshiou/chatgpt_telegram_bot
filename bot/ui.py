@@ -195,86 +195,123 @@ def build_keyboard_rows(buttons, num_keyboard_cols):
         keyboard_rows.append(buttons[i:end])
     return keyboard_rows
 
+def _menu_page(path, menu_data, _):
+    path = path if path is not None else menu_data["key"]
+    title_format = "{} <b>{}</b>"
+    segs = path.split(">") if path else []
+    data = None
+    path_segs = []
+
+    # find deepest menu page
+    for key in segs:
+        if data is None:
+            # first layer
+            data = menu_data
+        elif "options" in data and isinstance(data["options"], dict):
+            if key in data["options"]:
+                data = data["options"][key]
+            else:
+                break
+        else:
+            break
+        menu_page_key = key
+        path_segs.append(key)
+
+    keyboard = []
+    num_keyboard_cols = data["num_keyboard_cols"] if "num_keyboard_cols" in data else 1
+    reply_markup = None
+
+    text = title_format.format(data["icon"], data["name"])
+    if "desc" in data:
+        text += "\n\n"
+        text += data["desc"]
+
+    if "options" in data:
+        if isinstance(data["options"], dict):
+            options = data["options"]
+            for key, option in options.items():
+                if "callback" in option:
+                    callback_data = option["callback"]
+                else:
+                    option_path_segs = path_segs + [key]
+                    callback_data = ">".join(option_path_segs)
+                
+                keyboard.append(InlineKeyboardButton("{} {}".format(option["icon"], option["name"]), callback_data=callback_data))
+        else:
+            # array
+            for option in data["options"]:
+                label = option["label"]
+                if "disable_check_mark" not in data and data["value"] == option["value"]:
+                    label = "✅ " + label
+
+                if "callback" in option:
+                    callback_data = option["callback"]
+                else:
+                    callback_value = option["value"] if option["value"] is not None else ""
+                    # back to previous menu after selecting an option
+                    base_path = ">".join(path_segs[:-1])
+                    callback_data = f"{base_path}|{menu_page_key}|{callback_value}"
+                
+                keyboard.append(InlineKeyboardButton(label, callback_data=callback_data))
+
+    keyboard_rows = []
+    if len(keyboard) > 0:
+        keyboard_rows = build_keyboard_rows(keyboard, num_keyboard_cols=num_keyboard_cols)
+    if len(segs) > 1:
+        callback_data = ">".join(path_segs[:-1])
+        keyboard_rows.append([InlineKeyboardButton("< " + _("Back"), callback_data=callback_data)])
+    if len(keyboard_rows) > 0:
+        reply_markup = InlineKeyboardMarkup(keyboard_rows)
+    return text, reply_markup
+    
+
 def settings(db: Database, chat_id: int, _, data: str = None):
     if data and "|" in data:
         # TODO: move to update handle function
         # save settings
-        segs = data.split("|")
-        setting_key, value = segs[1:]
+        path, setting_key, value = data.split("|")
         if not value:
             value = None
         elif value.isnumeric():
             value = int(value)
-        db.set_chat_attribute(chat_id, setting_key, value)
+        settings = load_settings(db, chat_id, _)
+        if setting_key in settings:
+            db.set_chat_attribute(chat_id, setting_key, value)
         if setting_key == 'lang':
             _ = i18n.get_text_func(value)
+    else:
+        path = data
 
     settings = load_settings(db, chat_id, _)
 
-    segs = data.split(">") if data else []
-
-    keyboard = []
-    num_keyboard_cols = 1
-
-    title_format = "{} <b>{}</b>"
-
-    text = ""
-    reply_markup = None
-
-    if len(segs) <= 1:
-        # main setting menu
-        num_keyboard_cols = 2
-
-        text = title_format.format("⚙️", _("Settings"))
-        info = []
-        for key, setting in settings.items():
-            value = setting["value"]
-            label = value
-            for option in setting["options"]:
-                if value == option["value"]:
-                    label = option["label"]
-            keyboard.append(InlineKeyboardButton("{} {}".format(setting["icon"], setting["name"]), callback_data=f"settings>{key}"))
-
-            info.append("<b>{}</b>: {}".format(setting["name"], label))
-        keyboard.append(InlineKeyboardButton("ℹ️ " + _("About"), callback_data=f"about"))
-
-        text += "\n\n"
-        text += "\n".join(info)
-
-        keyboard_rows = build_keyboard_rows(keyboard, num_keyboard_cols=num_keyboard_cols)
-        reply_markup = InlineKeyboardMarkup(keyboard_rows)
-    else:
-        # sub setting menu
-        setting_key = segs[-1]
-        if setting_key in settings:
-            setting = settings[setting_key]
-
-            if "num_keyboard_cols" in setting:
-                num_keyboard_cols = setting["num_keyboard_cols"]
-
-            text = title_format.format(setting["icon"], setting["name"])
-
-            if "desc" in setting:
-                text += "\n\n"
-                text += setting["desc"]
-
-            for option in setting["options"]:
+    info = []
+    for key, setting in settings.items():
+        value = setting["value"]
+        label = value
+        for option in setting["options"]:
+            if value == option["value"]:
                 label = option["label"]
-                if "disable_check_mark" not in setting and setting["value"] == option["value"]:
-                    label = "✅ " + label
 
-                callback_value = option["value"] if option["value"] is not None else ""
-                callback_data = option["callback"] if "callback" in option else f"settings|{setting_key}|{callback_value}"
-                keyboard.append(InlineKeyboardButton(label, callback_data=callback_data))
+        info.append("<b>{}</b>: {}".format(setting["name"], label))
+    desc = "\n".join(info)
 
-            keyboard_rows = build_keyboard_rows(keyboard, num_keyboard_cols=num_keyboard_cols)
-            keyboard_rows.append([InlineKeyboardButton("< " + _("Back"), callback_data="settings")])
-            reply_markup = InlineKeyboardMarkup(keyboard_rows)
-        else:
-            text = "⚠️ " + _("This setting is outdated")
+    menu_data = {
+        "icon": "⚙️",
+        "name": _("Settings"),
+        "key": "settings",
+        "desc": desc,
+        "options": {
+            **settings,
+            "about": {
+                "icon": "ℹ️",
+                "name": _("About"),
+                "callback": "about",
+            }
+        },
+        "num_keyboard_cols": 2,
+    }
 
-
-    return text, reply_markup
+    return _menu_page(path, menu_data, _)
 
 def about(_):
     text = _("Hi! My name is Nexia, an AI chatbot powered by OpenAI's GPT and DALL·E models.")
