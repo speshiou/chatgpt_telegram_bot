@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-06-02 16:14+0800\n"
+"POT-Creation-Date: 2023-06-02 17:35+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -59,23 +59,27 @@ msgstr "😅 沒有要重試的對話歷史記錄"
 msgid "Temporary OpenAI server failure, please try again later."
 msgstr "OpenAI 服務器暫時性故障，請稍後重試。"
 
-#: ./bot/bot.py:179 ./bot/bot.py:623
+#: ./bot/bot.py:181 ./bot/bot.py:665
+msgid "Inappropriate prompt. Please modify your prompt and retry."
+msgstr "不當提示。請修改您的提示並重試。"
+
+#: ./bot/bot.py:182 ./bot/bot.py:626
 msgid "Reason: {}"
 msgstr "原因： {}"
 
-#: ./bot/bot.py:251
+#: ./bot/bot.py:254
 msgid "⚠️ Insufficient tokens. You need {} tokens to decode this voice message. Check /balance"
 msgstr "⚠️ 標記額度不足。您需要 {} 標記來解碼此語音訊息。查看餘額 /balance"
 
-#: ./bot/bot.py:254
+#: ./bot/bot.py:257
 msgid "Decoding voice message ..."
 msgstr "解碼語音訊息 ..."
 
-#: ./bot/bot.py:278
+#: ./bot/bot.py:281
 msgid "Voice data size exceeds 20MB limit"
 msgstr "語音數據大小超過 20MB 限制"
 
-#: ./bot/bot.py:312
+#: ./bot/bot.py:315
 msgid ""
 "summarize the transcript from {} containing abstract, list of key points and the conclusion\n"
 "\n"
@@ -83,27 +87,27 @@ msgid ""
 "{}"
 msgstr "總結來自 {} 的抄本，包含摘要、關鍵點列表和結論\n\n抄本：\n{}"
 
-#: ./bot/bot.py:357 ./bot/bot.py:730
+#: ./bot/bot.py:360 ./bot/bot.py:737
 msgid "Retry"
 msgstr "重試"
 
-#: ./bot/bot.py:391
+#: ./bot/bot.py:394
 msgid "⚠️ This chat has exceeded the rate limit. Please wait for up to 60 seconds."
 msgstr "⚠️ 此聊天已超出速率限制。請等待最多 60 秒。"
 
-#: ./bot/bot.py:410
+#: ./bot/bot.py:413
 msgid "⚠️ Insufficient tokens, check /balance"
 msgstr "⚠️ 標記額度不足，查看 /balance"
 
-#: ./bot/bot.py:422
+#: ./bot/bot.py:425
 msgid "⚠️ Transcripts for this video are not available, possibly due to access restrictions or transcript disablement."
 msgstr "⚠️ 此影片的轉錄本不可用，可能是由於訪問限製或轉錄本禁用。"
 
-#: ./bot/bot.py:428
+#: ./bot/bot.py:431
 msgid "⚠️ Failed to fetch the website content, possibly due to access restrictions."
 msgstr "⚠️ 無法獲取網站內容，可能是因為訪問限制。"
 
-#: ./bot/bot.py:430
+#: ./bot/bot.py:433
 msgid ""
 "summarize the content from {} containing abstract, list of key points and the conclusion\n"
 "\n"
@@ -111,234 +115,234 @@ msgid ""
 "{}"
 msgstr "總結來自 {} 的內容，包含摘要、要點列表和結論\n\n原始內容：\n{}"
 
-#: ./bot/bot.py:526
+#: ./bot/bot.py:529
 msgid "⚠️ The answer was too long, has been splitted into multiple unformatted messages"
 msgstr "⚠️ 答案太長，被拆分成多條未格式化的訊息"
 
-#: ./bot/bot.py:539
+#: ./bot/bot.py:542
 msgid "⚠️ Require {} tokens to process the input text, check /balance"
 msgstr "⚠️ 需要 {} 個標記來處理輸入訊息，檢查 /balance"
 
-#: ./bot/bot.py:580
+#: ./bot/bot.py:583
 msgid "Insufficient tokens. You need {} tokens to generate this voice message. Check /balance"
 msgstr "標記額度不足。您需要 {} 標記才能生成此語音訊息。查看餘額 /balance"
 
-#: ./bot/bot.py:584
+#: ./bot/bot.py:587
 msgid "Recording ..."
 msgstr "錄音中 ..."
 
-#: ./bot/bot.py:612
+#: ./bot/bot.py:615
 msgid "The voice message could not be created. Voice messages are only valid in English."
 msgstr "無法創建語音消息。語音消息僅適用於英語。"
 
-#: ./bot/bot.py:622
+#: ./bot/bot.py:625
 msgid "Failed to generate the voice message, please try again later."
 msgstr "生成語音訊息失敗，請稍後重試。"
 
-#: ./bot/bot.py:656
+#: ./bot/bot.py:659
 msgid ""
 "💡 Please type /image and followed by the image prompt\n"
 "\n"
 msgstr "💡 請輸入 /image 然後輸入圖片提示\n\n"
 
-#: ./bot/bot.py:657
+#: ./bot/bot.py:660
 msgid ""
 "<b>Example:</b>\n"
 msgstr "<b>示例：</b>\n"
 
-#: ./bot/bot.py:686 ./bot/bot.py:698
+#: ./bot/bot.py:693 ./bot/bot.py:705
 msgid "Outdated command"
 msgstr "過時的命令"
 
-#: ./bot/bot.py:703
+#: ./bot/bot.py:710
 msgid "⚠️ Insufficient tokens. To generate an image, it will cost {} tokens. Check /balance"
 msgstr "⚠️ 標記額度不足。要生成圖像，將花費 {} 個標記。查看 /balance"
 
-#: ./bot/bot.py:708
+#: ./bot/bot.py:715
 msgid "⚠️ It is only possible to generate one image at a time. Please wait for {} seconds to retry."
 msgstr "⚠️ 一次只能生成一張圖像。請等待 {} 秒重試。"
 
-#: ./bot/bot.py:714
+#: ./bot/bot.py:721
 msgid "👨‍🎨 painting ..."
 msgstr "👨‍🎨 正在畫 ..."
 
-#: ./bot/bot.py:785
+#: ./bot/bot.py:792
 msgid "Change chat mode"
 msgstr "更改聊天模式"
 
-#: ./bot/bot.py:789
+#: ./bot/bot.py:796
 msgid "It's been a long time since we talked, and I've forgotten what we talked about before."
 msgstr "我們好久沒說話了，我都忘了我們之前談過什麼了。"
 
-#: ./bot/bot.py:790
+#: ./bot/bot.py:797
 msgid "Timeout settings"
 msgstr "超時設置"
 
-#: ./bot/bot.py:792
+#: ./bot/bot.py:799
 msgid "I have already forgotten what we previously talked about."
 msgstr "我已經忘記了我們之前談過的事情。"
 
-#: ./bot/bot.py:797
+#: ./bot/bot.py:804
 msgid "You're now chatting with {} ..."
 msgstr "您現在正在與 {} 聊天..."
 
-#: ./bot/bot.py:808
+#: ./bot/bot.py:815
 msgid "To continue the conversation in the group chat, please \"reply\" to my messages."
 msgstr "要在群聊中繼續對話，請“回覆”我的訊息。"
 
-#: ./bot/bot.py:809
+#: ./bot/bot.py:816
 msgid "Please \"SLOW DOWN\" interactions with the chatbot as group chats can easily exceed the Telegram rate limit. "
 msgstr "請“放慢”與聊天機器人的互動，因為群聊很容易超過 Telegram 速率限制。"
 
-#: ./bot/bot.py:810
+#: ./bot/bot.py:817
 msgid "Once this chat exceeds the rate limit, the chatbot won't respond temporarily."
 msgstr "一旦本次聊天超過限速，聊天機器人將暫時不響應。"
 
-#: ./bot/bot.py:837
+#: ./bot/bot.py:844
 msgid "🔒 For privacy reason, your balance won't show in a group chat. Please contact @{} directly."
 msgstr "🔒 出於隱私原因，您的餘額不會在群聊中顯示。請直接聯繫 @{}。"
 
-#: ./bot/bot.py:846
+#: ./bot/bot.py:853
 msgid ""
 "👛 <b>Balance</b>\n"
 "\n"
 msgstr "👛 <b>餘額</b>\n\n"
 
-#: ./bot/bot.py:847
+#: ./bot/bot.py:854
 msgid ""
 "<b>{:,}</b> tokens left\n"
 msgstr "剩餘 <b>{:,}</b> 個標記額度\n"
 
-#: ./bot/bot.py:848
+#: ./bot/bot.py:855
 msgid "<i>You used <b>{:,}</b> tokens</i>"
 msgstr "<i>您使用了 <b>{:,}</b> 個標記</i>"
 
-#: ./bot/bot.py:852
+#: ./bot/bot.py:859
 msgid "The longer conversation would spend more tokens"
 msgstr "對話越長，花費的標記越多"
 
-#: ./bot/bot.py:853
+#: ./bot/bot.py:860
 msgid "/reset to clear history manually"
 msgstr "/reset 手動清除歷史記錄"
 
-#: ./bot/bot.py:854
+#: ./bot/bot.py:861
 msgid "Most users spend fewer than 200,000 tokens per month"
 msgstr "大多數用戶每月花費少於 200,000 個標記"
 
-#: ./bot/bot.py:906
+#: ./bot/bot.py:913
 msgid "💡 Only accept number between 0.1 to 100"
 msgstr "💡 只接受 0.1 到 100 之間的數字"
 
-#: ./bot/bot.py:909
+#: ./bot/bot.py:916
 msgid ""
 "🛒 Choose the payment method\n"
 "\n"
 msgstr "🛒 選擇付款方式\n\n"
 
-#: ./bot/bot.py:910
+#: ./bot/bot.py:917
 msgid ""
 "💳 Debit or Credit Card - support 200+ countries/regions\n"
 msgstr "💳 借記卡或信用卡 - 支持 200 多個國家/地區\n"
 
-#: ./bot/bot.py:912
+#: ./bot/bot.py:919
 msgid ""
 "💎 Crypto - BTC, USDT, USDC, TON, BNB\n"
 msgstr "💎 加密貨幣 - BTC、USDT、USDC、TON、BNB\n"
 
-#: ./bot/bot.py:914
+#: ./bot/bot.py:921
 msgid "💳 Debit or Credit Card"
 msgstr "💳 借記卡或信用卡"
 
-#: ./bot/bot.py:915
+#: ./bot/bot.py:922
 msgid "💎 Crypto"
 msgstr "💎 加密貨幣"
 
-#: ./bot/bot.py:938
+#: ./bot/bot.py:945
 msgid "📋 Creating an invoice ..."
 msgstr "📋 創建發票 ..."
 
-#: ./bot/bot.py:945
+#: ./bot/bot.py:952
 msgid ""
 "📋 <b>Your invoice</b>:\n"
 "\n"
 msgstr "📋 <b>您的發票</b>：\n\n"
 
-#: ./bot/bot.py:950
+#: ./bot/bot.py:957
 msgid ""
 "💡 <b>Tips</b>:\n"
 msgstr "💡 <b>提示</b>：\n"
 
-#: ./bot/bot.py:956
+#: ./bot/bot.py:963
 msgid "If you do not have a PayPal account, click on the button located below the login button to pay with cards directly."
 msgstr "如果您沒有 PayPal 帳戶，請單擊登錄按鈕下方的按鈕直接使用卡片付款。"
 
-#: ./bot/bot.py:957
+#: ./bot/bot.py:964
 msgid "💳 Pay with Debit or Credit Card"
 msgstr "💳 用借記卡或信用卡支付"
 
-#: ./bot/bot.py:959
+#: ./bot/bot.py:966
 msgid "If you have any issues related to crypto payment, please contact the customer service in the payment page, or send messages to {} directly for assistance."
 msgstr "如果您有任何與加密支付相關的問題，請在支付頁面聯繫客服，或直接發送訊息至 {} 尋求幫助。"
 
-#: ./bot/bot.py:960
+#: ./bot/bot.py:967
 msgid "💎 Pay with Crypto"
 msgstr "💎 使用加密支付"
 
-#: ./bot/bot.py:962
+#: ./bot/bot.py:969
 msgid "Tokens will be credited within 10 minutes of payment."
 msgstr "標記額度將在付款後 10 分鐘內存入。"
 
-#: ./bot/bot.py:963
+#: ./bot/bot.py:970
 msgid "Please contact @{} if tokens are not received after 1 hour of payment."
 msgstr "如果付款 1 小時後仍未收到標記額度，請聯繫 @{}。"
 
-#: ./bot/bot.py:971
+#: ./bot/bot.py:978
 msgid "⚠️ Failed to create an invoice, please try again later."
 msgstr "⚠️ 發票創建失敗，請稍後重試。"
 
-#: ./bot/bot.py:1011
+#: ./bot/bot.py:1018
 msgid ""
 "<b>💰 Earn</b>\n"
 "\n"
 msgstr "<b>💰 賺取</b>\n\n"
 
-#: ./bot/bot.py:1013
+#: ./bot/bot.py:1020
 msgid ""
 "Get %s%% rewards from the referred payments\n"
 "\n"
 msgstr "從推薦的付款中獲得 %s%% 的獎勵\n\n"
 
-#: ./bot/bot.py:1014
+#: ./bot/bot.py:1021
 msgid ""
 "Unused rewards: ${:,.2f}\n"
 msgstr "未使用的獎勵：${:,.2f}\n"
 
-#: ./bot/bot.py:1015
+#: ./bot/bot.py:1022
 msgid ""
 "Total earned: ${:,.2f}\n"
 "\n"
 msgstr "總獲得的獎勵：${:,.2f}\n\n"
 
-#: ./bot/bot.py:1016
+#: ./bot/bot.py:1023
 msgid ""
 "Referral link:\n"
 msgstr "推薦鏈接：\n"
 
-#: ./bot/bot.py:1018
+#: ./bot/bot.py:1025
 msgid ""
 "<i>You have referred {:,} new users</i>\n"
 "\n"
 msgstr "<i>您推薦了 {:,} 個新用戶</i>\n\n"
 
-#: ./bot/bot.py:1019
+#: ./bot/bot.py:1026
 msgid "<i>💡 Refer the new users via your referral link, and you'll get a reward when they make a payment.</i>"
 msgstr "<i>💡 通過您的推薦鏈接推薦新用戶，當他們付款時您將獲得獎勵。</i>"
 
-#: ./bot/bot.py:1021
+#: ./bot/bot.py:1028
 msgid "⚠️ Server error, please try again later."
 msgstr "⚠️ 服務器錯誤，請稍後重試。"
 
-#: ./bot/bot.py:1030
+#: ./bot/bot.py:1037
 msgid "💡 Edited messages won't take effects"
 msgstr "💡 編輯的訊息不會生效"
 
@@ -597,15 +601,27 @@ msgstr "反饋"
 msgid "Select the image size (width x height)"
 msgstr "選擇圖像尺寸（寬 x 高）"
 
-#: ./bot/ui.py:439
+#: ./bot/ui.py:441
 msgid "The price is for 2 images"
 msgstr "價格為 2 張圖片"
 
-#: ./bot/ui.py:448
+#: ./bot/ui.py:442
+msgid "English only"
+msgstr "僅限英語"
+
+#: ./bot/ui.py:452
 msgid "Generate images"
 msgstr "生成圖像"
 
-#: ./bot/ui.py:450
+#: ./bot/ui.py:454
 msgid "Select painting style or AI model"
 msgstr "選擇畫風或 AI 模型"
+
+#: ./bot/ui.py:462
+msgid "The price is for one image"
+msgstr "價格是一張圖片"
+
+#: ./bot/ui.py:463
+msgid "Any languages"
+msgstr "任何語言"
 

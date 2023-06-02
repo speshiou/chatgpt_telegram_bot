@@ -176,6 +176,9 @@ async def send_openai_error(update: Update, context: CallbackContext, e: Excepti
     error_msg = f"{e}"
     if "JSONDecodeError" not in error_msg:
         # ignore JSONDecodeError content. openai api may response html, which will cause message too long error
+        if "policy" in error_msg:
+            # replace Microsoft warnings
+            error_msg = _("Inappropriate prompt. Please modify your prompt and retry.")
         text += " " + _("Reason: {}").format(error_msg)
     if placeholder is None:
         await update.effective_message.reply_text(text)

@@ -436,7 +436,11 @@ def image_menu(_, path = None):
         options[key] = { 
             "icon": "🎨",
             "name": _(value["name"]),
-            "desc": desc_select_size + "\n\n" + build_tips([ _("The price is for 2 images") ], _),
+            "desc": desc_select_size + "\n\n" + 
+                build_tips([ 
+                    _("The price is for 2 images"),
+                    _("English only"),
+                      ], _),
             "options": size_options,
             "args": {
                 "m": key,
@@ -453,7 +457,11 @@ def image_menu(_, path = None):
             "dalle": {
                 "icon": "🎨",
                 "name": "DALL·E (OpenAI)",
-                "desc": desc_select_size,
+                "desc": desc_select_size + "\n\n" + 
+                build_tips([ 
+                    _("The price is for one image"),
+                    _("Any languages"),
+                      ], _),
                 "args": {
                     "m": "dalle",
                 },
