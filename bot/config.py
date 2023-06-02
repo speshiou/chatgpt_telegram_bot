@@ -136,6 +136,9 @@ AZURE_OPENAI_API_KEY = os.getenv('AZURE_OPENAI_API_KEY')
 if not AZURE_OPENAI_API_BASE or not AZURE_OPENAI_API_VERSION or not AZURE_OPENAI_API_KEY:
     # fallback to official OpenAI base if Azure is not set up properly
     OPENAI_CHAT_API_TYPE = DEFAULT_OPENAI_API_TYPE
+
+# sinkin.ai
+SINKIN_ACCOUNT = os.getenv('SINKIN_ACCOUNT')
 # request timeout in seconds
 OPENAI_TIMEOUT = 60
 # whisper api has 25MB of file size limit, set 20MB to maintain buffer

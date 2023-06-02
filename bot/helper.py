@@ -1,5 +1,14 @@
 import re
+import aiohttp
 from urllib.parse import urlparse
+
+async def http_post(url, data, result_type="json"):
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, data=data) as response:
+            if result_type == "json":
+                return await response.json()
+            else:
+                return await response.text()
 
 def is_uri(s):
     try:

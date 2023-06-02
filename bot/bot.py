@@ -8,7 +8,7 @@ import math
 from datetime import datetime
 
 import telegram
-from telegram import Message, Chat, BotCommand, Update, User, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Message, Chat, BotCommand, Update, User, InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto
 from telegram.ext import (
     Application,
     ApplicationBuilder,
@@ -30,6 +30,7 @@ import database
 import openai_utils
 import chatgpt
 import tts_helper
+import sinkinai_utils
 import api
 import ui
 import helper
@@ -633,31 +634,69 @@ async def image_message_handle(update: Update, context: CallbackContext):
     user_id = user.id
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
-    used_tokens = config.DALLE_TOKENS
-
+    path = None
     cached_msg_id = None
     if update.callback_query:
         # from retry
         query = update.callback_query
+        path = query.data
         await query.answer()
-        action, cached_msg_id = query.data.split("|")
-        full_message = db.get_cached_message(cached_msg_id)
-
+        cached_msg_id = ui.get_arg(path, "id")
+        full_message = None
+        if cached_msg_id:
+            full_message = db.get_cached_message(cached_msg_id)
         if not full_message:
             # remove the retry button
             await update.effective_message.edit_caption(reply_markup=None)
             return
     else:
         full_message = update.message.text
+        message = strip_command(full_message)
+        if not message:
+            text = _("💡 Please type /image and followed by the image prompt\n\n")
+            text += _("<b>Example:</b> /image a cat wearing a spacesuit\n")
+            await update.effective_message.reply_text(text, ParseMode.HTML)
+            return
+        path = "image"
     
-    message = strip_command(full_message)
-    if not message:
-        text = _("💡 Please type /image and followed by the image prompt\n\n")
-        text += _("<b>Example:</b> /image a cat wearing a spacesuit\n")
-        text += _("<b>Price:</b> {} tokens per image").format(used_tokens)
-        await update.effective_message.reply_text(text, ParseMode.HTML)
+    if cached_msg_id is None:
+        cached_msg_id = db.cache_chat_message(message)
+
+    path = ui.add_arg(path, "id", cached_msg_id)
+    text, reply_markup = ui.image_menu(_, path=path)
+    await reply_or_edit_text(update, text, reply_markup=reply_markup)
+
+async def gen_image_handle(update: Update, context: CallbackContext):
+    user = await register_user_if_not_exists(update, context)
+    chat_id = update.effective_chat.id
+    _ = get_text_func(user, chat_id)
+    user_id = user.id
+
+    query = update.callback_query
+    path = query.data
+    await query.answer()
+
+    model = ui.get_arg(path, "m")
+    width = int(ui.get_arg(path, "w"))
+    height = int(ui.get_arg(path, "h"))
+    cached_msg_id = ui.get_arg(path, "id")
+    if cached_msg_id:
+        prompt = db.get_cached_message(cached_msg_id)
+        if not prompt:
+            await reply_or_edit_text(update, "⚠️ " + _("Outdated command"))
+            return
+    if model == "dalle":
+        used_tokens = config.DALLE_TOKENS
+    elif model in sinkinai_utils.MODELS:
+        num_images = sinkinai_utils.DEFAULT_NUM_IMAGES
+        credit_cost = sinkinai_utils.calc_credit_cost(width=width, height=height, num_images=num_images)
+        used_tokens = credit_cost * sinkinai_utils.BASE_TOKENS
+        used_tokens = int(used_tokens)
+        print(f"credit_cost={credit_cost} used_tokens={used_tokens}")
+    else:
+        await reply_or_edit_text(update, "⚠️ " + _("Outdated command"))
         return
-    
+
     remaining_tokens = db.get_user_remaining_tokens(user_id)
     if remaining_tokens < used_tokens:
         await update.effective_message.reply_text(_("⚠️ Insufficient tokens. To generate an image, it will cost {} tokens. Check /balance").format(used_tokens), parse_mode=ParseMode.HTML)
@@ -671,19 +710,33 @@ async def image_message_handle(update: Update, context: CallbackContext):
     placeholder = None
     try:
         db.mark_user_is_generating_image(user_id, True)
-        placeholder = await update.effective_message.reply_text(_("👨‍🎨 painting ..."))
-        image_url = await openai_utils.create_image(message)
+        text = _("👨‍🎨 painting ...")
+        if update.effective_message.photo:
+            placeholder = await update.effective_message.reply_text(text)
+        else:
+            placeholder = await query.edit_message_text(text)
+        if model == "dalle":
+            image_url = await openai_utils.create_image(prompt)
+            images = [image_url]
+        else:
+            images = await sinkinai_utils.inference(model=model, width=width, height=height, prompt=prompt)
         try:
             # in case the user deletes the placeholders manually
             await placeholder.delete()
         except Exception as e:
             print(e)
-        if cached_msg_id is None:
-            cached_msg_id = db.cache_chat_message(full_message)
         reply_markup = InlineKeyboardMarkup([
-            [InlineKeyboardButton(_("Retry"), callback_data=f"image|{cached_msg_id}")]
+            [InlineKeyboardButton(_("Retry"), callback_data=query.data)]
         ])
-        await update.effective_message.reply_photo(image_url, reply_markup=reply_markup)
+        # send as a media group
+        # media_group = map(lambda image_url: InputMediaPhoto(image_url), images)
+        # media_group = list(media_group)
+        # text = f"<code>{message}</code>"
+        # await update.effective_message.reply_media_group(media=media_group, caption=text, parse_mode=ParseMode.HTML)
+
+        # send each image as single message for better share experience
+        for image_url in images:
+            await update.effective_message.reply_photo(image_url, reply_markup=reply_markup)
         db.inc_user_used_tokens(user_id, used_tokens)
         db.mark_user_is_generating_image(user_id, False)
     except Exception as e:
@@ -1041,6 +1094,7 @@ def run_bot() -> None:
     application.add_handler(CallbackQueryHandler(common_command_handle, pattern="^retry"))
     application.add_handler(CommandHandler("image", image_message_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(image_message_handle, pattern="^image"))
+    application.add_handler(CallbackQueryHandler(gen_image_handle, pattern="^gen_image"))
     application.add_handler(CommandHandler("settings", settings_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(settings_handle, pattern="^(settings|about)"))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & user_filter, message_handle))

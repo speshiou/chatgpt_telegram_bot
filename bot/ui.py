@@ -1,8 +1,59 @@
+from urllib.parse import urlencode, parse_qs
+
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 import config
+import sinkinai_utils
 import i18n
 from database import Database
+
+def get_arg(path: str, key: str):
+    if "?" not in path:
+        return None
+    query = path.split("?")[-1]
+    query_params = parse_qs(query)
+    return query_params[key][0] if key in query_params else None
+
+def add_arg(path: str, key: str, value: str):
+    base_path = path
+    if "?" in path:
+        base_path, query = path.split("?")
+        query_params = parse_qs(query)
+        # convert query params to a flat dictionary with string values
+        query_params = {k:v[0] for k,v in query_params.items()}
+    else:
+        base_path = path
+        query_params = {}
+    query_params[key] = value
+    query_string = urlencode(query_params)
+    return base_path + "?" + query_string
+
+def get_args(path: str):
+    if "?" in path:
+        base_path, query = path.split("?")
+        query_params = parse_qs(query)
+        # convert query params to a flat dictionary with string values
+        query_params = {k:v[0] for k,v in query_params.items()}
+    else:
+        query_params = {}
+    return query_params
+
+def add_args(path: str, args: dict):
+    base_path = path
+    if "?" in path:
+        base_path, query = path.split("?")
+        query_params = parse_qs(query)
+        # convert query params to a flat dictionary with string values
+        query_params = {k:v[0] for k,v in query_params.items()}
+    else:
+        base_path = path
+        query_params = {}
+    query_params = {
+        **query_params,
+        **args,
+    }
+    query_string = urlencode(query_params)
+    return base_path + "?" + query_string
 
 def _chat_mode_features(chat_mode=None):
     if chat_mode is None:
@@ -195,8 +246,12 @@ def build_keyboard_rows(buttons, num_keyboard_cols):
         keyboard_rows.append(buttons[i:end])
     return keyboard_rows
 
-def _menu_page(path, menu_data, _):
+def _menu_page(path: str, menu_data, _):
     path = path if path is not None else menu_data["key"]
+    query = None
+    if "?" in path:
+        path, query = path.split("?")
+    print(f"_menu_page path={path} query={query}")
     title_format = "{} <b>{}</b>"
     segs = path.split(">") if path else []
     data = None
@@ -235,13 +290,21 @@ def _menu_page(path, menu_data, _):
                 else:
                     option_path_segs = path_segs + [key]
                     callback_data = ">".join(option_path_segs)
+                    if query:
+                        callback_data += "?" + query
+                if "args" in data:
+                    callback_data = add_args(callback_data, data["args"])
+                label = option["name"]
+                if "icon" in option:
+                    label = "{} {}".format(option["icon"], label)
                 
-                keyboard.append(InlineKeyboardButton("{} {}".format(option["icon"], option["name"]), callback_data=callback_data))
+                print(f"dict option callback_data={callback_data}")
+                keyboard.append(InlineKeyboardButton(label, callback_data=callback_data))
         else:
             # array
             for option in data["options"]:
                 label = option["label"]
-                if "disable_check_mark" not in data and data["value"] == option["value"]:
+                if "disable_check_mark" not in data and "value" in data and data["value"] == option["value"]:
                     label = "✅ " + label
 
                 if "callback" in option:
@@ -251,7 +314,11 @@ def _menu_page(path, menu_data, _):
                     # back to previous menu after selecting an option
                     base_path = ">".join(path_segs[:-1])
                     callback_data = f"{base_path}|{menu_page_key}|{callback_value}"
-                
+                    if query:
+                        callback_data += "?" + query
+                if "args" in data:
+                    callback_data = add_args(callback_data, data["args"])
+                print(f"option callback_data={callback_data}")
                 keyboard.append(InlineKeyboardButton(label, callback_data=callback_data))
 
     keyboard_rows = []
@@ -259,11 +326,12 @@ def _menu_page(path, menu_data, _):
         keyboard_rows = build_keyboard_rows(keyboard, num_keyboard_cols=num_keyboard_cols)
     if len(segs) > 1:
         callback_data = ">".join(path_segs[:-1])
+        if query:
+            callback_data += "?" + query
         keyboard_rows.append([InlineKeyboardButton("< " + _("Back"), callback_data=callback_data)])
     if len(keyboard_rows) > 0:
         reply_markup = InlineKeyboardMarkup(keyboard_rows)
     return text, reply_markup
-    
 
 def settings(db: Database, chat_id: int, _, data: str = None):
     if data and "|" in data:
@@ -344,3 +412,63 @@ def about(_):
     ])
 
     return text, reply_markup
+
+def image_menu(_, path = None):
+    options = {}
+    size_options = []
+    for size in sinkinai_utils.SIZE_OPTIONS:
+        width = size["width"]
+        height = size["height"]
+        value = "{}x{}".format(width, height)
+        used_tokens = sinkinai_utils.calc_credit_cost(width, height) * sinkinai_utils.BASE_TOKENS
+        label = "{} (💰 {:,.0f})".format(value, used_tokens)
+        callback_data = add_args("gen_image", {
+            **get_args(path),
+            "w": width,
+            "h": height,
+        })
+        size_options.append({
+            "label": label,
+            "callback": callback_data
+        })
+
+    desc_select_size = _("Select the image size (width x height)")
+    for key, value in sinkinai_utils.MODELS.items():
+        options[key] = { 
+            "icon": "🎨",
+            "name": _(value["name"]),
+            "desc": desc_select_size,
+            "options": size_options,
+            "args": {
+                "m": key,
+            },
+        }
+
+    menu_data = {
+        "icon": "👨‍🎨",
+        "name": _("Generate images"),
+        "key": "image",
+        "desc": _("Select painting style or AI model"),
+        "options": {
+            **options,
+            "dalle": {
+                "icon": "🎨",
+                "name": _("DALL·E"),
+                "desc": desc_select_size,
+                "args": {
+                    "m": "dalle",
+                },
+                "options": [
+                    {
+                        "label": "1000x1000 (💰 6,000)",
+                        "callback": add_args("gen_image", {
+                            **get_args(path),
+                            "w": 1000,
+                            "h": 1000,
+                        })
+                    }
+                ]
+            }
+        },
+    }
+    return _menu_page(path, menu_data, _)
