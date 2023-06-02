@@ -251,7 +251,7 @@ def _menu_page(path: str, menu_data, _):
     query = None
     if "?" in path:
         path, query = path.split("?")
-    print(f"_menu_page path={path} query={query}")
+
     title_format = "{} <b>{}</b>"
     segs = path.split(">") if path else []
     data = None
@@ -298,7 +298,6 @@ def _menu_page(path: str, menu_data, _):
                 if "icon" in option:
                     label = "{} {}".format(option["icon"], label)
                 
-                print(f"dict option callback_data={callback_data}")
                 keyboard.append(InlineKeyboardButton(label, callback_data=callback_data))
         else:
             # array
@@ -318,7 +317,6 @@ def _menu_page(path: str, menu_data, _):
                         callback_data += "?" + query
                 if "args" in data:
                     callback_data = add_args(callback_data, data["args"])
-                print(f"option callback_data={callback_data}")
                 keyboard.append(InlineKeyboardButton(label, callback_data=callback_data))
 
     keyboard_rows = []
@@ -415,25 +413,26 @@ def about(_):
 
 def image_menu(_, path = None):
     options = {}
-    size_options = []
-    for size in sinkinai_utils.SIZE_OPTIONS:
-        width = size["width"]
-        height = size["height"]
-        value = "{}x{}".format(width, height)
-        used_tokens = sinkinai_utils.calc_credit_cost(width, height) * sinkinai_utils.BASE_TOKENS
-        label = "{} (💰 {:,.0f})".format(value, used_tokens)
-        callback_data = add_args("gen_image", {
-            **get_args(path),
-            "w": width,
-            "h": height,
-        })
-        size_options.append({
-            "label": label,
-            "callback": callback_data
-        })
 
     desc_select_size = _("Select the image size (width x height)")
     for key, value in sinkinai_utils.MODELS.items():
+        size_options = []
+        for size in sinkinai_utils.SIZE_OPTIONS:
+            width = size["width"]
+            height = size["height"]
+
+            steps = sinkinai_utils.MODELS[key]["steps"]
+            used_tokens = sinkinai_utils.calc_credit_cost(width, height, steps=steps) * sinkinai_utils.BASE_TOKENS
+            label = "{}x{} (💰 {:,.0f})".format(width, height, used_tokens)
+            callback_data = add_args("gen_image", {
+                **get_args(path),
+                "w": width,
+                "h": height,
+            })
+            size_options.append({
+                "label": label,
+                "callback": callback_data
+            })
         options[key] = { 
             "icon": "🎨",
             "name": _(value["name"]),

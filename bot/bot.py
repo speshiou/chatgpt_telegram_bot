@@ -47,7 +47,7 @@ def get_commands(lang=i18n.DEFAULT_LOCALE):
         BotCommand("gpt", _("switch to ChatGPT mode")),
         BotCommand("proofreader", _("switch to Proofreader mode")),
         BotCommand("dictionary", _("switch to Dictionary mode")),
-        BotCommand("image", _("generate images ({} tokens)").format(config.DALLE_TOKENS)),
+        BotCommand("image", _("generate images")),
         BotCommand("role", _("chat with dream characters")),
         BotCommand("reset", _("start a new conversation")),
         BotCommand("balance", _("check balance")),
@@ -654,7 +654,7 @@ async def image_message_handle(update: Update, context: CallbackContext):
         message = strip_command(full_message)
         if not message:
             text = _("💡 Please type /image and followed by the image prompt\n\n")
-            text += _("<b>Example:</b> /image a cat wearing a spacesuit\n")
+            text += _("<b>Example:</b>\n") + " /image a man wears spacesuit"
             await update.effective_message.reply_text(text, ParseMode.HTML)
             return
         path = "image"
@@ -689,7 +689,8 @@ async def gen_image_handle(update: Update, context: CallbackContext):
         used_tokens = config.DALLE_TOKENS
     elif model in sinkinai_utils.MODELS:
         num_images = sinkinai_utils.DEFAULT_NUM_IMAGES
-        credit_cost = sinkinai_utils.calc_credit_cost(width=width, height=height, num_images=num_images)
+        steps = sinkinai_utils.MODELS[model]["steps"]
+        credit_cost = sinkinai_utils.calc_credit_cost(width=width, height=height, steps=steps, num_images=num_images)
         used_tokens = credit_cost * sinkinai_utils.BASE_TOKENS
         used_tokens = int(used_tokens)
         print(f"credit_cost={credit_cost} used_tokens={used_tokens}")

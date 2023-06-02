@@ -4,15 +4,11 @@ import config
 BASE_TOKENS = 1600
 
 DEFAULT_NUM_IMAGES = 2
-DEFAULT_STEPS = 20
 
 INFERENCE_ENDPOINT = "https://sinkin.ai/m/inference"
 
 BASE_FORM_DATA = {
     "user_email": config.SINKIN_ACCOUNT,
-    "use_default_neg": "false",
-    "steps": DEFAULT_STEPS,
-    "scale": "5",
     "num_images": DEFAULT_NUM_IMAGES,
     "seed": "-1",
     "scheduler": "K_EULER_ANCESTRAL",
@@ -31,8 +27,20 @@ MODELS = {
         "model_id": "yBG2r9O",
         "version": "5",
         "negative_prompt": "ng_deepnegative_v1_75t, (badhandv4:1.2), (worst quality:2), (low quality:2), (normal quality:2), lowres, bad anatomy, bad hands, ((monochrome)), ((grayscale)) watermark, moles",
+        "steps": 30,
+        "scale": "5",
         "scheduler": "K_EULER_ANCESTRAL",
-    }
+        "use_default_neg": "false",
+    },
+    "meina": {
+        "name": _("Anime"),
+        "model_id": "vln8Nwr",
+        "version": "10",
+        "steps": 20,
+        "scale": "7.5",
+        "scheduler": "K_EULER_ANCESTRAL",
+        "use_default_neg": "true",
+    },
 }
 
 SIZE_OPTIONS = [
@@ -50,7 +58,7 @@ SIZE_OPTIONS = [
     },
 ]
 
-def calc_credit_cost(width: int, height: int, num_images=DEFAULT_NUM_IMAGES, steps=DEFAULT_STEPS):
+def calc_credit_cost(width: int, height: int, steps: int, num_images=DEFAULT_NUM_IMAGES):
     base_time = 3
 
     num_images_factor = num_images
