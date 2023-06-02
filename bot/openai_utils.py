@@ -137,3 +137,10 @@ async def audio_transcribe(filename):
         api_key=config.OPENAI_API_KEY,
         )
     return response['text']
+
+async def moderation(prompt):
+    response = await openai.Moderation.acreate(
+        input=prompt
+    )
+    output = response["results"][0]
+    return not output["flagged"]

@@ -657,6 +657,10 @@ async def image_message_handle(update: Update, context: CallbackContext):
             text += _("<b>Example:</b>\n") + " /image a man wears spacesuit"
             await update.effective_message.reply_text(text, ParseMode.HTML)
             return
+        result = await openai_utils.moderation(message)
+        if not result:
+            await update.effective_message.reply_text("⚠️ " + _("Inappropriate prompt. Please modify your prompt and retry."), ParseMode.HTML)
+            return
         path = "image"
     
     if cached_msg_id is None:
