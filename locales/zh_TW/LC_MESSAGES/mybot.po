@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-06-05 10:34+0800\n"
+"POT-Creation-Date: 2023-06-06 07:06+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -196,8 +196,8 @@ msgid "Once this chat exceeds the rate limit, the chatbot won't respond temporar
 msgstr "一旦本次聊天超過限速，聊天機器人將暫時不響應。"
 
 #: ./bot/bot.py:872
-msgid "🔒 For privacy reason, your balance won't show in a group chat. Please contact @{} directly."
-msgstr "🔒 出於隱私原因，您的餘額不會在群聊中顯示。請直接聯繫 @{}。"
+msgid "🔒 For privacy reason, your balance won't show in a group chat. Please use /balance command in @{}."
+msgstr "🔒 出於隱私原因，您的餘額不會在群聊中顯示。請在 @{} 中使用 /balance 命令。"
 
 #: ./bot/bot.py:881
 msgid ""
@@ -364,18 +364,14 @@ msgid "This is a dictionary where you can search for any words or phrases in var
 msgstr "這是一本字典，您可以在其中搜索各種語言的任何單詞或短語。"
 
 #: ./bot/sinkinai_utils.py:27
-msgid "Unreal (2.5D)"
-msgstr "虛幻 (2.5D)"
-
-#: ./bot/sinkinai_utils.py:37
 msgid "Photorealistic"
 msgstr "真實感"
 
-#: ./bot/sinkinai_utils.py:47
-msgid "Photorealistic (Asian)"
-msgstr "真實感（亞洲）"
+#: ./bot/sinkinai_utils.py:37
+msgid "Unreal (2.5D)"
+msgstr "虛幻 (2.5D)"
 
-#: ./bot/sinkinai_utils.py:57
+#: ./bot/sinkinai_utils.py:49
 msgid "Anime"
 msgstr "日本動畫片"
 

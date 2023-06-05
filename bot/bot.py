@@ -869,8 +869,8 @@ async def show_balance_handle(update: Update, context: CallbackContext):
     _ = get_text_func(user, chat_id)
     chat = update.effective_chat
     if chat.type != Chat.PRIVATE:
-        text = _("🔒 For privacy reason, your balance won't show in a group chat. Please contact @{} directly.").format(config.TELEGRAM_BOT_NAME)
-        await update.message.reply_text(text)
+        text = _("🔒 For privacy reason, your balance won't show in a group chat. Please use /balance command in @{}.").format(config.TELEGRAM_BOT_NAME)
+        await reply_or_edit_text(update, text)
         return
 
     db.set_user_attribute(user.id, "last_interaction", datetime.now())

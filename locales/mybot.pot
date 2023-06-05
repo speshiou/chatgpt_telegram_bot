@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-06-05 10:34+0800\n"
+"POT-Creation-Date: 2023-06-06 07:06+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -196,7 +196,7 @@ msgid "Once this chat exceeds the rate limit, the chatbot won't respond temporar
 msgstr ""
 
 #: ./bot/bot.py:872
-msgid "🔒 For privacy reason, your balance won't show in a group chat. Please contact @{} directly."
+msgid "🔒 For privacy reason, your balance won't show in a group chat. Please use /balance command in @{}."
 msgstr ""
 
 #: ./bot/bot.py:881
@@ -364,18 +364,14 @@ msgid "This is a dictionary where you can search for any words or phrases in var
 msgstr ""
 
 #: ./bot/sinkinai_utils.py:27
-msgid "Unreal (2.5D)"
-msgstr ""
-
-#: ./bot/sinkinai_utils.py:37
 msgid "Photorealistic"
 msgstr ""
 
-#: ./bot/sinkinai_utils.py:47
-msgid "Photorealistic (Asian)"
+#: ./bot/sinkinai_utils.py:37
+msgid "Unreal (2.5D)"
 msgstr ""
 
-#: ./bot/sinkinai_utils.py:57
+#: ./bot/sinkinai_utils.py:49
 msgid "Anime"
 msgstr ""
 
