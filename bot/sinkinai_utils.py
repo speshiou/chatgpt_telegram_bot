@@ -23,6 +23,16 @@ def _(text):
 
 # keep model key short to prevent callback_data from exceeding size limit
 MODELS = {
+    "real": {
+        "name": _("Photorealistic"),
+        "model_id": "mGYMaD5",
+        "version": "1.0",
+        "negative_prompt": "BadDream, (cgi render, 3d, cartoon, drawing, low quality, worst quality:1.2)",
+        "steps": 30,
+        "scale": "7.5",
+        "scheduler": "DPMSolverMultistep",
+        "use_default_neg": "false",
+    },
     "dream": {
         "name": _("Unreal (2.5D)"),
         "model_id": "4zdwGOB",
@@ -32,26 +42,8 @@ MODELS = {
         "scale": "7",
         "scheduler": "DPMSolverMultistep",
         "use_default_neg": "true",
-    },
-    "vision": {
-        "name": _("Photorealistic"),
-        "model_id": "r2La2w2",
-        "version": "2.0",
-        "prompt_template": "RAW photo, {}, (high detailed:1.2), 8k uhd, dslr, high quality, film grain, Fujifilm XT3",
-        "steps": 20,
-        "scale": "7",
-        "scheduler": "K_EULER_ANCESTRAL",
-        "use_default_neg": "true",
-    },
-    "majic": {
-        "name": _("Photorealistic (Asian)"),
-        "model_id": "yBG2r9O",
-        "version": "5",
-        "negative_prompt": "ng_deepnegative_v1_75t, (badhandv4:1.2), (worst quality:2), (low quality:2), (normal quality:2), lowres, bad anatomy, bad hands, ((monochrome)), ((grayscale)) watermark, moles",
-        "steps": 30,
-        "scale": "5",
-        "scheduler": "K_EULER_ANCESTRAL",
-        "use_default_neg": "false",
+        "lora": LORA_DETAILER_ID, 
+        "lora_scale": "0.5",
     },
     "meina": {
         "name": _("Anime"),
