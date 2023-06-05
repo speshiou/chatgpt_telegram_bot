@@ -772,7 +772,7 @@ async def gen_image_handle(update: Update, context: CallbackContext):
 
         # send each image as single message for better share experience
         for image_url in images:
-            await update.effective_message.reply_photo(image_url, reply_markup=reply_markup)
+            await context.bot.send_photo(chat_id, image_url, reply_markup=reply_markup)
         db.inc_user_used_tokens(user_id, used_tokens)
         db.mark_user_is_generating_image(user_id, False)
     except Exception as e:
