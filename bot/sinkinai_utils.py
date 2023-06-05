@@ -23,8 +23,28 @@ def _(text):
 
 # keep model key short to prevent callback_data from exceeding size limit
 MODELS = {
-    "majic": {
+    "vision": {
         "name": _("Photorealistic"),
+        "model_id": "r2La2w2",
+        "version": "2.0",
+        "prompt_template": "RAW photo, {}, (high detailed:1.2), 8k uhd, dslr, high quality, film grain, Fujifilm XT3",
+        "steps": 20,
+        "scale": "7",
+        "scheduler": "K_EULER_ANCESTRAL",
+        "use_default_neg": "true",
+    },
+    "dream": {
+        "name": _("Unreal (2.5D)"),
+        "model_id": "4zdwGOB",
+        "version": "6",
+        "prompt_template": "8k, best quality, highly detailed, hdr, intricate, {}",
+        "steps": 20,
+        "scale": "7",
+        "scheduler": "DPMSolverMultistep",
+        "use_default_neg": "true",
+    },
+    "majic": {
+        "name": _("Photorealistic (Asian)"),
         "model_id": "yBG2r9O",
         "version": "5",
         "negative_prompt": "ng_deepnegative_v1_75t, (badhandv4:1.2), (worst quality:2), (low quality:2), (normal quality:2), lowres, bad anatomy, bad hands, ((monochrome)), ((grayscale)) watermark, moles",
@@ -82,6 +102,9 @@ async def inference(model, width, height, prompt):
     else:
         print(f"invalid model: {model}")
         return None
+    
+    if "prompt_template" in model_data:
+        prompt = model_data["prompt_template"].format(prompt)
     data = {
         **BASE_FORM_DATA,
         **model_data,
