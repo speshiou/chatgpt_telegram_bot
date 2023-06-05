@@ -129,9 +129,13 @@ async def start_handle(update: Update, context: CallbackContext):
     await settings_handle(update, context, data="about")
 
     if is_new_user and update.message:
+        reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton("👛 " + _("Check balance"), callback_data="balance")]
+        ])
         await update.message.reply_text(
-            _("✅ {:,} free tokens have been credited, check /balance").format(config.FREE_QUOTA), 
+            _("✅ {:,} free tokens have been credited").format(config.FREE_QUOTA), 
             parse_mode=ParseMode.HTML,
+            reply_markup=reply_markup,
             )
 
 async def retry_handle(update: Update, context: CallbackContext):
@@ -188,6 +192,21 @@ async def send_openai_error(update: Update, context: CallbackContext, e: Excepti
     logger.error(error_msg)
     # printing stack trace
     traceback.print_exc()
+
+async def send_insufficient_tokens_warning(update: Update, context: CallbackContext, message: str = None, num_tokens: int = None):
+    user = await register_user_if_not_exists(update, context)
+    chat_id = update.effective_chat.id
+    _ = get_text_func(user, chat_id)
+
+    reply_markup = InlineKeyboardMarkup([
+        [InlineKeyboardButton("👛 " + _("Check balance"), callback_data="balance")]
+    ])
+
+    # TODO: show different messages for private and group chats
+    text = "⚠️ " + _("Insufficient tokens.")
+    if num_tokens is not None:
+        text += " " + _("Require {} tokens to process this message").format(num_tokens)
+    await update.effective_message.reply_text(text, reply_markup=reply_markup)
 
 async def common_command_handle(update: Update, context: CallbackContext):
     # check if message is edited
@@ -251,7 +270,7 @@ async def voice_message_handle(update: Update, context: CallbackContext):
 
         remaining_tokens = db.get_user_remaining_tokens(user.id)
         if remaining_tokens < used_tokens:
-            await update.message.reply_text(_("⚠️ Insufficient tokens. You need {} tokens to decode this voice message. Check /balance").format(used_tokens), parse_mode=ParseMode.HTML)
+            await send_insufficient_tokens_warning(update, context, num_tokens=used_tokens)
             return
         
         placeholder = await update.effective_message.reply_text("🎙 " + _("Decoding voice message ..."))
@@ -408,9 +427,8 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         # enable token saving mode for low balance users and external modes
         max_tokens = min(max_tokens, 2000)
 
-    if remaining_tokens < 0:
-        # TODO: show different messages for private and group chats
-        await update.effective_message.reply_text(_("⚠️ Insufficient tokens, check /balance"), parse_mode=ParseMode.HTML)
+    if remaining_tokens <= 0:
+        await send_insufficient_tokens_warning(update, context)
         return
 
     if message is None:
@@ -539,7 +557,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
                 await update.effective_message.reply_text(chunk, reply_markup=final_reply_markup)
             sent_answer = answer
     except ValueError as e:
-        await update.effective_message.reply_text(_("⚠️ Require {} tokens to process the input text, check /balance").format(e.args[1]), parse_mode=ParseMode.HTML)
+        await send_insufficient_tokens_warning(update, context, num_tokens=e.args[1])
     except Exception as e:
         await send_openai_error(update, context, e)
     
@@ -580,7 +598,7 @@ async def send_voice_message(update: Update, context: CallbackContext, message: 
     used_tokens = config.TTS_ESTIMATED_DURATION_BASE * len(message) * config.COQUI_TOKENS
     print(f"[TTS] estimated used tokens: {used_tokens}")
     if used_tokens > db.get_user_remaining_tokens(user.id):
-        await update.effective_message.reply_text("⚠️ " + _("Insufficient tokens. You need {} tokens to generate this voice message. Check /balance").format(used_tokens))
+        await send_insufficient_tokens_warning(update, context, num_tokens=used_tokens)
         return
 
     if placeholder is None:
@@ -717,7 +735,7 @@ async def gen_image_handle(update: Update, context: CallbackContext):
 
     remaining_tokens = db.get_user_remaining_tokens(user_id)
     if remaining_tokens < used_tokens:
-        await update.effective_message.reply_text(_("⚠️ Insufficient tokens. To generate an image, it will cost {} tokens. Check /balance").format(used_tokens), parse_mode=ParseMode.HTML)
+        await send_insufficient_tokens_warning(update, context, num_tokens=used_tokens)
         return
     
     remaing_time = db.is_user_generating_image(user_id)
@@ -842,10 +860,10 @@ async def set_chat_mode_handle(update: Update, context: CallbackContext):
     await set_chat_mode(update, context, chat_mode)
 
 async def show_balance_handle(update: Update, context: CallbackContext):
-    user = update.message.from_user if update.message else None
-    if not user:
-        # sent from a channel
-        return
+    query = update.callback_query
+    if query:
+        await query.answer()
+
     user = await register_user_if_not_exists(update, context)
     chat_id = update.effective_chat.id
     _ = get_text_func(user, chat_id)
@@ -903,7 +921,7 @@ async def show_balance_handle(update: Update, context: CallbackContext):
     rows = map(lambda button: [button], buttons)
     reply_markup = InlineKeyboardMarkup(list(rows))
 
-    await update.message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=reply_markup, disable_web_page_preview=True)
+    await reply_or_edit_text(update, text, parse_mode=ParseMode.HTML, reply_markup=reply_markup, disable_web_page_preview=True)
 
 def price_to_tokens(price: float):
     return int(price / config.TOKEN_PRICE * 1000)
@@ -1106,6 +1124,7 @@ def run_bot() -> None:
     application.add_handler(CommandHandler("role", show_chat_modes_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(set_chat_mode_handle, pattern="^set_chat_mode"))
     application.add_handler(CommandHandler("balance", show_balance_handle, filters=user_filter))
+    application.add_handler(CallbackQueryHandler(show_balance_handle, pattern="^balance"))
     application.add_handler(CallbackQueryHandler(show_payment_methods, pattern="^top_up\|(\d)+"))
     application.add_handler(CallbackQueryHandler(show_invoice, pattern="^payment\|"))
     application.add_handler(CommandHandler("earn", show_earn_handle, filters=user_filter))

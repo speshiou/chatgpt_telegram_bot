@@ -23,16 +23,6 @@ def _(text):
 
 # keep model key short to prevent callback_data from exceeding size limit
 MODELS = {
-    "vision": {
-        "name": _("Photorealistic"),
-        "model_id": "r2La2w2",
-        "version": "2.0",
-        "prompt_template": "RAW photo, {}, (high detailed:1.2), 8k uhd, dslr, high quality, film grain, Fujifilm XT3",
-        "steps": 20,
-        "scale": "7",
-        "scheduler": "K_EULER_ANCESTRAL",
-        "use_default_neg": "true",
-    },
     "dream": {
         "name": _("Unreal (2.5D)"),
         "model_id": "4zdwGOB",
@@ -41,6 +31,16 @@ MODELS = {
         "steps": 20,
         "scale": "7",
         "scheduler": "DPMSolverMultistep",
+        "use_default_neg": "true",
+    },
+    "vision": {
+        "name": _("Photorealistic"),
+        "model_id": "r2La2w2",
+        "version": "2.0",
+        "prompt_template": "RAW photo, {}, (high detailed:1.2), 8k uhd, dslr, high quality, film grain, Fujifilm XT3",
+        "steps": 20,
+        "scale": "7",
+        "scheduler": "K_EULER_ANCESTRAL",
         "use_default_neg": "true",
     },
     "majic": {
