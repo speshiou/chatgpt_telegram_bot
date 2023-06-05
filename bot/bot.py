@@ -1015,6 +1015,9 @@ async def settings_handle(update: Update, context: CallbackContext, data: str = 
 
     await reply_or_edit_text(update, text, reply_markup=reply_markup, disable_web_page_preview=True)
 
+async def close_handle(update: Update, context: CallbackContext):
+    await update.effective_message.delete()
+
 async def show_earn_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
     chat_id = update.effective_chat.id
@@ -1115,6 +1118,7 @@ def run_bot() -> None:
     application.add_handler(CallbackQueryHandler(gen_image_handle, pattern="^gen_image"))
     application.add_handler(CommandHandler("settings", settings_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(settings_handle, pattern="^(settings|about)"))
+    application.add_handler(CallbackQueryHandler(close_handle, pattern="^close"))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & user_filter, message_handle))
     application.add_handler(MessageHandler(filters.VOICE & user_filter, voice_message_handle))
     application.add_error_handler(error_handle)

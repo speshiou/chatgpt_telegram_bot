@@ -327,6 +327,8 @@ def _menu_page(path: str, menu_data, _):
         if query:
             callback_data += "?" + query
         keyboard_rows.append([InlineKeyboardButton("< " + _("Back"), callback_data=callback_data)])
+    else:
+        keyboard_rows.append([InlineKeyboardButton(_("Close"), callback_data="close")])
     if len(keyboard_rows) > 0:
         reply_markup = InlineKeyboardMarkup(keyboard_rows)
     return text, reply_markup
