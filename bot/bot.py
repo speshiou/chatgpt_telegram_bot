@@ -370,6 +370,9 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         # to keep the language of input message, not to send chat history to model
         messages = []
         push_new_message = False
+        # ignore timeout check if the message sent in instant access
+        if update.effective_message.text.startswith("/"):
+            use_new_dialog_timeout = False
         if cached_msg_id is None:
             cached_message = update.effective_message.text
             if not cached_message.startswith("/"):
