@@ -382,7 +382,7 @@ def settings(db: Database, chat_id: int, _, data: str = None):
     return _menu_page(path, menu_data, _)
 
 def about(_):
-    text = _("Hi! My name is Nexia, an AI chatbot powered by OpenAI's GPT and DALL·E models.")
+    text = _("Hi! My name is Nexia, an AI chatbot powered by OpenAI's GPT, DALL·E and Stable Diffusion models.")
     text += "\n\n"
     text += _("<b>What can I do for you?</b>\n")
     text += _("🌎 Translate\n")

@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-06-06 07:06+0800\n"
+"POT-Creation-Date: 2023-06-08 10:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -63,11 +63,11 @@ msgstr "😅 没有要重试的对话历史记录"
 msgid "Temporary OpenAI server failure, please try again later."
 msgstr "OpenAI 服务器暂时性故障，请稍后重试。"
 
-#: ./bot/bot.py:185 ./bot/bot.py:693
+#: ./bot/bot.py:185 ./bot/bot.py:700
 msgid "Inappropriate prompt. Please modify your prompt and retry."
 msgstr "不当提示。请修改您的提示并重试。"
 
-#: ./bot/bot.py:186 ./bot/bot.py:644
+#: ./bot/bot.py:186 ./bot/bot.py:651
 msgid "Reason: {}"
 msgstr "原因： {}"
 
@@ -95,23 +95,23 @@ msgid ""
 "{}"
 msgstr "总结来自 {} 的抄本，包含摘要、关键点列表和结论\n\n抄本：\n{}"
 
-#: ./bot/bot.py:379 ./bot/bot.py:765
+#: ./bot/bot.py:382 ./bot/bot.py:774
 msgid "Retry"
 msgstr "重试"
 
-#: ./bot/bot.py:413
+#: ./bot/bot.py:416
 msgid "⚠️ This chat has exceeded the rate limit. Please wait for up to 60 seconds."
 msgstr "⚠️ 此聊天已超出速率限制。请等待最多 60 秒。"
 
-#: ./bot/bot.py:443
+#: ./bot/bot.py:446
 msgid "⚠️ Transcripts for this video are not available, possibly due to access restrictions or transcript disablement."
 msgstr "⚠️ 此视频的转录本不可用，可能是由于访问限制或转录本禁用。"
 
-#: ./bot/bot.py:449
+#: ./bot/bot.py:452
 msgid "⚠️ Failed to fetch the website content, possibly due to access restrictions."
 msgstr "⚠️ 无法获取网站内容，可能是因为访问限制。"
 
-#: ./bot/bot.py:451
+#: ./bot/bot.py:454
 msgid ""
 "summarize the content from {} containing abstract, list of key points and the conclusion\n"
 "\n"
@@ -119,227 +119,239 @@ msgid ""
 "{}"
 msgstr "总结来自 {} 的内容，包含摘要、要点列表和结论\n\n原始内容：\n{}"
 
-#: ./bot/bot.py:547
+#: ./bot/bot.py:550
 msgid "⚠️ The answer was too long, has been splitted into multiple unformatted messages"
 msgstr "⚠️ 答案太长，被拆分成多条未格式化的信息"
 
-#: ./bot/bot.py:605
+#: ./bot/bot.py:609
 msgid "Recording ..."
 msgstr "录音中 ..."
 
-#: ./bot/bot.py:633
+#: ./bot/bot.py:630
+msgid "Text"
+msgstr "文本"
+
+#: ./bot/bot.py:640
 msgid "The voice message could not be created. Voice messages are only valid in English."
 msgstr "无法创建语音消息。语音消息仅适用于英语。"
 
-#: ./bot/bot.py:643
+#: ./bot/bot.py:650
 msgid "Failed to generate the voice message, please try again later."
 msgstr "生成语音信息失败，请稍后重试。"
 
-#: ./bot/bot.py:677
+#: ./bot/bot.py:684
 msgid "💡 Please type /image and followed by the image prompt"
 msgstr "💡 请输入 /image 然后输入图片提示"
 
-#: ./bot/bot.py:680
+#: ./bot/bot.py:687
 msgid "<b>Example:</b>"
 msgstr "<b>例子：</b>"
 
-#: ./bot/bot.py:681
+#: ./bot/bot.py:688
 msgid "Some AI Models only support English prompt"
 msgstr "部分AI模型仅支持英文提示"
 
-#: ./bot/bot.py:686 ./bot/ui.py:408
+#: ./bot/bot.py:693 ./bot/ui.py:408
 msgid "Learn"
 msgstr "学习"
 
-#: ./bot/bot.py:721 ./bot/bot.py:733
+#: ./bot/bot.py:728 ./bot/bot.py:740
 msgid "Outdated command"
 msgstr "过时的命令"
 
-#: ./bot/bot.py:743
+#: ./bot/bot.py:750
 msgid "⚠️ It is only possible to generate one image at a time. Please wait for {} seconds to retry."
 msgstr "⚠️ 一次只能生成一张图像。请等待 {} 秒重试。"
 
-#: ./bot/bot.py:749
+#: ./bot/bot.py:756
 msgid "👨‍🎨 painting ..."
 msgstr "👨‍🎨 正在画 ..."
 
-#: ./bot/bot.py:820
+#: ./bot/bot.py:773
+msgid "Prompt"
+msgstr "提词"
+
+#: ./bot/bot.py:852
 msgid "Change chat mode"
 msgstr "更改聊天模式"
 
-#: ./bot/bot.py:824
+#: ./bot/bot.py:856
 msgid "It's been a long time since we talked, and I've forgotten what we talked about before."
 msgstr "我们好久没说话了，我都忘了我们之前谈过什么了。"
 
-#: ./bot/bot.py:825
+#: ./bot/bot.py:857
 msgid "Timeout settings"
 msgstr "超时设置"
 
-#: ./bot/bot.py:827
+#: ./bot/bot.py:859
 msgid "I have already forgotten what we previously talked about."
 msgstr "我已经忘记了我们之前谈过的事情。"
 
-#: ./bot/bot.py:832
+#: ./bot/bot.py:864
 msgid "You're now chatting with {} ..."
 msgstr "您现在正在与 {} 聊天..."
 
-#: ./bot/bot.py:843
+#: ./bot/bot.py:875
 msgid "To continue the conversation in the group chat, please \"reply\" to my messages."
 msgstr "要在群聊中继续对话，请“回复”我的信息。"
 
-#: ./bot/bot.py:844
+#: ./bot/bot.py:876
 msgid "Please \"SLOW DOWN\" interactions with the chatbot as group chats can easily exceed the Telegram rate limit. "
 msgstr "请“放慢”与聊天机器人的互动，因为群聊很容易超过 Telegram 速率限制。"
 
-#: ./bot/bot.py:845
+#: ./bot/bot.py:877
 msgid "Once this chat exceeds the rate limit, the chatbot won't respond temporarily."
 msgstr "一旦本次聊天超过限速，聊天机器人将暂时不响应。"
 
-#: ./bot/bot.py:872
+#: ./bot/bot.py:904
 msgid "🔒 For privacy reason, your balance won't show in a group chat. Please use /balance command in @{}."
 msgstr "🔒 出于隐私原因，您的余额不会在群聊中显示。请在 @{} 中使用 /balance 命令。"
 
-#: ./bot/bot.py:881
+#: ./bot/bot.py:913
 msgid ""
 "👛 <b>Balance</b>\n"
 "\n"
 msgstr "👛 <b>余额</b>\n\n"
 
-#: ./bot/bot.py:882
+#: ./bot/bot.py:914
 msgid ""
 "<b>{:,}</b> tokens left\n"
 msgstr "剩余 <b>{:,}</b> 个标记额度\n"
 
-#: ./bot/bot.py:883
+#: ./bot/bot.py:915
 msgid "<i>You used <b>{:,}</b> tokens</i>"
 msgstr "<i>您使用了 <b>{:,}</b> 个标记</i>"
 
-#: ./bot/bot.py:887
+#: ./bot/bot.py:919
 msgid "The longer conversation would spend more tokens"
 msgstr "对话越长，花费的标记越多"
 
-#: ./bot/bot.py:888
+#: ./bot/bot.py:920
 msgid "/reset to clear history manually"
 msgstr "/reset 手动清除历史记录"
 
-#: ./bot/bot.py:889
+#: ./bot/bot.py:921
 msgid "Most users spend fewer than 200,000 tokens per month"
 msgstr "大多数用户每月花费少于 200,000 个标记"
 
-#: ./bot/bot.py:941
+#: ./bot/bot.py:922
+msgid "Around 500 images can be generated from one million tokens."
+msgstr "一百万个标记可以生成大约 500 张图像。"
+
+#: ./bot/bot.py:974
 msgid "💡 Only accept number between 0.1 to 100"
 msgstr "💡 只接受 0.1 到 100 之间的数字"
 
-#: ./bot/bot.py:944
+#: ./bot/bot.py:977
 msgid ""
 "🛒 Choose the payment method\n"
 "\n"
 msgstr "🛒 选择付款方式\n\n"
 
-#: ./bot/bot.py:945
+#: ./bot/bot.py:978
 msgid ""
 "💳 Debit or Credit Card - support 200+ countries/regions\n"
 msgstr "💳 借记卡或信用卡 - 支持 200 多个国家/地区\n"
 
-#: ./bot/bot.py:947
+#: ./bot/bot.py:980
 msgid ""
 "💎 Crypto - BTC, USDT, USDC, TON, BNB\n"
 msgstr "💎 加密货币 - BTC、USDT、USDC、TON、BNB\n"
 
-#: ./bot/bot.py:949
+#: ./bot/bot.py:982
 msgid "💳 Debit or Credit Card"
 msgstr "💳 借记卡或信用卡"
 
-#: ./bot/bot.py:950
+#: ./bot/bot.py:983
 msgid "💎 Crypto"
 msgstr "💎 加密货币"
 
-#: ./bot/bot.py:973
+#: ./bot/bot.py:1006
 msgid "📋 Creating an invoice ..."
 msgstr "📋 创建发票 ..."
 
-#: ./bot/bot.py:980
+#: ./bot/bot.py:1013
 msgid ""
 "📋 <b>Your invoice</b>:\n"
 "\n"
 msgstr "📋 <b>您的发票</b>：\n\n"
 
-#: ./bot/bot.py:985
+#: ./bot/bot.py:1018
 msgid ""
 "💡 <b>Tips</b>:\n"
 msgstr "💡 <b>提示</b>：\n"
 
-#: ./bot/bot.py:991
+#: ./bot/bot.py:1024
 msgid "If you do not have a PayPal account, click on the button located below the login button to pay with cards directly."
 msgstr "如果您没有贝宝 (PayPal) 帐户，请单击登录按钮下方的按钮直接使用卡片付款。 (支持 🇨🇳 银行卡)"
 
-#: ./bot/bot.py:992
+#: ./bot/bot.py:1025
 msgid "💳 Pay with Debit or Credit Card"
 msgstr "💳 用借记卡或信用卡支付"
 
-#: ./bot/bot.py:994
+#: ./bot/bot.py:1027
 msgid "If you have any issues related to crypto payment, please contact the customer service in the payment page, or send messages to {} directly for assistance."
 msgstr "如果您有任何与加密支付相关的问题，请在支付页面联系客服，或直接发送信息至 {} 寻求帮助。"
 
-#: ./bot/bot.py:995
+#: ./bot/bot.py:1028
 msgid "💎 Pay with Crypto"
 msgstr "💎 用加密支付"
 
-#: ./bot/bot.py:997
+#: ./bot/bot.py:1030
 msgid "Tokens will be credited within 10 minutes of payment."
 msgstr "标记额度将在付款后 10 分钟内存入。"
 
-#: ./bot/bot.py:998
+#: ./bot/bot.py:1031
 msgid "Please contact @{} if tokens are not received after 1 hour of payment."
 msgstr "如果付款 1 小时后仍未收到标记额度，请联系 @{}。"
 
-#: ./bot/bot.py:1006
+#: ./bot/bot.py:1039
 msgid "⚠️ Failed to create an invoice, please try again later."
 msgstr "⚠️ 发票创建失败，请稍后重试。"
 
-#: ./bot/bot.py:1049
+#: ./bot/bot.py:1082
 msgid ""
 "<b>💰 Earn</b>\n"
 "\n"
 msgstr "<b>💰 赚取</b>\n\n"
 
-#: ./bot/bot.py:1051
+#: ./bot/bot.py:1084
 msgid ""
 "Get %s%% rewards from the referred payments\n"
 "\n"
 msgstr "从推荐的付款中获得 %s%% 的奖励\n\n"
 
-#: ./bot/bot.py:1052
+#: ./bot/bot.py:1085
 msgid ""
 "Unused rewards: ${:,.2f}\n"
 msgstr "未使用的奖励：${:,.2f}\n"
 
-#: ./bot/bot.py:1053
+#: ./bot/bot.py:1086
 msgid ""
 "Total earned: ${:,.2f}\n"
 "\n"
 msgstr "总获得的奖厉：${:,.2f}\n\n"
 
-#: ./bot/bot.py:1054
+#: ./bot/bot.py:1087
 msgid ""
 "Referral link:\n"
 msgstr "推荐链接：\n"
 
-#: ./bot/bot.py:1056
+#: ./bot/bot.py:1089
 msgid ""
 "<i>You have referred {:,} new users</i>\n"
 "\n"
 msgstr "<i>您推荐了 {:,} 个新用户</i>\n\n"
 
-#: ./bot/bot.py:1057
+#: ./bot/bot.py:1090
 msgid "<i>💡 Refer the new users via your referral link, and you'll get a reward when they make a payment.</i>"
 msgstr "<i>💡 通过您的推荐链接推荐新用户，当他们付款时您将获得奖励。</i>"
 
-#: ./bot/bot.py:1059
+#: ./bot/bot.py:1092
 msgid "⚠️ Server error, please try again later."
 msgstr "⚠️ 服务器错误，请稍后重试。"
 
-#: ./bot/bot.py:1068
+#: ./bot/bot.py:1101
 msgid "💡 Edited messages won't take effects"
 msgstr "💡 编辑的信息不会生效"
 
@@ -514,8 +526,8 @@ msgid "About"
 msgstr "关于"
 
 #: ./bot/ui.py:385
-msgid "Hi! My name is Nexia, an AI chatbot powered by OpenAI's GPT and DALL·E models."
-msgstr "你好！我的名字是 Nexia，一个由 OpenAI 的 GPT 和 DALL·E 模型驱动的人工智能聊天机器人。"
+msgid "Hi! My name is Nexia, an AI chatbot powered by OpenAI's GPT, DALL·E and Stable Diffusion models."
+msgstr "你好！我叫 Nexia，一个由 OpenAI 的 GPT、DALL·E 和 Stable Diffusion 模型提供支持的 AI 聊天机器人。"
 
 #: ./bot/ui.py:387
 msgid ""

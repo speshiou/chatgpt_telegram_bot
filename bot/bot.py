@@ -592,6 +592,7 @@ async def send_voice_message(update: Update, context: CallbackContext, message: 
     chat_id = update.effective_chat.id
     _ = get_text_func(user, chat_id)
 
+    full_message = message
     limit = 600
     if len(message) > limit:
         print("[TTS] message too long")
@@ -624,7 +625,10 @@ async def send_voice_message(update: Update, context: CallbackContext, message: 
                     await placeholder.delete()
             except Exception as e:
                 print(e)
-            await update.effective_message.reply_voice(ogg_filename)
+            
+            cached_msg_id = db.cache_chat_message(full_message)
+            reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton(_("Text"), callback_data=ui.add_arg("show_message", "id", cached_msg_id))]])
+            await update.effective_message.reply_voice(ogg_filename, reply_markup=reply_markup)
             db.inc_user_used_tokens(user.id, used_tokens)
             print(f"[TTS] real used tokens: {used_tokens}")
             # clean up
@@ -765,7 +769,10 @@ async def gen_image_handle(update: Update, context: CallbackContext):
         except Exception as e:
             print(e)
         reply_markup = InlineKeyboardMarkup([
-            [InlineKeyboardButton(_("Retry"), callback_data=query.data)]
+            [
+                InlineKeyboardButton(_("Prompt"), callback_data=ui.add_arg("show_message", "id", cached_msg_id)),
+                InlineKeyboardButton(_("Retry"), callback_data=query.data)
+            ]
         ])
         # send as a media group
         # media_group = map(lambda image_url: InputMediaPhoto(image_url), images)
@@ -781,6 +788,28 @@ async def gen_image_handle(update: Update, context: CallbackContext):
     except Exception as e:
         db.mark_user_is_generating_image(user_id, False)
         await send_openai_error(update, context, e, placeholder=placeholder)
+
+async def show_message_handle(update: Update, context: CallbackContext):
+    user = await register_user_if_not_exists(update, context)
+    query = update.callback_query
+    path = query.data
+    await query.answer()
+    cached_msg_id = ui.get_arg(path, "id")
+    caption = None
+    if cached_msg_id:
+        message = db.get_cached_message(cached_msg_id)
+        if message:
+            caption = "<pre><code>{}</code></pre>".format(html.escape(message))
+    # hide show message button
+    inline_keyboard = []
+    for row in update.effective_message.reply_markup.inline_keyboard:
+        buttons = filter(lambda b: not b.callback_data.startswith("show_message"), row)
+        buttons = list(buttons)
+        if len(buttons) > 0:
+            inline_keyboard.append(buttons)
+    reply_markup = InlineKeyboardMarkup(inline_keyboard)
+
+    await update.effective_message.edit_caption(caption, parse_mode=ParseMode.HTML, reply_markup=reply_markup)
 
 async def reset_handle(update: Update, context: CallbackContext):
     await set_chat_mode(update, context, reason="reset")
@@ -890,6 +919,7 @@ async def show_balance_handle(update: Update, context: CallbackContext):
             _("The longer conversation would spend more tokens"),
             _("/reset to clear history manually"),
             _("Most users spend fewer than 200,000 tokens per month"),
+            _("Around 500 images can be generated from one million tokens."),
         ], _
     )
     # text += f"You spent <b>{n_spent_dollars:.03f}$</b>\n"
@@ -1138,6 +1168,7 @@ def run_bot() -> None:
     application.add_handler(CommandHandler("image", image_message_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(image_message_handle, pattern="^image"))
     application.add_handler(CallbackQueryHandler(gen_image_handle, pattern="^gen_image"))
+    application.add_handler(CallbackQueryHandler(show_message_handle, pattern="^show_message"))
     application.add_handler(CommandHandler("settings", settings_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(settings_handle, pattern="^(settings|about)"))
     application.add_handler(CallbackQueryHandler(close_handle, pattern="^close"))
