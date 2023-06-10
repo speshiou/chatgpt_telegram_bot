@@ -176,14 +176,16 @@ async def send_openai_error(update: Update, context: CallbackContext, e: Excepti
     user = await register_user_if_not_exists(update, context)
     chat_id = update.effective_chat.id
     _ = get_text_func(user, chat_id)
-    text = "⚠️ " + _("Temporary OpenAI server failure, please try again later.")
+    text = _("Temporary OpenAI server failure, please try again later.")
     error_msg = f"{e}"
     if "JSONDecodeError" not in error_msg:
         # ignore JSONDecodeError content. openai api may response html, which will cause message too long error
         if "policy" in error_msg:
             # replace Microsoft warnings
-            error_msg = _("Inappropriate prompt. Please modify your prompt and retry.")
-        text += " " + _("Reason: {}").format(error_msg)
+            text = _("Your request may violate OpenAI's policies. Please modify your prompt and retry.")
+        else:
+            text += " " + _("Reason: {}").format(error_msg)
+    text = "⚠️ " + text
     if placeholder is None:
         await update.effective_message.reply_text(text)
     else:

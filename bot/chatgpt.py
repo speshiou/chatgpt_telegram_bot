@@ -25,6 +25,7 @@ async def send_message(message, dialog_messages=[], system_prompt=None, max_toke
     num_prompt_tokens = 0
 
     answer = None
+    finish_reason = None
     while answer is None:
         prompt = openai_utils.prompt_from_chat_messages(system_prompt, dialog_messages, message, model)
         num_prompt_tokens = openai_utils.num_tokens_from_messages(prompt, model)
@@ -64,6 +65,9 @@ async def send_message(message, dialog_messages=[], system_prompt=None, max_toke
     num_completion_tokens = openai_utils.num_tokens_from_string(answer, model) if answer is not None else 0
     num_total_tokens = num_prompt_tokens + num_completion_tokens
     used_tokens = num_total_tokens 
+
+    if answer is None:
+        print(f"Invalid answer, num_prompt_tokens={num_prompt_tokens}, num_completion_tokens={num_completion_tokens}, finish_reason={finish_reason}")
 
     yield True, answer, used_tokens, n_first_dialog_messages_removed
         
