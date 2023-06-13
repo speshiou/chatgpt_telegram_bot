@@ -68,6 +68,8 @@ async def send_message(message, dialog_messages=[], system_prompt=None, max_toke
 
     if answer is None:
         print(f"Invalid answer, num_prompt_tokens={num_prompt_tokens}, num_completion_tokens={num_completion_tokens}, finish_reason={finish_reason}")
+        print(message)
+        raise Exception(finish_reason)
 
     yield True, answer, used_tokens, n_first_dialog_messages_removed
         
