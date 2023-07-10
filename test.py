@@ -135,12 +135,13 @@ async def test():
                 text = f"summarize the content from {url} containing abstract, list of key points and the summary, all responses in Chinese\n\ntranscript:\n{result}"
 
         system_prompt = config.CHAT_MODES[role]["prompt"]
+        model = openai_utils.MODEL_GPT_4 if role == "gpt4" else openai_utils.MODEL_GPT_35_TURBO
 
         api_type = "azure" if args.azure else config.DEFAULT_OPENAI_API_TYPE
         if api_type != config.DEFAULT_OPENAI_API_TYPE and "api_type" in config.CHAT_MODES[role]:
             api_type = config.CHAT_MODES[role]["api_type"]
         
-        stream = chatgpt.send_message(text, dialog, system_prompt, stream=True, api_type=api_type)
+        stream = chatgpt.send_message(text, dialog, system_prompt, model=model, stream=True, api_type=api_type)
         answer = None
         current_line_index = 0
         async for buffer in stream:

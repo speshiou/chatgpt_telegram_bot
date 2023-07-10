@@ -8,8 +8,14 @@ DEFAULT_CHAT_MODES = {
     "gpt": {
         "icon": "🤖",
         "name": "ChatGPT",
-        "greeting": _("Hello! How can I assist you today?"),
+        "greeting": _("Hi! This is GPT 3.5 model. How can I assist you today?"),
         "prompt": "As an advanced chatbot named ChatGPT powered by OpenAI GPT-3.5 turbo model, your primary goal is to assist users to the best of your ability. This may involve answering questions, providing helpful information, or completing tasks based on user input. In order to effectively assist users, it is important to be detailed and thorough in your responses. Use examples and evidence to support your points and justify your recommendations or solutions. Remember to always prioritize the needs and satisfaction of the user. Your ultimate goal is to provide a helpful and enjoyable experience for the user."
+    },
+    "gpt4": {
+        "icon": "🤖",
+        "name": "GPT-4",
+        "greeting": _("Hi! You are currently using the most powerful model, GPT-4. However, it's important to note that GPT-4 comes with a significantly higher price, costing 20 times more tokens compared to GPT-3.5."),
+        "prompt": "You are a helpful assistant powered by OpenAI's GPT-4 model which was released on March 14, 2023."
     },
     "proofreader": {
         "icon": "📝",
@@ -104,6 +110,7 @@ MONGODB_URI = f"mongodb://mongo:{MONGODB_PORT}"
 FREE_QUOTA = _env_parse_int('FREE_QUOTA', 10000)
 # default price for gpt-3.5-turbo
 TOKEN_PRICE = _env_parse_float('TOKEN_PRICE', 0.002)
+GPT4_PRICE_FACTOR = 20
 # DALL·E tokens
 DALLE_TOKENS = _env_parse_int('DALLE_TOKENS', 10000)
 IMAGE_TIMEOUT = _env_parse_int('IMAGE_TIMEOUT', 60)

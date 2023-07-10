@@ -2,6 +2,16 @@ import tiktoken
 import openai
 import config
 
+MODEL_GPT_35_TURBO = "gpt-3.5-turbo"
+MODEL_GPT_35_TURBO_16K = "gpt-3.5-turbo-16k"
+MODEL_GPT_4 = "gpt-4"
+
+SUPPORTED_MODELS = set([
+    MODEL_GPT_35_TURBO,
+    MODEL_GPT_35_TURBO_16K,
+    MODEL_GPT_4,
+])
+
 def print_gpt_models():
     # list models
     models = openai.Model.list()
@@ -16,27 +26,36 @@ def num_tokens_from_string(string: str, model: str) -> int:
     return num_tokens
 
 # sample code from https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
-def num_tokens_from_messages(messages, model="gpt-3.5-turbo-0301"):
-    """Returns the number of tokens used by a list of messages."""
+def num_tokens_from_messages(messages, model="gpt-3.5-turbo-0613"):
+    """Return the number of tokens used by a list of messages."""
     try:
         encoding = tiktoken.encoding_for_model(model)
     except KeyError:
         print("Warning: model not found. Using cl100k_base encoding.")
         encoding = tiktoken.get_encoding("cl100k_base")
-    if model == "gpt-3.5-turbo":
-        # print("Warning: gpt-3.5-turbo may change over time. Returning num tokens assuming gpt-3.5-turbo-0301.")
-        return num_tokens_from_messages(messages, model="gpt-3.5-turbo-0301")
-    elif model == "gpt-4":
-        # print("Warning: gpt-4 may change over time. Returning num tokens assuming gpt-4-0314.")
-        return num_tokens_from_messages(messages, model="gpt-4-0314")
+    if model in {
+        "gpt-3.5-turbo-0613",
+        "gpt-3.5-turbo-16k-0613",
+        "gpt-4-0314",
+        "gpt-4-32k-0314",
+        "gpt-4-0613",
+        "gpt-4-32k-0613",
+        }:
+        tokens_per_message = 3
+        tokens_per_name = 1
     elif model == "gpt-3.5-turbo-0301":
         tokens_per_message = 4  # every message follows <|start|>{role/name}\n{content}<|end|>\n
         tokens_per_name = -1  # if there's a name, the role is omitted
-    elif model == "gpt-4-0314":
-        tokens_per_message = 3
-        tokens_per_name = 1
+    elif "gpt-3.5-turbo" in model:
+        # print("Warning: gpt-3.5-turbo may update over time. Returning num tokens assuming gpt-3.5-turbo-0613.")
+        return num_tokens_from_messages(messages, model="gpt-3.5-turbo-0613")
+    elif "gpt-4" in model:
+        # print("Warning: gpt-4 may update over time. Returning num tokens assuming gpt-4-0613.")
+        return num_tokens_from_messages(messages, model="gpt-4-0613")
     else:
-        raise NotImplementedError(f"""num_tokens_from_messages() is not implemented for model {model}. See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens.""")
+        raise NotImplementedError(
+            f"""num_tokens_from_messages() is not implemented for model {model}. See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens."""
+        )
     num_tokens = 0
     for message in messages:
         num_tokens += tokens_per_message
@@ -76,13 +95,13 @@ def chatgpt_prompt(system_prompt, chat_messages, new_message):
     return messages
 
 def prompt_from_chat_messages(system_prompt, chat_messages, new_message, model="gpt-3.5-turbo"):
-    if model == "gpt-3.5-turbo":
+    if model in SUPPORTED_MODELS:
         return chatgpt_prompt(system_prompt, chat_messages, new_message)
     else:
         raise NotImplementedError(f"""prompt_from_chat_messages() is not implemented for model {model}.""")
     
 def _reply_content_stream(response, model):
-    if model == "gpt-3.5-turbo":
+    if model in SUPPORTED_MODELS:
         delta = response.choices[0].delta
         return delta.content if "content" in delta else None, response.choices[0].finish_reason
     else:
@@ -92,7 +111,7 @@ def reply_content(response, model, stream=False):
     if stream:
         return _reply_content_stream(response, model)
     
-    if model == "gpt-3.5-turbo":
+    if model in SUPPORTED_MODELS:
         return response.choices[0].message.content
     else:
         raise NotImplementedError(f"""reply_content() is not implemented for model {model}.""")

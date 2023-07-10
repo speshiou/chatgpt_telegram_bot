@@ -1,24 +1,24 @@
 import openai_utils
 
-MODEL_GPT_35_TURBO = "gpt-3.5-turbo"
-MODEL_MAX_TOKENS = 4096
+MODEL_MIN_LIMITED_TOKENS = 4096
 MIN_TOKENS = 50
-
-OPENAI_CHAT_MODEL = MODEL_GPT_35_TURBO
-
-SUPPORTED_CHAT_MODELS = set([
-    MODEL_GPT_35_TURBO,
-])
 
 def _model_name(model, api_type):
     if api_type == "azure":
         return model.replace(".", "")
     return model
 
-async def send_message(message, dialog_messages=[], system_prompt=None, max_tokens=MODEL_MAX_TOKENS, stream=False, api_type=None):
-    model = OPENAI_CHAT_MODEL
+def _max_tokens(model):
+    if model == openai_utils.MODEL_GPT_35_TURBO:
+        return 4096
+    elif model == openai_utils.MODEL_GPT_35_TURBO_16K:
+        return 16384
+    elif model == openai_utils.MODEL_GPT_4:
+        return 8000
+
+async def send_message(message, dialog_messages=[], system_prompt=None, model=openai_utils.MODEL_GPT_35_TURBO, max_tokens=None, stream=False, api_type=None):
     if max_tokens is None:
-        max_tokens = MODEL_MAX_TOKENS
+        max_tokens = _max_tokens(model)
 
     n_dialog_messages_before = len(dialog_messages)
     n_first_dialog_messages_removed = 0

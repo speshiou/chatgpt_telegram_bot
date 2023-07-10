@@ -45,6 +45,7 @@ def get_commands(lang=i18n.DEFAULT_LOCALE):
     _ = i18n.get_text_func(lang)
     return [
         BotCommand("gpt", _("switch to ChatGPT mode")),
+        BotCommand("gpt4", _("switch to GPT-4 mode")),
         BotCommand("proofreader", _("switch to Proofreader mode")),
         BotCommand("dictionary", _("switch to Dictionary mode")),
         BotCommand("image", _("generate images")),
@@ -388,6 +389,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         messages = db.get_chat_messages(chat_id)
 
     system_prompt = config.CHAT_MODES[chat_mode]["prompt"]
+    model = openai_utils.MODEL_GPT_4 if chat_mode == "gpt4" else openai_utils.MODEL_GPT_35_TURBO
 
     # new dialog timeout
     if use_new_dialog_timeout:
@@ -425,12 +427,12 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
     remaining_tokens = db.get_user_remaining_tokens(user_id)
 
-    max_tokens = chatgpt.MODEL_MAX_TOKENS
-    if remaining_tokens < chatgpt.MODEL_MAX_TOKENS:
+    max_tokens = None
+    if remaining_tokens < chatgpt.MODEL_MIN_LIMITED_TOKENS:
         max_tokens = remaining_tokens
     if remaining_tokens < 10000 or chat_mode not in config.DEFAULT_CHAT_MODES:
         # enable token saving mode for low balance users and external modes
-        max_tokens = min(max_tokens, 2000)
+        max_tokens = min(max_tokens, 2000) if max_tokens is not None else 2000
 
     if remaining_tokens <= 0:
         await send_insufficient_tokens_warning(update, context)
@@ -476,6 +478,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             message,
             dialog_messages=messages,
             system_prompt=system_prompt,
+            model=model,
             max_tokens=max_tokens,
             stream=config.STREAM_ENABLED,
             api_type=api_type,
@@ -532,7 +535,9 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
                     except telegram.error.BadRequest as e:
                         if str(e).startswith("Message is not modified"):
                             continue
-                        print(e)
+                        # May encounter parsing errors, send plaintext instead
+                        await placeholder.edit_text(message_chunk, parse_mode=None, reply_markup=final_reply_markup)
+                        print("Telegram errors while editing text: {}".format(e))
                 sent_answer = answer[0:end_index]
                 current_message_chunk_index = chuck_index
                 n_sent_chunks = chuck_index + 1
@@ -579,9 +584,9 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             )
         else:
             db.update_chat_last_interaction(chat_id)
-
+        final_cost = used_tokens * config.GPT4_PRICE_FACTOR if model == openai_utils.MODEL_GPT_4 else used_tokens
         # IMPORTANT: consume tokens in the end of function call to protect users' credits
-        db.inc_user_used_tokens(user_id, used_tokens)
+        db.inc_user_used_tokens(user_id, final_cost)
 
         if voice_mode != "text":
             await send_voice_message(update, context, sent_answer, chat_mode, placeholder=voice_placeholder)
@@ -1164,6 +1169,7 @@ def run_bot() -> None:
     application.add_handler(CallbackQueryHandler(show_invoice, pattern="^payment\|"))
     application.add_handler(CommandHandler("earn", show_earn_handle, filters=user_filter))
     application.add_handler(CommandHandler("gpt", common_command_handle, filters=user_filter))
+    application.add_handler(CommandHandler("gpt4", common_command_handle, filters=user_filter))
     application.add_handler(CommandHandler("proofreader", common_command_handle, filters=user_filter))
     application.add_handler(CommandHandler("dictionary", common_command_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(common_command_handle, pattern="^retry"))
