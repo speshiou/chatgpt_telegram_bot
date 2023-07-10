@@ -45,7 +45,7 @@ def get_commands(lang=i18n.DEFAULT_LOCALE):
     _ = i18n.get_text_func(lang)
     return [
         BotCommand("gpt", _("switch to ChatGPT mode")),
-        BotCommand("gpt4", _("switch to GPT-4 mode")),
+        # BotCommand("gpt4", _("switch to GPT-4 mode")),
         BotCommand("proofreader", _("switch to Proofreader mode")),
         BotCommand("dictionary", _("switch to Dictionary mode")),
         BotCommand("image", _("generate images")),
