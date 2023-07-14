@@ -38,8 +38,7 @@ def cost_factors(model):
     return 1, 1
 
 async def send_message(prompt, model=openai_utils.MODEL_GPT_35_TURBO, max_tokens=None, stream=False, api_type=None):
-    if max_tokens is None:
-        max_tokens = _max_tokens(model)
+    max_tokens = _max_tokens(model) if max_tokens is None else min(_max_tokens(model), max_tokens)
 
     answer = None
     finish_reason = None
