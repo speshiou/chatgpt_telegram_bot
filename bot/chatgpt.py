@@ -16,7 +16,7 @@ def _max_tokens(model):
     elif model == openai_utils.MODEL_GPT_4:
         return 8000
     
-def build_prompt(system_prompt, dialog_messages, new_message, model, max_tokens):
+def build_prompt(system_prompt, dialog_messages, new_message, model, max_tokens = None):
     n_dialog_messages_before = len(dialog_messages)
     n_first_dialog_messages_removed = 0
     num_prompt_tokens = None

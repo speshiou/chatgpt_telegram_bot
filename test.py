@@ -141,11 +141,12 @@ async def test():
         if api_type != config.DEFAULT_OPENAI_API_TYPE and "api_type" in config.CHAT_MODES[role]:
             api_type = config.CHAT_MODES[role]["api_type"]
         
-        stream = chatgpt.send_message(text, dialog, system_prompt, model=model, stream=True, api_type=api_type)
+        prompt, removed = chatgpt.build_prompt(system_prompt, dialog, text, model)
+        stream = chatgpt.send_message(prompt, model=model, stream=True, api_type=api_type)
         answer = None
         current_line_index = 0
         async for buffer in stream:
-            finished, answer, used_tokens, n_first_dialog_messages_removed = buffer
+            finished, answer, used_tokens = buffer
             if not answer:
                 continue
 
