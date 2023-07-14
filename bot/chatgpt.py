@@ -20,17 +20,19 @@ def _max_tokens(model):
 def build_prompt(system_prompt, dialog_messages, new_message, model, max_tokens = None):
     n_dialog_messages_before = len(dialog_messages)
     n_first_dialog_messages_removed = 0
+    prompt = None
     num_prompt_tokens = None
     max_tokens = _max_tokens(model) if max_tokens is None else min(max_tokens, _max_tokens(model))
-    
+
     while num_prompt_tokens is None or num_prompt_tokens >= max_tokens:
+        if prompt is not None:
+            # forget first message in dialog_messages
+            dialog_messages = dialog_messages[1:]
+            n_first_dialog_messages_removed = n_dialog_messages_before - len(dialog_messages)
         prompt = openai_utils.prompt_from_chat_messages(system_prompt, dialog_messages, new_message, model)
         num_prompt_tokens = openai_utils.num_tokens_from_messages(prompt, model)
         if len(dialog_messages) == 0:
             break
-        # forget first message in dialog_messages
-        dialog_messages = dialog_messages[1:]
-        n_first_dialog_messages_removed = n_dialog_messages_before - len(dialog_messages)
     return prompt, n_first_dialog_messages_removed
 
 def cost_factors(model):
