@@ -1,5 +1,6 @@
 import openai_utils
 import config
+import asyncio
 
 MIN_TOKENS = 30
 
@@ -57,6 +58,10 @@ async def send_message(prompt, model=openai_utils.MODEL_GPT_35_TURBO, max_tokens
                 answer = content_delta
             else:
                 answer += content_delta
+
+            if model == openai_utils.MODEL_GPT_4:
+                # WORKAROUND: avoid reaching rate limit
+                await asyncio.sleep(0.1)
             yield False, answer, None
     else:
         answer = openai_utils.reply_content(r, model)
