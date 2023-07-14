@@ -14,7 +14,7 @@ DEFAULT_CHAT_MODES = {
     "gpt4": {
         "icon": "🤖",
         "name": "GPT-4",
-        "greeting": _("Hi! You are currently using the most powerful model, GPT-4. However, it's important to note that GPT-4 comes with a significantly higher price, costing 20 times more tokens compared to GPT-3.5."),
+        "greeting": _("Hi! This is GPT-4, the most powerful AI model. However, it's important to note that GPT-4 comes with a significantly higher price, costing 20 times more tokens compared to GPT-3.5."),
         "prompt": "You are a helpful assistant powered by OpenAI's GPT-4 model which was released on March 14, 2023."
     },
     "proofreader": {

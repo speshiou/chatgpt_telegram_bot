@@ -179,13 +179,16 @@ async def send_openai_error(update: Update, context: CallbackContext, e: Excepti
     _ = get_text_func(user, chat_id)
     text = _("Temporary OpenAI server failure, please try again later.")
     error_msg = f"{e}"
-    if "JSONDecodeError" not in error_msg:
-        # ignore JSONDecodeError content. openai api may response html, which will cause message too long error
-        if "policy" in error_msg:
-            # replace Microsoft warnings
-            text = _("Your request may violate OpenAI's policies. Please modify your prompt and retry.")
-        else:
-            text += " " + _("Reason: {}").format(error_msg)
+    if "RateLimitError" in error_msg:
+        # openai.error.RateLimitError may contain sensitive data
+        text += " " + _("Reason: Rate limit reached")
+    elif "policy" in error_msg:
+        # replace Microsoft warnings
+        text = _("Your request may violate OpenAI's policies. Please modify your prompt and retry.")
+    elif "JSONDecodeError" in error_msg:
+        pass
+    else:
+        text += " " + _("Reason: {}").format(error_msg)
     text = "⚠️ " + text
     if placeholder is None:
         await update.effective_message.reply_text(text)
@@ -924,7 +927,8 @@ async def show_balance_handle(update: Update, context: CallbackContext):
         [
             _("The longer conversation would spend more tokens"),
             _("/reset to clear history manually"),
-            _("Most users spend fewer than 200,000 tokens per month"),
+            _("Most GPT-3.5 users spend about 200,000 tokens per month"),
+            _("Most GPT-4 users spend about 2,000,000 tokens per month"),
             _("Around 500 images can be generated from one million tokens."),
         ], _
     )
