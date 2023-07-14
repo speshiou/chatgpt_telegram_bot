@@ -426,14 +426,6 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     await update.effective_chat.send_action(action="typing")
 
     remaining_tokens = db.get_user_remaining_tokens(user_id)
-
-    max_tokens = None
-    if remaining_tokens < chatgpt.MODEL_MIN_LIMITED_TOKENS:
-        max_tokens = remaining_tokens
-    if remaining_tokens < 10000 or chat_mode not in config.DEFAULT_CHAT_MODES:
-        # enable token saving mode for low balance users and external modes
-        max_tokens = min(max_tokens, 2000) if max_tokens is not None else 2000
-
     if remaining_tokens <= 0:
         await send_insufficient_tokens_warning(update, context)
         return
@@ -469,22 +461,43 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     # handle too many tokens
     max_message_count = -1
 
+    prompt_cost_factor, completion_cost_factor = chatgpt.cost_factors(model)
+
+    max_tokens = int(remaining_tokens / prompt_cost_factor)
+    if remaining_tokens < 10000 or chat_mode not in config.DEFAULT_CHAT_MODES:
+        # enable token saving mode for low balance users and external modes
+        max_tokens = min(max_tokens, 2000)
+
+    prompt, n_first_dialog_messages_removed = chatgpt.build_prompt(system_prompt, messages, message, model, max_tokens)
+    # send warning if some messages were removed from the context
+    if n_first_dialog_messages_removed > 0:
+        # if n_first_dialog_messages_removed == 1:
+        #     text = _("⚠️ The <b>first message</b> was removed from the context due to OpenAI's token amount limit. Use /reset to reset")
+        # else:
+        #     text = _("⚠️ The <b>first {} messages</b> have removed from the context due to OpenAI's token amount limit. Use /reset to reset").format(n_first_dialog_messages_removed)
+        # await update.effective_message.reply_text(text, parse_mode=ParseMode.HTML)
+        print(f"removed {n_first_dialog_messages_removed} messages from context")
+        max_message_count = len(messages) + 1 - n_first_dialog_messages_removed
+
+    num_prompt_tokens = openai_utils.num_tokens_from_messages(prompt, model)
+    estimated_cost = num_prompt_tokens * prompt_cost_factor
+    if remaining_tokens < estimated_cost:
+        await send_insufficient_tokens_warning(update, context, num_tokens=estimated_cost)
+        return
+
     try:
         api_type = config.OPENAI_CHAT_API_TYPE
         if api_type != config.DEFAULT_OPENAI_API_TYPE and "api_type" in config.CHAT_MODES[chat_mode]:
             api_type = config.CHAT_MODES[chat_mode]["api_type"]
 
         stream = chatgpt.send_message(
-            message,
-            dialog_messages=messages,
-            system_prompt=system_prompt,
+            prompt,
             model=model,
             max_tokens=max_tokens,
             stream=config.STREAM_ENABLED,
             api_type=api_type,
         )
 
-        num_dialog_messages_removed = 0
         prev_answer = ""
         
         if api_type == "azure":
@@ -497,9 +510,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         
         async for buffer in stream:
             
-            finished, answer, used_tokens, n_first_dialog_messages_removed = buffer
-
-            num_dialog_messages_removed += n_first_dialog_messages_removed
+            finished, answer, used_tokens = buffer
 
             if not finished and len(answer) - len(prev_answer) < stream_len:
                 # reduce edit message requests
@@ -542,16 +553,6 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
                 current_message_chunk_index = chuck_index
                 n_sent_chunks = chuck_index + 1
 
-        # send warning if some messages were removed from the context
-        if num_dialog_messages_removed > 0:
-            # if num_dialog_messages_removed == 1:
-            #     text = _("⚠️ The <b>first message</b> was removed from the context due to OpenAI's token amount limit. Use /reset to reset")
-            # else:
-            #     text = _("⚠️ The <b>first {} messages</b> have removed from the context due to OpenAI's token amount limit. Use /reset to reset").format(num_dialog_messages_removed)
-            # await update.effective_message.reply_text(text, parse_mode=ParseMode.HTML)
-            print(f"removed {num_dialog_messages_removed} messages from context")
-            max_message_count = len(messages) + 1 - num_dialog_messages_removed
-
         # send warning if the anwser is too long (based on telegram's limit)
         if len(answer) > config.MESSAGE_MAX_LENGTH:
             await update.effective_message.reply_text(_("⚠️ The answer was too long, has been splitted into multiple unformatted messages"))
@@ -566,8 +567,6 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
                 # answer may have invalid characters, so we send it without parse_mode
                 await update.effective_message.reply_text(chunk, reply_markup=final_reply_markup)
             sent_answer = answer
-    except ValueError as e:
-        await send_insufficient_tokens_warning(update, context, num_tokens=e.args[1])
     except Exception as e:
         await send_openai_error(update, context, e)
     
@@ -584,7 +583,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             )
         else:
             db.update_chat_last_interaction(chat_id)
-        final_cost = used_tokens * config.GPT4_PRICE_FACTOR if model == openai_utils.MODEL_GPT_4 else used_tokens
+        final_cost = used_tokens * prompt_cost_factor
         # IMPORTANT: consume tokens in the end of function call to protect users' credits
         db.inc_user_used_tokens(user_id, final_cost)
 
