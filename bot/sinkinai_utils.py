@@ -26,7 +26,7 @@ MODELS = {
     "real": {
         "name": _("Photorealistic"),
         "model_id": "mGYMaD5",
-        "version": "1.0",
+        "version": "1.6",
         "negative_prompt": "BadDream, (cgi render, 3d, cartoon, drawing, low quality, worst quality:1.2)",
         "steps": 30,
         "scale": "7.5",
@@ -36,7 +36,7 @@ MODELS = {
     "dream": {
         "name": _("Unreal (2.5D)"),
         "model_id": "4zdwGOB",
-        "version": "6",
+        "version": "7",
         "prompt_template": "8k, best quality, highly detailed, hdr, intricate, {}",
         "steps": 20,
         "scale": "7",
@@ -48,7 +48,7 @@ MODELS = {
     "meina": {
         "name": _("Anime"),
         "model_id": "vln8Nwr",
-        "version": "10",
+        "version": "11",
         "negative_prompt": "(worst quality, low quality:1.4), (zombie, sketch, interlocked fingers, comic),",
         "steps": 20,
         "scale": "7",
