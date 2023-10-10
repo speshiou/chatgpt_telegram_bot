@@ -1,5 +1,6 @@
 import os
 import time
+import json
 import aiohttp
 import hashlib
 import hmac
@@ -16,17 +17,24 @@ def hash_query(params):
     hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
     return hash
 
-async def api_request(endpoint, params):
+def common_params(user_id):
+    params = {
+        'user': json.dumps({'id': user_id}),
+    }
+
+    return params
+
+async def api_request(endpoint, method='GET', params = None, data = None):
     if not config.API_ENDPOINT:
         return None
     url = os.path.join(config.API_ENDPOINT, endpoint)
 
-    params['create_time'] = int(time.time())
+    params['auth_date'] = int(time.time())
     hash = hash_query(params)
     params['hash'] = hash
     
     async with aiohttp.ClientSession() as session:
-        async with session.get(url, params=params) as response:
+        async with session.request(method, url, params=params, json=data) as response:
             if response.status == 200:
                 response_data = await response.json()
                 return response_data
@@ -36,18 +44,16 @@ async def api_request(endpoint, params):
 
 
 async def create_order(user_id, payment_method, price, token_amount):
-    params = {
-        'tg_user_id': user_id,
+    params = common_params(user_id)
+    data = {
         'payment_method': payment_method,
         'payment_amount': price,
         'token_amount': token_amount,
     }
     
-    return await api_request("orders/create", params)
+    return await api_request("orders", method="POST", params=params, data=data)
 
 async def earn(user_id):
-    params = {
-        'tg_user_id': user_id,
-    }
+    params = common_params(user_id)
     
-    return await api_request("earn", params)
+    return await api_request("earn", params=params)
