@@ -4,18 +4,21 @@ import os, csv
 def _(text):
     return text
 
-DEFAULT_CHAT_MODES = {
+DEFAULT_MODELS = {
     "gpt": {
-        "icon": "🤖",
-        "name": "ChatGPT",
-        "greeting": _("Hi! This is GPT 3.5 model. How can I assist you today?"),
-        "prompt": "As an advanced chatbot named ChatGPT powered by OpenAI GPT-3.5 turbo model, your primary goal is to assist users to the best of your ability. This may involve answering questions, providing helpful information, or completing tasks based on user input. In order to effectively assist users, it is important to be detailed and thorough in your responses. Use examples and evidence to support your points and justify your recommendations or solutions. Remember to always prioritize the needs and satisfaction of the user. Your ultimate goal is to provide a helpful and enjoyable experience for the user."
+        "name": "GPT-3.5",
     },
     "gpt4": {
-        "icon": "🤖",
         "name": "GPT-4",
-        "greeting": _("Hi! This is GPT-4, the most powerful AI model. However, it's important to note that GPT-4 comes with a significantly higher price, costing 20 times more tokens compared to GPT-3.5."),
-        "prompt": "You are a helpful assistant powered by OpenAI's GPT-4 model which was released on March 14, 2023."
+    }
+}
+
+DEFAULT_CHAT_MODES = {
+    "chatgpt": {
+        "icon": "🤖",
+        "name": "ChatGPT",
+        "greeting": _("Hi! This is ChatGPT. How can I assist you today?"),
+        "prompt": "As an advanced chatbot named ChatGPT powered by OpenAI's GPT model, your primary goal is to assist users to the best of your ability. This may involve answering questions, providing helpful information, or completing tasks based on user input. In order to effectively assist users, it is important to be detailed and thorough in your responses. Use examples and evidence to support your points and justify your recommendations or solutions. Remember to always prioritize the needs and satisfaction of the user. Your ultimate goal is to provide a helpful and enjoyable experience for the user."
     },
     "proofreader": {
         "icon": "📝",
@@ -161,7 +164,9 @@ TTS_ESTIMATED_DURATION_BASE = 0.05
 STREAM_ENABLED = True
 ALLOWED_TELEGRAM_USERNAMES = _env_parse_str_array('ALLOWED_TELEGRAM_USERNAMES')
 DEFAULT_CHAT_MODE = list(DEFAULT_CHAT_MODES.keys())[0]
+DEFAULT_MODEL = list(DEFAULT_MODELS.keys())[0]
 DEFAULT_CHAT_TIMEOUT = _env_parse_int('DEFAULT_CHAT_TIMEOUT', 60 * 60 * 1)
 API_ENDPOINT = os.getenv('API_ENDPOINT')
+WEB_APP_URL = os.getenv('WEB_APP_URL')
 BUGREPORT_BOT_TOKEN = os.getenv('BUGREPORT_BOT_TOKEN')
 BUGREPORT_CHAT_ID = os.getenv('BUGREPORT_CHAT_ID')

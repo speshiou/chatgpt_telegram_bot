@@ -118,15 +118,22 @@ class Database:
     def get_current_chat_mode(self, chat_id: int):
         return self.get_chat_attribute(chat_id, 'current_chat_mode') or config.DEFAULT_CHAT_MODE
     
+    def set_current_model(self, chat_id: int, model: str):
+        self.set_chat_attribute(chat_id, 'current_model', model)
+
+    def get_current_model(self, chat_id: int):
+        return self.get_chat_attribute(chat_id, 'current_model') or config.DEFAULT_MODEL
+    
     def get_chat_voice_mode(self, chat_id: int):
         return self.get_chat_attribute(chat_id, 'voice_mode') or "text"
     
     def get_chat_timeout(self, chat_id: int):
-        timeout = self.get_chat_attribute(chat_id, 'timeout')
-        return timeout if timeout is not None else config.DEFAULT_CHAT_TIMEOUT
+        # timeout = self.get_chat_attribute(chat_id, 'timeout')
+        # return timeout if timeout is not None else config.DEFAULT_CHAT_TIMEOUT
+        return config.DEFAULT_CHAT_TIMEOUT
     
     def get_chat_lang(self, chat_id: int):
-        return self.get_chat_attribute(chat_id, 'lang')
+        return self.get_chat_attribute(chat_id, 'preferred_lang')
 
     def reset_chat(self, chat_id: int, chat_mode=None):
         self.upsert_chat(chat_id, chat_mode)

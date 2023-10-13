@@ -1,6 +1,6 @@
 from urllib.parse import urlencode, parse_qs
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 
 import config
 import sinkinai_utils
@@ -78,7 +78,20 @@ def _chat_mode_options(_):
             label += " ({})".format("".join(features))
         options.append({ 
             "label": label, 
-            "value": chat_mode, "callback": "set_chat_mode|" + chat_mode 
+            "value": chat_mode, 
+            "callback": "set_chat_mode|" + chat_mode 
+        })
+    return options
+
+def _model_options(_):
+    options = []
+    for key, model in config.DEFAULT_MODELS.items():
+        label = model["name"]
+
+        options.append({ 
+            "label": label, 
+            "value": key, 
+            "callback": "set_model|" + key 
         })
     return options
 
@@ -117,11 +130,27 @@ def load_settings(db: Database, chat_id: int, _):
     if current_chat_mode not in config.CHAT_MODES:
         current_chat_mode = config.DEFAULT_CHAT_MODE
 
+    current_model = db.get_current_model(chat_id)
     voice_mode = db.get_chat_voice_mode(chat_id)
     timeout = db.get_chat_timeout(chat_id)
     lang = db.get_chat_lang(chat_id)
+    if lang:
+        lang = lang.lower()
 
     settings = {
+        "current_model": {
+            "icon": "💬",
+            "name": _("AI Model"),
+            "desc": chat_mode_tips(None, _) + "\n\n" + build_tips([
+                _("🤥 Some characters are made up! Don't take them too seriously."),
+                _("🤩 More roles are coming soon. Stay tuned!"),
+            ], _, hide_bullet=True),
+            "hide_tips_bullet": True,
+            "value": current_model,
+            "disable_check_mark": True,
+            "num_keyboard_cols": 2,
+            "options": _model_options(_),
+        },
         "current_chat_mode": {
             "icon": "💬",
             "name": _("Chat Mode"),
@@ -135,62 +164,62 @@ def load_settings(db: Database, chat_id: int, _):
             "num_keyboard_cols": 2,
             "options": _chat_mode_options(_)
         },
-        "voice_mode": {
-            "icon": "🗣",
-            "name": _("Chat Voice"),
-            "desc": _("This setting only applies to the character with 🗣 icon, see /role.")
-                    + "\n\n"
-                    + _("<b>Price:</b> {} tokens per second").format(config.COQUI_TOKENS)
-                    + "\n\n"
-                    + build_tips([
-                        _("English only, please speak English to characters once you enable voice messages"),
-                        _("It costs roughly 500,000 tokens to have a 30-minute voice chat."),
-                        _("The maximum length of the text is 600 characters."),
-                    ], _),
-            "value": voice_mode,
-            "options": [
-                {
-                    "label": _("Text Only"),
-                    "value": "text",
-                },
-                # {
-                #     "label": _("Voice Only"),
-                #     "value": "voice",
-                # },
-                {
-                    "label": _("Text and Voice"),
-                    "value": "text_and_voice",
-                },
-            ]
-        },
-        "timeout": {
-            "icon": "⏳",
-            "name": _("Chat Timeout"),
-            "desc": _("Setting a proper timeout can help reduce token consumption. When a timeout occurs, the chatbot will not generate an answer based on previous chat history.\n\nYou can also use /reset to clear chat history manually."),
-            "value": timeout,
-            "options": [
-                {
-                    "label": _("1 Hour"),
-                    "value": 60 * 60 * 1,
-                },
-                {
-                    "label": _("6 Hours"),
-                    "value": 60 * 60 * 6,
-                },
-                {
-                    "label": _("12 Hours"),
-                    "value": 60 * 60 * 12,
-                },
-                {
-                    "label": _("24 Hours"),
-                    "value": 60 * 60 * 24,
-                },
-                {
-                    "label": _("Never"),
-                    "value": 0,
-                },
-            ]
-        },
+        # "voice_mode": {
+        #     "icon": "🗣",
+        #     "name": _("Chat Voice"),
+        #     "desc": _("This setting only applies to the character with 🗣 icon, see /role.")
+        #             + "\n\n"
+        #             + _("<b>Price:</b> {} tokens per second").format(config.COQUI_TOKENS)
+        #             + "\n\n"
+        #             + build_tips([
+        #                 _("English only, please speak English to characters once you enable voice messages"),
+        #                 _("It costs roughly 500,000 tokens to have a 30-minute voice chat."),
+        #                 _("The maximum length of the text is 600 characters."),
+        #             ], _),
+        #     "value": voice_mode,
+        #     "options": [
+        #         {
+        #             "label": _("Text Only"),
+        #             "value": "text",
+        #         },
+        #         # {
+        #         #     "label": _("Voice Only"),
+        #         #     "value": "voice",
+        #         # },
+        #         {
+        #             "label": _("Text and Voice"),
+        #             "value": "text_and_voice",
+        #         },
+        #     ]
+        # },
+        # "timeout": {
+        #     "icon": "⏳",
+        #     "name": _("Chat Timeout"),
+        #     "desc": _("Setting a proper timeout can help reduce token consumption. When a timeout occurs, the chatbot will not generate an answer based on previous chat history.\n\nYou can also use /reset to clear chat history manually."),
+        #     "value": timeout,
+        #     "options": [
+        #         {
+        #             "label": _("1 Hour"),
+        #             "value": 60 * 60 * 1,
+        #         },
+        #         {
+        #             "label": _("6 Hours"),
+        #             "value": 60 * 60 * 6,
+        #         },
+        #         {
+        #             "label": _("12 Hours"),
+        #             "value": 60 * 60 * 12,
+        #         },
+        #         {
+        #             "label": _("24 Hours"),
+        #             "value": 60 * 60 * 24,
+        #         },
+        #         {
+        #             "label": _("Never"),
+        #             "value": 0,
+        #         },
+        #     ]
+        # },
         "lang": {
             "icon": "🌐",
             "name": _("Language"),
@@ -252,7 +281,6 @@ def _menu_page(path: str, menu_data, _):
     if "?" in path:
         path, query = path.split("?")
 
-    title_format = "{} <b>{}</b>"
     segs = path.split(">") if path else []
     data = None
     path_segs = []
@@ -276,7 +304,10 @@ def _menu_page(path: str, menu_data, _):
     num_keyboard_cols = data["num_keyboard_cols"] if "num_keyboard_cols" in data else 1
     reply_markup = None
 
-    text = title_format.format(data["icon"], data["name"])
+    title_format = "<b>{}</b>"
+    text = title_format.format(data["name"])
+    if "icon" in data:
+        text = "{} {}".format(data["icon"], text)
     if "desc" in data:
         text += "\n\n"
         text += data["desc"]
@@ -285,7 +316,11 @@ def _menu_page(path: str, menu_data, _):
         if isinstance(data["options"], dict):
             options = data["options"]
             for key, option in options.items():
-                if "callback" in option:
+                args = {}
+                callback_data = None
+                if "web_app" in option:
+                    args["web_app"] = WebAppInfo(url=option["web_app"])
+                elif "callback" in option:
                     callback_data = option["callback"]
                 else:
                     option_path_segs = path_segs + [key]
@@ -294,11 +329,14 @@ def _menu_page(path: str, menu_data, _):
                         callback_data += "?" + query
                 if "args" in data:
                     callback_data = add_args(callback_data, data["args"])
+                if callback_data is not None:
+                    args["callback_data"] = callback_data
+
                 label = option["name"]
                 if "icon" in option:
                     label = "{} {}".format(option["icon"], label)
                 
-                keyboard.append(InlineKeyboardButton(label, callback_data=callback_data))
+                keyboard.append(InlineKeyboardButton(label, **args))
         else:
             # array
             for option in data["options"]:
@@ -363,20 +401,27 @@ def settings(db: Database, chat_id: int, _, data: str = None):
         info.append("<b>{}</b>: {}".format(setting["name"], label))
     desc = "\n".join(info)
 
+    options = {}
+    if chat_id > 0:
+        options["settings"] = {
+            "icon": "⚙️",
+            "name": _("Configure"),
+            "web_app": config.WEB_APP_URL,
+        }
+
+    options["about"] = {
+        "icon": "ℹ️",
+        "name": _("About"),
+        "callback": "about",
+    }
+
     menu_data = {
         "icon": "⚙️",
         "name": _("Settings"),
         "key": "settings",
         "desc": desc,
-        "options": {
-            **settings,
-            "about": {
-                "icon": "ℹ️",
-                "name": _("About"),
-                "callback": "about",
-            }
-        },
-        "num_keyboard_cols": 2,
+        "options": options,
+        "num_keyboard_cols": 1,
     }
 
     return _menu_page(path, menu_data, _)
@@ -385,9 +430,9 @@ def about(_):
     text = _("Hi! My name is Nexia, an AI chatbot powered by OpenAI's GPT, DALL·E and Stable Diffusion models.")
     text += "\n\n"
     text += _("<b>What can I do for you?</b>\n")
-    text += _("🌎 Translate\n")
     text += _("✉️ Writing\n")
     text += _("🗂 Summarize\n")
+    text += _("🌎 Translate\n")
     text += _("🤔 Provide ideas and solve problems\n")
     text += _("💻 Programming and debugging\n")
     text += "\n"
@@ -397,14 +442,14 @@ def about(_):
     text += _("📔 Dictionary (/dictionary)\n")
     text += _("🌐 Summarize websites and Youtube videos (under 5min)") + "\n"
     text += _("👨‍🎨 Generate images (/image)\n")
-    text += _("🧙‍♀️ Chat with dream characters (/role)\n")
-    text += _("👥 Group chat - add @{} to a group chat, then use /gpt to start.\n").format(config.TELEGRAM_BOT_NAME)
+    text += _("🧙‍♀️ Create custom roles\n")
+    text += _("👥 Group chat - add @{} to a group chat, then use /chatgpt to start.\n").format(config.TELEGRAM_BOT_NAME)
     text += "\n\n"
     text += _("""By using this chatbot, you agree to our <a href="{}">terms of service</a> and <a href="{}">privacy policy</a>.""").format("https://tgchat.co/terms-of-service", "https://tgchat.co/privacy-policy")
 
     reply_markup = InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("⚙️ " + _("Settings"), callback_data="settings"),
+            InlineKeyboardButton("⚙️ " + _("Settings"), web_app=WebAppInfo(url=config.WEB_APP_URL)),
             InlineKeyboardButton("💡 " + _("Learn"), url="https://t.me/ChatGPT_Prompts_Lab"),
         ],
         [

@@ -8,7 +8,7 @@ import math
 from datetime import datetime
 
 import telegram
-from telegram import Message, Chat, BotCommand, Update, User, InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto
+from telegram import Message, Chat, BotCommand, Update, User, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import (
     Application,
     ApplicationBuilder,
@@ -16,7 +16,8 @@ from telegram.ext import (
     CommandHandler,
     MessageHandler,
     CallbackQueryHandler,
-    filters
+    filters,
+    ContextTypes
 )
 from telegram.constants import ParseMode, ChatAction
 
@@ -44,12 +45,12 @@ logger = logging.getLogger(__name__)
 def get_commands(lang=i18n.DEFAULT_LOCALE):
     _ = i18n.get_text_func(lang)
     return [
-        BotCommand("gpt", _("switch to ChatGPT mode")),
-        BotCommand("gpt4", _("switch to GPT-4 mode")),
+        BotCommand("gpt", _("use GPT-3.5 model")),
+        BotCommand("gpt4", _("use to GPT-4 model")),
+        BotCommand("chatgpt", _("switch to ChatGPT mode")),
         BotCommand("proofreader", _("switch to Proofreader mode")),
         BotCommand("dictionary", _("switch to Dictionary mode")),
         BotCommand("image", _("generate images")),
-        BotCommand("role", _("chat with dream characters")),
         BotCommand("reset", _("start a new conversation")),
         BotCommand("balance", _("check balance")),
         BotCommand("settings", _("settings")),
@@ -243,6 +244,10 @@ async def common_command_handle(update: Update, context: CallbackContext):
     command = parse_command(message)
     message = strip_command(message)
 
+    if command in config.DEFAULT_MODELS:
+        await set_chat_model(update, context, command)
+        return
+
     chat_mode = command if command in config.CHAT_MODES else None
 
     if not chat_mode:
@@ -392,7 +397,8 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         messages = db.get_chat_messages(chat_id)
 
     system_prompt = config.CHAT_MODES[chat_mode]["prompt"]
-    model = openai_utils.MODEL_GPT_4 if chat_mode == "gpt4" else openai_utils.MODEL_GPT_35_TURBO
+    model_id = db.get_current_model(chat_id)
+    model = openai_utils.MODEL_GPT_4 if model_id == "gpt4" else openai_utils.MODEL_GPT_35_TURBO
 
     # new dialog timeout
     if use_new_dialog_timeout:
@@ -833,8 +839,38 @@ async def show_chat_modes_handle(update: Update, context: CallbackContext):
     text, reply_markup = ui.settings(db, chat_id, _, "settings>current_chat_mode")
     await update.message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=reply_markup)
 
+async def set_chat_model(update: Update, context: CallbackContext, model = None):
+    user = await register_user_if_not_exists(update, context)
+    chat = update.effective_chat
+    chat_id = update.effective_chat.id
+    _ = get_text_func(user, chat_id)
+    if model not in config.DEFAULT_MODELS:
+        # fallback to ChatGPT mode
+        model = config.DEFAULT_MODEL
+
+    db.set_current_model(chat_id, model)
+
+    text = "🤖 " + _("You are using {} model ...").format(config.DEFAULT_MODELS[model]["name"])
+
+    if model == "gpt4":
+        text += "\n\n"
+        text += _("NOTE: GPT-4 is expensive, so please use it carefully.")
+
+    reply_markup = None
+    keyborad_rows = None
+    if chat.type == Chat.PRIVATE:
+        keyborad_rows = [
+            [InlineKeyboardButton("💬 " + _("Change chat mode"), web_app=WebAppInfo(os.path.join(config.WEB_APP_URL, "models?start_for_result=1")))]
+        ]
+
+    if keyborad_rows:
+        reply_markup = InlineKeyboardMarkup(keyborad_rows)
+
+    await update.message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=reply_markup)
+
 async def set_chat_mode(update: Update, context: CallbackContext, chat_mode = None, reason: str = None):
     user = await register_user_if_not_exists(update, context)
+    chat = update.effective_chat
     chat_id = update.effective_chat.id
     _ = get_text_func(user, chat_id)
 
@@ -857,20 +893,26 @@ async def set_chat_mode(update: Update, context: CallbackContext, chat_mode = No
     # to trigger roles to start the conversation
     send_empty_message = "greeting" not in config.CHAT_MODES[chat_mode] and reason is None
     reply_markup = None
-    keyborad_rows = [
-        [InlineKeyboardButton("💬 " + _("Change chat mode"), callback_data="settings>current_chat_mode")]
-    ]
+
+    keyborad_rows = []
+    if chat.type == Chat.PRIVATE:
+        keyborad_rows = [
+            [InlineKeyboardButton("💬 " + _("Change chat mode"), web_app=WebAppInfo(os.path.join(config.WEB_APP_URL, "roles?start_for_result=1")))]
+        ]
     icon_prefix = config.CHAT_MODES[chat_mode]["icon"] + " " if "icon" in config.CHAT_MODES[chat_mode] else ""
-    if reason == "timeout":
-        text = icon_prefix + _("It's been a long time since we talked, and I've forgotten what we talked about before.")
-        keyborad_rows.append([InlineKeyboardButton("⏳ " + _("Timeout settings"), callback_data="settings>timeout")])
-    elif reason == "reset":
+
+    if reason == "reset":
         text = icon_prefix + _("I have already forgotten what we previously talked about.")
         keyborad_rows = []
     elif show_tips and "greeting" in config.CHAT_MODES[chat_mode]:
         text = icon_prefix + _(config.CHAT_MODES[chat_mode]["greeting"])
+    # elif reason == "timeout":
+    #     text = icon_prefix + _("It's been a long time since we talked, and I've forgotten what we talked about before.")
+    #     keyborad_rows.append([InlineKeyboardButton("⏳ " + _("Timeout settings"), callback_data="settings>timeout")])
     else:
-        text = icon_prefix + _("You're now chatting with {} ...").format(config.CHAT_MODES[chat_mode]["name"])
+        model_id = db.get_current_model(chat_id)
+        model = config.DEFAULT_MODLES[model_id]
+        text = icon_prefix + _("You're now chatting with {} ({}) ...").format(config.CHAT_MODES[chat_mode]["name"], model["name"])
 
     if show_tips:
         tips = ui.chat_mode_tips(chat_mode, _)
@@ -1111,7 +1153,6 @@ async def edited_message_handle(update: Update, context: CallbackContext):
     text = _("💡 Edited messages won't take effects")
     await update.edited_message.reply_text(text, parse_mode=ParseMode.HTML)
 
-
 async def error_handle(update: Update, context: CallbackContext) -> None:
     # collect error message
     tb_list = traceback.format_exception(None, context.error, context.error.__traceback__)
@@ -1164,7 +1205,7 @@ def run_bot() -> None:
 
     application.add_handler(CommandHandler("start", start_handle, filters=user_filter))
     application.add_handler(CommandHandler("reset", reset_handle, filters=user_filter))
-    application.add_handler(CommandHandler("role", show_chat_modes_handle, filters=user_filter))
+    # application.add_handler(CommandHandler("role", show_chat_modes_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(set_chat_mode_handle, pattern="^set_chat_mode"))
     application.add_handler(CommandHandler("balance", show_balance_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(show_balance_handle, pattern="^balance"))
@@ -1173,6 +1214,7 @@ def run_bot() -> None:
     application.add_handler(CommandHandler("earn", show_earn_handle, filters=user_filter))
     application.add_handler(CommandHandler("gpt", common_command_handle, filters=user_filter))
     application.add_handler(CommandHandler("gpt4", common_command_handle, filters=user_filter))
+    application.add_handler(CommandHandler("chatgpt", common_command_handle, filters=user_filter))
     application.add_handler(CommandHandler("proofreader", common_command_handle, filters=user_filter))
     application.add_handler(CommandHandler("dictionary", common_command_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(common_command_handle, pattern="^retry"))
