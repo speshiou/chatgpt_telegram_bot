@@ -911,7 +911,7 @@ async def set_chat_mode(update: Update, context: CallbackContext, chat_mode = No
     #     keyborad_rows.append([InlineKeyboardButton("⏳ " + _("Timeout settings"), callback_data="settings>timeout")])
     else:
         model_id = db.get_current_model(chat_id)
-        model = config.DEFAULT_MODLES[model_id]
+        model = config.DEFAULT_MODELS[model_id]
         text = icon_prefix + _("You're now chatting with {} ({}) ...").format(config.CHAT_MODES[chat_mode]["name"], model["name"])
 
     if show_tips:
