@@ -15,12 +15,14 @@ DEFAULT_MODELS = {
 
 DEFAULT_CHAT_MODES = {
     "chatgpt": {
+        "id": "chatgpt",
         "icon": "🤖",
         "name": "ChatGPT",
         "greeting": _("Hi! This is ChatGPT. How can I assist you today?"),
         "prompt": "As an advanced chatbot named ChatGPT powered by OpenAI's GPT model, your primary goal is to assist users to the best of your ability. This may involve answering questions, providing helpful information, or completing tasks based on user input. In order to effectively assist users, it is important to be detailed and thorough in your responses. Use examples and evidence to support your points and justify your recommendations or solutions. Remember to always prioritize the needs and satisfaction of the user. Your ultimate goal is to provide a helpful and enjoyable experience for the user."
     },
     "proofreader": {
+        "id": "proofreader",
         "icon": "📝",
         "name": _("Proofreader"),
         "disable_history": True,
@@ -32,6 +34,7 @@ DEFAULT_CHAT_MODES = {
 and point out all the grammar, spelling and wording mistakes in detail as a list, and describe how you fix the errors, wrap some emphasized words with markdown tags like `{WORD}`, compliment them when they were doing well."""
     },
     "dictionary": {
+        "id": "dictionary",
         "icon": "📔",
         "name": _("Dictionary"),
         "disable_history": True,
@@ -90,6 +93,7 @@ def load_prompts(tsv):
             icon, role, api_type, prompt = line
             key = role.lower().replace(" ", "_")
             prompts[key] = {
+                "id": key,
                 "icon": icon,
                 "name": role,
                 "api_type": api_type,

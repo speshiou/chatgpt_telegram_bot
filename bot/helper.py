@@ -1,6 +1,9 @@
 import re
 import aiohttp
+import functools
 from urllib.parse import urlparse
+from database import Database
+import config
 
 async def http_post(url, data, result_type="json"):
     async with aiohttp.ClientSession() as session:
@@ -26,3 +29,23 @@ def parse_youtube_id(url: str)->str:
    if data:
        return data[0]
    return ""
+
+def get_available_chat_modes(db: Database, chat_id: int):
+    if chat_id > 0:
+        # private chat
+        roles = db.get_roles(chat_id)
+        roles_dict = functools.reduce(lambda acc, role: {**acc, str(role['_id']): role}, roles, {})
+        chat_modes = {**config.CHAT_MODES, **roles_dict}
+    else:
+        chat_modes = config.CHAT_MODES
+    return chat_modes
+
+def get_current_chat_mode(db: Database, chat_id: int, fallback: bool = True):
+    chat_mode_id = db.get_current_chat_mode(chat_id)
+    chat_modes = get_available_chat_modes(db, chat_id)
+    if chat_mode_id in chat_modes:
+        return chat_modes[chat_mode_id]
+    
+    if fallback:
+        return config.CHAT_MODES[config.DEFAULT_CHAT_MODE]
+    return None

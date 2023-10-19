@@ -6,6 +6,7 @@ import config
 import sinkinai_utils
 import i18n
 from database import Database
+import helper
 
 def get_arg(path: str, key: str):
     if "?" not in path:
@@ -102,8 +103,8 @@ def chat_mode_tips(chat_mode, _):
         tip = None
         if feature == "⚡":
             example = "/dictionary flower"
-            if chat_mode == "gpt":
-                example = "/gpt what can you do?"
+            if chat_mode == "chatgpt":
+                example = "/chatgpt what can you do?"
             elif chat_mode == "proofreader":
                 example = "/proofreader any text"
             tip = _("Instant access, ex: {}").format(example)
@@ -126,10 +127,7 @@ def chat_mode_tips(chat_mode, _):
     return text
 
 def load_settings(db: Database, chat_id: int, _):
-    current_chat_mode = db.get_current_chat_mode(chat_id)
-    if current_chat_mode not in config.CHAT_MODES:
-        current_chat_mode = config.DEFAULT_CHAT_MODE
-
+    current_chat_mode = helper.get_current_chat_mode(db, chat_id)
     current_model = db.get_current_model(chat_id)
     voice_mode = db.get_chat_voice_mode(chat_id)
     timeout = db.get_chat_timeout(chat_id)
@@ -394,9 +392,12 @@ def settings(db: Database, chat_id: int, _, data: str = None):
     for key, setting in settings.items():
         value = setting["value"]
         label = value
-        for option in setting["options"]:
-            if value == option["value"]:
-                label = option["label"]
+        if key == "current_chat_mode":
+            label = value["name"]
+        else:
+            for option in setting["options"]:
+                if value == option["value"]:
+                    label = option["label"]
 
         info.append("<b>{}</b>: {}".format(setting["name"], label))
     desc = "\n".join(info)

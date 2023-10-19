@@ -255,7 +255,7 @@ async def common_command_handle(update: Update, context: CallbackContext):
         return
 
     if message:
-        await message_handle(update, context, message=message, chat_mode=chat_mode, cached_msg_id=cached_msg_id)
+        await message_handle(update, context, message=message, chat_mode_id=chat_mode, cached_msg_id=cached_msg_id)
     else:
         await set_chat_mode(update, context, chat_mode)
     return
@@ -351,7 +351,7 @@ def _build_youtube_prompt(url, _):
         print(e)
     return None
 
-async def message_handle(update: Update, context: CallbackContext, message=None, use_new_dialog_timeout=True, chat_mode=None, placeholder: Message=None, cached_msg_id=None):
+async def message_handle(update: Update, context: CallbackContext, message=None, use_new_dialog_timeout=True, chat_mode_id=None, placeholder: Message=None, cached_msg_id=None):
     user = await register_user_if_not_exists(update, context)
     chat_id = update.effective_chat.id
     
@@ -367,51 +367,39 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     reply_markup = None
 
     voice_mode = db.get_chat_voice_mode(chat_id)
-    if chat_mode is None:
-        chat_mode = db.get_current_chat_mode(chat_id)
 
-    push_new_message = True
-    
-    if chat_mode not in config.CHAT_MODES:
-        # fallback to the first mode
-        chat_mode = config.DEFAULT_CHAT_MODE
-        # lead to timeout process
-        messages = None
-    elif "disable_history" in config.CHAT_MODES[chat_mode]:
-        # to keep the language of input message, not to send chat history to model
-        messages = []
-        push_new_message = False
-        # ignore timeout check if the message sent in instant access
-        if update.effective_message.text.startswith("/"):
-            use_new_dialog_timeout = False
+    if chat_mode_id is None:
+        chat_mode_id = db.get_current_chat_mode(chat_id)
+
+    disable_history = False
+
+    chat_modes = helper.get_available_chat_modes(db, chat_id)
+    chat_mode = chat_modes[chat_mode_id] if chat_mode_id in chat_modes else None
+    if chat_mode is None:
+        # fallback to the default chat mode
+        chat_mode_id = config.DEFAULT_CHAT_MODE
+        chat_mode = chat_modes[chat_mode_id]
+        await set_chat_mode(update, context, chat_mode_id, reason="timeout")
+    elif "disable_history" in chat_mode:
+        disable_history = True
         if cached_msg_id is None:
             cached_message = update.effective_message.text
             if not cached_message.startswith("/"):
-                cached_message = "/{} {}".format(chat_mode, cached_message)
+                cached_message = "/{} {}".format(chat_mode_id, cached_message)
             cached_msg_id = db.cache_chat_message(cached_message)
         reply_markup = InlineKeyboardMarkup([
             [InlineKeyboardButton(_("Retry"), callback_data=f"retry|{cached_msg_id}")]
         ])
-    else:
-        # load chat history to context
-        messages = db.get_chat_messages(chat_id)
-
-    system_prompt = config.CHAT_MODES[chat_mode]["prompt"]
-    model_id = db.get_current_model(chat_id)
-    model = openai_utils.MODEL_GPT_4 if model_id == "gpt4" else openai_utils.MODEL_GPT_35_TURBO
-
-    # new dialog timeout
-    if use_new_dialog_timeout:
+    elif use_new_dialog_timeout:
+        # determine if the chat is timed out
         last_chat_time = db.get_last_chat_time(chat_id)
         timeout = db.get_chat_timeout(chat_id)
-        if messages is None or last_chat_time is None:
-            # first launch
-            await set_chat_mode(update, context, chat_mode)
-            messages = []
+        if last_chat_time is None:
+            # first launch or the current chat mode is outdated
+            await set_chat_mode(update, context, chat_mode_id, reason="timeout")
         elif timeout > 0 and (datetime.now() - last_chat_time).total_seconds() > timeout:
             # timeout
-            await set_chat_mode(update, context, chat_mode, reason="timeout")
-            messages = []
+            await set_chat_mode(update, context, chat_mode_id, reason="timeout")
             # drop placeholder to prevent the answer from showing before the timeout message
             placeholder = None
 
@@ -433,6 +421,17 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
     # send typing action
     await update.effective_chat.send_action(action="typing")
+
+    # load role
+    if "prompt" not in chat_mode:
+        # custom role list won't contain prompts by default
+        chat_mode["prompt"] = db.get_role_prompt(chat_id, chat_mode["_id"])
+    system_prompt = chat_mode["prompt"]
+    # load model
+    model_id = db.get_current_model(chat_id)
+    model = openai_utils.MODEL_GPT_4 if model_id == "gpt4" else openai_utils.MODEL_GPT_35_TURBO
+    # load chat history to context
+    messages = db.get_chat_messages(chat_id) if not disable_history else []
 
     remaining_tokens = db.get_user_remaining_tokens(user_id)
     if remaining_tokens <= 0:
@@ -473,7 +472,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     prompt_cost_factor, completion_cost_factor = chatgpt.cost_factors(model)
 
     max_tokens = int(remaining_tokens / prompt_cost_factor)
-    if remaining_tokens < 10000 or chat_mode not in config.DEFAULT_CHAT_MODES:
+    if remaining_tokens < 10000 or chat_mode_id not in config.DEFAULT_CHAT_MODES:
         # enable token saving mode for low balance users and external modes
         max_tokens = min(max_tokens, 2000)
 
@@ -496,8 +495,8 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
     try:
         api_type = config.OPENAI_CHAT_API_TYPE
-        if api_type != config.DEFAULT_OPENAI_API_TYPE and "api_type" in config.CHAT_MODES[chat_mode]:
-            api_type = config.CHAT_MODES[chat_mode]["api_type"]
+        # if api_type != config.DEFAULT_OPENAI_API_TYPE and "api_type" in config.CHAT_MODES[chat_mode]:
+        #     api_type = config.CHAT_MODES[chat_mode]["api_type"]
 
         stream = chatgpt.send_message(
             prompt,
@@ -582,7 +581,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     # TODO: consume tokens even if an exception occurs
     # consume tokens and append the message record to db
     if sent_answer is not None and used_tokens is not None:
-        if push_new_message:
+        if not disable_history:
             # update user data
             new_dialog_message = {"user": message, "bot": sent_answer, "date": datetime.now(), "used_tokens": used_tokens}
             db.push_chat_messages(
@@ -597,7 +596,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         db.inc_user_used_tokens(user_id, final_cost)
 
         if voice_mode != "text":
-            await send_voice_message(update, context, sent_answer, chat_mode, placeholder=voice_placeholder)
+            await send_voice_message(update, context, sent_answer, chat_mode_id, placeholder=voice_placeholder)
 
 async def send_voice_message(update: Update, context: CallbackContext, message: str, chat_mode: str, placeholder = None):
     if chat_mode not in config.TTS_MODELS:
@@ -868,30 +867,35 @@ async def set_chat_model(update: Update, context: CallbackContext, model = None)
 
     await update.message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=reply_markup)
 
-async def set_chat_mode(update: Update, context: CallbackContext, chat_mode = None, reason: str = None):
+async def set_chat_mode(update: Update, context: CallbackContext, chat_mode_id = None, reason: str = None):
     user = await register_user_if_not_exists(update, context)
     chat = update.effective_chat
     chat_id = update.effective_chat.id
     _ = get_text_func(user, chat_id)
 
-    if chat_mode is None:
-        chat_mode = db.get_current_chat_mode(chat_id)
-    
-    if chat_mode not in config.CHAT_MODES:
-        # fallback to ChatGPT mode
-        chat_mode = config.DEFAULT_CHAT_MODE
+    if chat_mode_id is None:
+        chat_mode = helper.get_current_chat_mode(db, chat_id)
+        chat_mode_id = str(chat_mode["_id"])
+    else:
+        chat_modes = helper.get_available_chat_modes(db, chat_id)
+        if chat_mode_id in chat_modes:
+            chat_mode = chat_modes[chat_mode_id]
+        else:
+            # fallback to ChatGPT mode
+            chat_mode_id = config.DEFAULT_CHAT_MODE
+            chat_mode = config.CHAT_MODES[chat_mode_id]
 
     # reset chat history
-    db.reset_chat(chat_id, chat_mode)
+    db.reset_chat(chat_id, chat_mode_id)
 
     show_tips = reason is None
-    if reason is not None and "disable_history" in config.CHAT_MODES[chat_mode]:
+    if reason is not None and "disable_history" in chat_mode:
         # info the current mode only
         reason = None
         show_tips = False
 
     # to trigger roles to start the conversation
-    send_empty_message = "greeting" not in config.CHAT_MODES[chat_mode] and reason is None
+    send_empty_message = "greeting" not in chat_mode and reason is None
     reply_markup = None
 
     keyborad_rows = []
@@ -899,23 +903,24 @@ async def set_chat_mode(update: Update, context: CallbackContext, chat_mode = No
         keyborad_rows = [
             [InlineKeyboardButton("💬 " + _("Change chat mode"), web_app=WebAppInfo(os.path.join(config.WEB_APP_URL, "roles?start_for_result=1")))]
         ]
-    icon_prefix = config.CHAT_MODES[chat_mode]["icon"] + " " if "icon" in config.CHAT_MODES[chat_mode] else ""
+    icon = chat_mode["icon"] if "icon" in chat_mode else "ℹ️"
+    icon_prefix = icon + " "
 
     if reason == "reset":
         text = icon_prefix + _("I have already forgotten what we previously talked about.")
         keyborad_rows = []
-    elif show_tips and "greeting" in config.CHAT_MODES[chat_mode]:
-        text = icon_prefix + _(config.CHAT_MODES[chat_mode]["greeting"])
+    elif show_tips and "greeting" in chat_mode:
+        text = icon_prefix + _(chat_mode["greeting"])
     # elif reason == "timeout":
     #     text = icon_prefix + _("It's been a long time since we talked, and I've forgotten what we talked about before.")
     #     keyborad_rows.append([InlineKeyboardButton("⏳ " + _("Timeout settings"), callback_data="settings>timeout")])
     else:
         model_id = db.get_current_model(chat_id)
         model = config.DEFAULT_MODELS[model_id]
-        text = icon_prefix + _("You're now chatting with {} ({}) ...").format(config.CHAT_MODES[chat_mode]["name"], model["name"])
+        text = icon_prefix + _("You're now chatting with {} ({}) ...").format(chat_mode["name"], model["name"])
 
     if show_tips:
-        tips = ui.chat_mode_tips(chat_mode, _)
+        tips = ui.chat_mode_tips(chat_mode_id, _)
         if tips:
             text += "\n\n" + tips
 

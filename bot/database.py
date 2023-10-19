@@ -14,6 +14,7 @@ class Database:
 
         self.user_collection = self.db["users"]
         self.chat_collection = self.db["chats"]
+        self.role_collection = self.db["roles"]
         self.message_collection = self.db["chat_messages"]
         self.stat_collection = self.db["stats"]
 
@@ -255,6 +256,33 @@ class Database:
     def get_cached_message(self, id):
         doc = self.message_collection.find_one({ '_id': ObjectId(id) })
         return doc["message"] if doc else None
+    
+    def get_roles(self, user_id: int):
+        filter = {
+            'user_id': user_id
+        }
+
+        projection = {
+            'name': 1
+        }
+
+        return list(
+            self.role_collection.find(filter, projection)
+        )
+
+    def get_role_prompt(self, chat_id, _id):
+        filter = {
+            '_id': _id,
+            'user_id': chat_id,
+        }
+
+        projection = {
+            'name': 1,
+            'prompt': 1,
+        }
+
+        doc  = self.role_collection.find_one(filter, projection)
+        return doc["prompt"] if doc else ""
 
     def inc_stats(self, field: str, amount: int = 1):
         today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
