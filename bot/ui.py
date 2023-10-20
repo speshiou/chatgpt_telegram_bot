@@ -467,7 +467,8 @@ def image_menu(_, path = None):
     desc_select_size = _("Select the image size (width x height)")
     for key, value in sinkinai_utils.MODELS.items():
         size_options = []
-        for size in sinkinai_utils.SIZE_OPTIONS:
+        sizes = sinkinai_utils.size_options(key)
+        for size in sizes:
             width = size["width"]
             height = size["height"]
 
@@ -483,6 +484,7 @@ def image_menu(_, path = None):
                 "label": label,
                 "callback": callback_data
             })
+
         options[key] = { 
             "icon": "🎨",
             "name": _(value["name"]),

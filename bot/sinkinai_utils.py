@@ -57,6 +57,15 @@ MODELS = {
         "lora": LORA_DETAILER_ID, 
         "lora_scale": "0.3",
     },
+    "sdxl": {
+        "name": _("Stable Diffusion XL"),
+        "model_id": "wozEgKm",
+        "negative_prompt": "",
+        "steps": 30,
+        "scale": "7",
+        "scheduler": "DPMSolverMultistep",
+        "use_default_neg": "false",
+    },
 }
 
 SIZE_OPTIONS = [
@@ -73,6 +82,26 @@ SIZE_OPTIONS = [
         "height": 512,
     },
 ]
+
+XL_SIZE_OPTIONS = [
+    {
+        "width": 1024,
+        "height": 1024,
+    },
+    {
+        "width": 768,
+        "height": 1024,
+    },
+    {
+        "width": 1024,
+        "height": 768,
+    },
+]
+
+def size_options(model):
+    if model == "sdxl":
+        return XL_SIZE_OPTIONS
+    return SIZE_OPTIONS
 
 def calc_credit_cost(width: int, height: int, steps: int, num_images=DEFAULT_NUM_IMAGES):
     base_time = 3
