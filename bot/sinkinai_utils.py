@@ -36,8 +36,8 @@ MODELS = {
     "dream": {
         "name": _("Unreal (2.5D)"),
         "model_id": "4zdwGOB",
-        "version": "7",
-        "prompt_template": "8k, best quality, highly detailed, hdr, intricate, {}",
+        "version": "8",
+        "prompt_template": "best quality, highly detailed, intricate, {}",
         "steps": 20,
         "scale": "7",
         "scheduler": "DPMSolverMultistep",
