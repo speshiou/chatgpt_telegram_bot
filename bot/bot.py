@@ -174,6 +174,13 @@ def strip_command(message):
         return m[2].strip()
     return None
 
+async def send_error(update: Update, context: CallbackContext, message: str = None, placeholder = None):
+    text = "⚠️ " + message
+    if placeholder is None:
+        await update.effective_message.reply_text(text)
+    else:
+        await placeholder.edit_text(text)
+
 async def send_openai_error(update: Update, context: CallbackContext, e: Exception, placeholder = None):
     user = await register_user_if_not_exists(update, context)
     chat_id = update.effective_chat.id
@@ -190,11 +197,8 @@ async def send_openai_error(update: Update, context: CallbackContext, e: Excepti
         pass
     else:
         text += " " + _("Reason: {}").format(error_msg)
-    text = "⚠️ " + text
-    if placeholder is None:
-        await update.effective_message.reply_text(text)
-    else:
-        await placeholder.edit_text(text)
+
+    await send_error(update, context, message=text, placeholder=placeholder)
 
     logger.error(error_msg)
     # printing stack trace
@@ -780,7 +784,9 @@ async def gen_image_handle(update: Update, context: CallbackContext):
         try:
             # in case the user deletes the placeholders manually
             await placeholder.delete()
+            placeholder = None
         except Exception as e:
+            print("failed to delete placeholder")
             print(e)
         reply_markup = InlineKeyboardMarkup([
             [
@@ -796,12 +802,15 @@ async def gen_image_handle(update: Update, context: CallbackContext):
 
         # send each image as single message for better share experience
         for image_url in images:
+            print("send_photo " + image_url)
             await context.bot.send_photo(chat_id, image_url, reply_markup=reply_markup)
         db.inc_user_used_tokens(user_id, used_tokens)
         db.mark_user_is_generating_image(user_id, False)
     except Exception as e:
         db.mark_user_is_generating_image(user_id, False)
-        await send_openai_error(update, context, e, placeholder=placeholder)
+        error_message = _("Server error. Please try again later.")
+        await send_error(update, context, message=error_message, placeholder=placeholder)
+        raise e
 
 async def show_message_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
@@ -849,7 +858,7 @@ async def set_chat_model(update: Update, context: CallbackContext, model = None)
 
     db.set_current_model(chat_id, model)
 
-    text = "🤖 " + _("You are using {} model ...").format(config.DEFAULT_MODELS[model]["name"])
+    text = _("ℹ️ You are using {} model ...").format(config.DEFAULT_MODELS[model]["name"])
 
     if model == "gpt4":
         text += "\n\n"
@@ -859,7 +868,7 @@ async def set_chat_model(update: Update, context: CallbackContext, model = None)
     keyborad_rows = None
     if chat.type == Chat.PRIVATE:
         keyborad_rows = [
-            [InlineKeyboardButton("💬 " + _("Change chat mode"), web_app=WebAppInfo(os.path.join(config.WEB_APP_URL, "models?start_for_result=1")))]
+            [InlineKeyboardButton("💬 " + _("Change AI model"), web_app=WebAppInfo(os.path.join(config.WEB_APP_URL, "models?start_for_result=1")))]
         ]
 
     if keyborad_rows:
