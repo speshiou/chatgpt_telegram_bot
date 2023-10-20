@@ -58,7 +58,7 @@ MODELS = {
         "lora_scale": "0.3",
     },
     "sdxl": {
-        "name": _("Stable Diffusion XL"),
+        "name": "Stable Diffusion XL",
         "model_id": "wozEgKm",
         "negative_prompt": "",
         "steps": 30,
