@@ -14,6 +14,8 @@ def mapping_tg_lang_code(code):
     if not code:
         return DEFAULT_LOCALE
     if code in SUPPORTED_LOCALES:
+        if len(code) == 2 and code != "en":
+            return code + "_" + code.upper()
         return code
     if code == "zh-hant":
         return "zh_TW"
