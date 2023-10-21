@@ -884,7 +884,7 @@ async def set_chat_mode(update: Update, context: CallbackContext, chat_mode_id =
 
     if chat_mode_id is None:
         chat_mode = helper.get_current_chat_mode(db, chat_id)
-        chat_mode_id = str(chat_mode["_id"])
+        chat_mode_id = chat_mode["id"]
     else:
         chat_modes = helper.get_available_chat_modes(db, chat_id)
         if chat_mode_id in chat_modes:

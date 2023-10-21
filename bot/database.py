@@ -257,7 +257,7 @@ class Database:
         doc = self.message_collection.find_one({ '_id': ObjectId(id) })
         return doc["message"] if doc else None
     
-    def get_roles(self, user_id: int):
+    def get_custom_roles(self, user_id: int):
         filter = {
             'user_id': user_id
         }

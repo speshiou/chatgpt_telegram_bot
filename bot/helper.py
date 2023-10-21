@@ -33,8 +33,12 @@ def parse_youtube_id(url: str)->str:
 def get_available_chat_modes(db: Database, chat_id: int):
     if chat_id > 0:
         # private chat
-        roles = db.get_roles(chat_id)
-        roles_dict = functools.reduce(lambda acc, role: {**acc, str(role['_id']): role}, roles, {})
+        roles = db.get_custom_roles(chat_id)
+        def reduce(acc, current_role):
+            id = str(current_role["_id"])
+            current_role["id"] = id
+            return {**acc, id: current_role}
+        roles_dict = functools.reduce(reduce, roles, {})
         chat_modes = {**config.CHAT_MODES, **roles_dict}
     else:
         chat_modes = config.CHAT_MODES
