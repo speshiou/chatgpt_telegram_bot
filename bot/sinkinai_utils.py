@@ -135,9 +135,14 @@ async def inference(model, width, height, prompt):
     }
 
     result = await helper.http_post(INFERENCE_ENDPOINT, data)
-    if "images" in result:
-        print("credit_cost: {}".format(result["credit_cost"]))
-        return result["images"]
+    feed = None
+    if "feed" in result:
+        feed = result["feed"]
+    elif "images" in result:
+        feed = result
+    if feed is not None and "images" in feed:
+        print("credit_cost: {}".format(feed["credit_cost"]))
+        return feed["images"]
     print("Error: {}, {}".format(result["error_code"], result["message"]))
     raise Exception("Error code: {}".format(result["error_code"]))
 
