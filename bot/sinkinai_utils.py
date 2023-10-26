@@ -72,22 +72,22 @@ MODELS = {
             "use_default_neg": "false",
         }
     },
-    "dream": {
-        "name": _("Unreal (2.5D)"),
-        "model_id": "4zdwGOB",
-        "tips": TIPS,
-        "size_options": SIZE_OPTIONS,
-        "inputs": {
-            "version": "8",
-            "prompt_template": "best quality, highly detailed, intricate, {}",
-            "steps": 20,
-            "scale": "7",
-            "scheduler": "DPMSolverMultistep",
-            "use_default_neg": "true",
-            "lora": LORA_DETAILER_ID, 
-            "lora_scale": "0.5",
-        }
-    },
+    # "dream": {
+    #     "name": _("Unreal (2.5D)"),
+    #     "model_id": "4zdwGOB",
+    #     "tips": TIPS,
+    #     "size_options": SIZE_OPTIONS,
+    #     "inputs": {
+    #         "version": "8",
+    #         "prompt_template": "best quality, highly detailed, intricate, {}",
+    #         "steps": 20,
+    #         "scale": "7",
+    #         "scheduler": "DPMSolverMultistep",
+    #         "use_default_neg": "true",
+    #         "lora": LORA_DETAILER_ID, 
+    #         "lora_scale": "0.5",
+    #     }
+    # },
     "meina": {
         "name": _("Anime"),
         "model_id": "vln8Nwr",
