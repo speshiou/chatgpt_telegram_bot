@@ -21,52 +21,10 @@ BASE_FORM_DATA = {
 def _(text):
     return text
 
-# keep model key short to prevent callback_data from exceeding size limit
-MODELS = {
-    "real": {
-        "name": _("Photorealistic"),
-        "model_id": "mGYMaD5",
-        "version": "1.6",
-        "negative_prompt": "BadDream, (cgi render, 3d, cartoon, drawing, low quality, worst quality:1.2)",
-        "steps": 30,
-        "scale": "7.5",
-        "scheduler": "DPMSolverMultistep",
-        "use_default_neg": "false",
-    },
-    "dream": {
-        "name": _("Unreal (2.5D)"),
-        "model_id": "4zdwGOB",
-        "version": "8",
-        "prompt_template": "best quality, highly detailed, intricate, {}",
-        "steps": 20,
-        "scale": "7",
-        "scheduler": "DPMSolverMultistep",
-        "use_default_neg": "true",
-        "lora": LORA_DETAILER_ID, 
-        "lora_scale": "0.5",
-    },
-    "meina": {
-        "name": _("Anime"),
-        "model_id": "vln8Nwr",
-        "version": "11",
-        "negative_prompt": "(worst quality, low quality:1.4), (zombie, sketch, interlocked fingers, comic),",
-        "steps": 20,
-        "scale": "7",
-        "scheduler": "K_EULER_ANCESTRAL",
-        "use_default_neg": "false",
-        "lora": LORA_DETAILER_ID, 
-        "lora_scale": "0.3",
-    },
-    "sdxl": {
-        "name": "Stable Diffusion XL",
-        "model_id": "wozEgKm",
-        "negative_prompt": "",
-        "steps": 30,
-        "scale": "7",
-        "scheduler": "DPMSolverMultistep",
-        "use_default_neg": "false",
-    },
-}
+TIPS = [ 
+    _("The price is for 2 images"),
+    _("Use English prompt to get better results"),
+]
 
 SIZE_OPTIONS = [
     {
@@ -98,10 +56,64 @@ XL_SIZE_OPTIONS = [
     },
 ]
 
-def size_options(model):
-    if model == "sdxl":
-        return XL_SIZE_OPTIONS
-    return SIZE_OPTIONS
+# keep model key short to prevent callback_data from exceeding size limit
+MODELS = {
+    "real": {
+        "name": _("Photorealistic"),
+        "model_id": "mGYMaD5",
+        "tips": TIPS,
+        "size_options": SIZE_OPTIONS,
+        "inputs": {
+            "version": "1.6",
+            "negative_prompt": "BadDream, (cgi render, 3d, cartoon, drawing, low quality, worst quality:1.2)",
+            "steps": 30,
+            "scale": "7.5",
+            "scheduler": "DPMSolverMultistep",
+            "use_default_neg": "false",
+        }
+    },
+    "dream": {
+        "name": _("Unreal (2.5D)"),
+        "model_id": "4zdwGOB",
+        "tips": TIPS,
+        "size_options": SIZE_OPTIONS,
+        "inputs": {
+            "version": "8",
+            "prompt_template": "best quality, highly detailed, intricate, {}",
+            "steps": 20,
+            "scale": "7",
+            "scheduler": "DPMSolverMultistep",
+            "use_default_neg": "true",
+            "lora": LORA_DETAILER_ID, 
+            "lora_scale": "0.5",
+        }
+    },
+    "meina": {
+        "name": _("Anime"),
+        "model_id": "vln8Nwr",
+        "tips": TIPS,
+        "size_options": SIZE_OPTIONS,
+        "inputs": {
+            "version": "11",
+            "negative_prompt": "(worst quality, low quality:1.4), (zombie, sketch, interlocked fingers, comic),",
+            "steps": 20,
+            "scale": "7",
+            "scheduler": "K_EULER_ANCESTRAL",
+            "use_default_neg": "false",
+            "lora": LORA_DETAILER_ID, 
+            "lora_scale": "0.3",
+        }
+    },
+}
+
+def populate_costs(models):
+    for key, m in models.items():
+        steps = m["inputs"]["steps"]
+        for size in m["size_options"]:
+            width = size["width"]
+            height = size["height"]
+            cost = calc_credit_cost(width, height, steps=steps, num_images=DEFAULT_NUM_IMAGES) * BASE_TOKENS
+            size["cost"] = int(cost)
 
 def calc_credit_cost(width: int, height: int, steps: int, num_images=DEFAULT_NUM_IMAGES):
     base_time = 3
@@ -118,17 +130,22 @@ def calc_credit_cost(width: int, height: int, steps: int, num_images=DEFAULT_NUM
     return round(credit_cost * 10) / 10    # round to 1 decimal place
 
 async def inference(model, width, height, prompt):
-    if model in MODELS:
-        model_data = MODELS[model]
-    else:
+    if model not in MODELS:
         print(f"invalid model: {model}")
-        return None
+        return None        
     
-    if "prompt_template" in model_data:
-        prompt = model_data["prompt_template"].format(prompt)
+    m = MODELS[model]
+    inputs = m["inputs"]
+    steps = inputs["steps"]
+    estimated_credit = calc_credit_cost(width, height, steps, DEFAULT_NUM_IMAGES)
+    print(f"estimated credit={estimated_credit}")
+    
+    if "prompt_template" in inputs:
+        prompt = inputs["prompt_template"].format(prompt)
     data = {
         **BASE_FORM_DATA,
-        **model_data,
+        "model_id": m["model_id"],
+        **inputs,
         "width": width,
         "height": height,
         "prompt": prompt,
@@ -146,3 +163,4 @@ async def inference(model, width, height, prompt):
     print("Error: {}, {}".format(result["error_code"], result["message"]))
     raise Exception("Error code: {}".format(result["error_code"]))
 
+populate_costs(MODELS)

@@ -3,7 +3,7 @@ from urllib.parse import urlencode, parse_qs
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 
 import config
-import sinkinai_utils
+import gen_image_utils
 import i18n
 from database import Database
 import helper
@@ -262,7 +262,7 @@ def build_tips(tips, _, title=None, hide_bullet=False):
 
     text = title
     text += "\n"
-    text += "\n".join(map(lambda tip: bullet + tip, tips))
+    text += "\n".join(map(lambda tip: bullet + _(tip), tips))
     return text
 
 def build_keyboard_rows(buttons, num_keyboard_cols):
@@ -464,17 +464,14 @@ def about(_):
 def image_menu(_, path = None):
     options = {}
 
-    desc_select_size = _("Select the image size (width x height)")
-    for key, value in sinkinai_utils.MODELS.items():
+    for key, value in gen_image_utils.MODELS.items():
         size_options = []
-        sizes = sinkinai_utils.size_options(key)
+        sizes = value["size_options"]
         for size in sizes:
             width = size["width"]
             height = size["height"]
-
-            steps = sinkinai_utils.MODELS[key]["steps"]
-            used_tokens = sinkinai_utils.calc_credit_cost(width, height, steps=steps) * sinkinai_utils.BASE_TOKENS
-            label = "{}x{} (💰 {:,.0f})".format(width, height, used_tokens)
+            cost = size["cost"]
+            label = "{}x{} (💰 {:,.0f})".format(width, height, cost)
             callback_data = add_args("gen_image", {
                 **get_args(path),
                 "w": width,
@@ -485,14 +482,14 @@ def image_menu(_, path = None):
                 "callback": callback_data
             })
 
+        desc = _("Select the image size (width x height)")
+        if "tips" in value:
+            desc += "\n\n" + build_tips(value["tips"], _)
+
         options[key] = { 
             "icon": "🎨",
             "name": _(value["name"]),
-            "desc": desc_select_size + "\n\n" + 
-                build_tips([ 
-                    _("The price is for 2 images"),
-                    _("English only"),
-                      ], _),
+            "desc": desc,
             "options": size_options,
             "args": {
                 "m": key,
@@ -506,28 +503,6 @@ def image_menu(_, path = None):
         "desc": _("Select painting style or AI model"),
         "options": {
             **options,
-            "dalle": {
-                "icon": "🎨",
-                "name": "DALL·E (OpenAI)",
-                "desc": desc_select_size + "\n\n" + 
-                build_tips([ 
-                    _("The price is for one image"),
-                    _("Any languages"),
-                      ], _),
-                "args": {
-                    "m": "dalle",
-                },
-                "options": [
-                    {
-                        "label": "1000x1000 (💰 6,000)",
-                        "callback": add_args("gen_image", {
-                            **get_args(path),
-                            "w": 1000,
-                            "h": 1000,
-                        })
-                    }
-                ]
-            }
         },
     }
     return _menu_page(path, menu_data, _)

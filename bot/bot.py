@@ -31,7 +31,7 @@ import database
 import openai_utils
 import chatgpt
 import tts_helper
-import sinkinai_utils
+import gen_image_utils
 import api
 import ui
 import helper
@@ -745,16 +745,10 @@ async def gen_image_handle(update: Update, context: CallbackContext):
         if not prompt:
             await reply_or_edit_text(update, "⚠️ " + _("Outdated command"))
             return
-    if model == "dalle":
-        used_tokens = config.DALLE_TOKENS
-    elif model in sinkinai_utils.MODELS:
-        num_images = sinkinai_utils.DEFAULT_NUM_IMAGES
-        steps = sinkinai_utils.MODELS[model]["steps"]
-        credit_cost = sinkinai_utils.calc_credit_cost(width=width, height=height, steps=steps, num_images=num_images)
-        used_tokens = credit_cost * sinkinai_utils.BASE_TOKENS
-        used_tokens = int(used_tokens)
-        print(f"credit_cost={credit_cost} used_tokens={used_tokens}")
-    else:
+        
+    used_tokens = gen_image_utils.calc_cost(model, width, height)
+    print(f"estimated cost: {used_tokens}")
+    if not used_tokens:
         await reply_or_edit_text(update, "⚠️ " + _("Outdated command"))
         return
 
@@ -776,11 +770,8 @@ async def gen_image_handle(update: Update, context: CallbackContext):
             placeholder = await update.effective_message.reply_text(text)
         else:
             placeholder = await query.edit_message_text(text)
-        if model == "dalle":
-            image_url = await openai_utils.create_image(prompt)
-            images = [image_url]
-        else:
-            images = await sinkinai_utils.inference(model=model, width=width, height=height, prompt=prompt)
+
+        images = await gen_image_utils.inference(model=model, width=width, height=height, prompt=prompt)
         try:
             # in case the user deletes the placeholders manually
             await placeholder.delete()

@@ -5,3 +5,4 @@ pymongo==4.3.3
 pydub
 youtube-transcript-api
 trafilatura
+replicate
