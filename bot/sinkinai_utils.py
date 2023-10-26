@@ -58,20 +58,20 @@ XL_SIZE_OPTIONS = [
 
 # keep model key short to prevent callback_data from exceeding size limit
 MODELS = {
-    "real": {
-        "name": _("Photorealistic"),
-        "model_id": "mGYMaD5",
-        "tips": TIPS,
-        "size_options": SIZE_OPTIONS,
-        "inputs": {
-            "version": "1.6",
-            "negative_prompt": "BadDream, (cgi render, 3d, cartoon, drawing, low quality, worst quality:1.2)",
-            "steps": 30,
-            "scale": "7.5",
-            "scheduler": "DPMSolverMultistep",
-            "use_default_neg": "false",
-        }
-    },
+    # "real": {
+    #     "name": _("Photorealistic"),
+    #     "model_id": "mGYMaD5",
+    #     "tips": TIPS,
+    #     "size_options": SIZE_OPTIONS,
+    #     "inputs": {
+    #         "version": "1.6",
+    #         "negative_prompt": "BadDream, (cgi render, 3d, cartoon, drawing, low quality, worst quality:1.2)",
+    #         "steps": 30,
+    #         "scale": "7.5",
+    #         "scheduler": "DPMSolverMultistep",
+    #         "use_default_neg": "false",
+    #     }
+    # },
     # "dream": {
     #     "name": _("Unreal (2.5D)"),
     #     "model_id": "4zdwGOB",
@@ -88,22 +88,22 @@ MODELS = {
     #         "lora_scale": "0.5",
     #     }
     # },
-    "meina": {
-        "name": _("Anime"),
-        "model_id": "vln8Nwr",
-        "tips": TIPS,
-        "size_options": SIZE_OPTIONS,
-        "inputs": {
-            "version": "11",
-            "negative_prompt": "(worst quality, low quality:1.4), (zombie, sketch, interlocked fingers, comic),",
-            "steps": 20,
-            "scale": "7",
-            "scheduler": "K_EULER_ANCESTRAL",
-            "use_default_neg": "false",
-            "lora": LORA_DETAILER_ID, 
-            "lora_scale": "0.3",
-        }
-    },
+    # "meina": {
+    #     "name": _("Anime"),
+    #     "model_id": "vln8Nwr",
+    #     "tips": TIPS,
+    #     "size_options": SIZE_OPTIONS,
+    #     "inputs": {
+    #         "version": "11",
+    #         "negative_prompt": "(worst quality, low quality:1.4), (zombie, sketch, interlocked fingers, comic),",
+    #         "steps": 20,
+    #         "scale": "7",
+    #         "scheduler": "K_EULER_ANCESTRAL",
+    #         "use_default_neg": "false",
+    #         "lora": LORA_DETAILER_ID, 
+    #         "lora_scale": "0.3",
+    #     }
+    # },
 }
 
 def populate_costs(models):

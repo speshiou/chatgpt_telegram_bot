@@ -2,14 +2,16 @@ import config
 import openai_utils
 import replicate_utils
 import sinkinai_utils
+import getimg_utils
 
 # dummy function for localization
 def _(text):
     return text
 
 MODELS = {
-    **replicate_utils.MODELS,
+    **getimg_utils.MODELS,
     **sinkinai_utils.MODELS,
+    **replicate_utils.MODELS,
     "dalle": {
         "name": "DALL·E (OpenAI)",
         "tips": [
@@ -48,6 +50,8 @@ async def inference(model, prompt, width, height):
         images = await sinkinai_utils.inference(model=model, width=width, height=height, prompt=prompt)
     elif model in replicate_utils.MODELS:
         images = await replicate_utils.inference(model=model, width=width, height=height, prompt=prompt)
+    elif model in getimg_utils.MODELS:
+        images = await getimg_utils.inference(model=model, width=width, height=height, prompt=prompt)
 
     if images is None:
         raise Exception("invalid model")

@@ -792,9 +792,9 @@ async def gen_image_handle(update: Update, context: CallbackContext):
         # await update.effective_message.reply_media_group(media=media_group, caption=text, parse_mode=ParseMode.HTML)
 
         # send each image as single message for better share experience
-        for image_url in images:
-            print("send_photo " + image_url)
-            await context.bot.send_photo(chat_id, image_url, reply_markup=reply_markup)
+        for image in images:
+            # image can be a url string and bytes
+            await context.bot.send_photo(chat_id, image, reply_markup=reply_markup)
         db.inc_user_used_tokens(user_id, used_tokens)
         db.mark_user_is_generating_image(user_id, False)
     except Exception as e:

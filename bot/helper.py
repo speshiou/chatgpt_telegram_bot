@@ -5,8 +5,11 @@ from urllib.parse import urlparse
 from database import Database
 import config
 
-async def http_post(url, data, result_type="json"):
-    async with aiohttp.ClientSession() as session:
+async def http_post(url, data, result_type="json", headers=None):
+    session_args = {}
+    if headers is not None:
+        session_args["headers"] = headers
+    async with aiohttp.ClientSession(**session_args) as session:
         async with session.post(url, data=data) as response:
             if result_type == "json":
                 return await response.json()

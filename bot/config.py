@@ -150,7 +150,8 @@ AZURE_OPENAI_API_KEY = os.getenv('AZURE_OPENAI_API_KEY')
 if not AZURE_OPENAI_API_BASE or not AZURE_OPENAI_API_VERSION or not AZURE_OPENAI_API_KEY:
     # fallback to official OpenAI base if Azure is not set up properly
     OPENAI_CHAT_API_TYPE = DEFAULT_OPENAI_API_TYPE
-
+# getimg.ai
+GETIMG_API_TOKEN = os.getenv('GETIMG_API_TOKEN')
 # sinkin.ai
 SINKIN_ACCOUNT = os.getenv('SINKIN_ACCOUNT')
 # request timeout in seconds
