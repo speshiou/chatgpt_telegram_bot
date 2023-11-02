@@ -22,7 +22,7 @@ MODELS = {
             {
                 "width": 1000,
                 "height": 1000,
-                "cost": 6000,
+                "cost": config.DALLE_TOKENS,
             },
         ],
     }
@@ -41,18 +41,29 @@ def calc_cost(model, width, height):
     
     return cost
 
+def _build_image_data(image_urls):
+    return [{"image": url} for url in image_urls]
+
 async def inference(model, prompt, width, height):
-    images = None
+    result = None
     if model == "dalle":
         image_url = await openai_utils.create_image(prompt)
-        images = [image_url]
+        result = _build_image_data([image_url])
     elif model in sinkinai_utils.MODELS:
         images = await sinkinai_utils.inference(model=model, width=width, height=height, prompt=prompt)
+        result = _build_image_data(images)
     elif model in replicate_utils.MODELS:
         images = await replicate_utils.inference(model=model, width=width, height=height, prompt=prompt)
+        result = _build_image_data(images)
     elif model in getimg_utils.MODELS:
-        images = await getimg_utils.inference(model=model, width=width, height=height, prompt=prompt)
+        result = await getimg_utils.inference(model=model, width=width, height=height, prompt=prompt)
 
-    if images is None:
+    if result is None:
         raise Exception("invalid model")
-    return images
+    return result
+
+async def upscale(image, scale: float = 2):
+    image = await getimg_utils.upscale(image)
+    if image is None:
+        raise Exception("failed to upscale")
+    return image

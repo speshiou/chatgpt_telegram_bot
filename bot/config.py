@@ -120,6 +120,8 @@ TOKEN_PRICE = _env_parse_float('TOKEN_PRICE', 0.002)
 GPT4_PRICE_FACTOR = 20
 # DALL·E tokens
 DALLE_TOKENS = _env_parse_int('DALLE_TOKENS', 10000)
+# cost for real-esrgan-4x upscaler
+UPSCALE_COST = _env_parse_int('UPSCALE_COST', 9000)
 IMAGE_TIMEOUT = _env_parse_int('IMAGE_TIMEOUT', 60)
 # prompts
 if os.getenv('GPT_PROMPTS'):

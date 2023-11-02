@@ -4,6 +4,8 @@ import functools
 from urllib.parse import urlparse
 from database import Database
 import config
+from telegram import PhotoSize
+from typing import Tuple
 
 async def http_post(url, data, result_type="json", headers=None):
     session_args = {}
@@ -56,3 +58,11 @@ def get_current_chat_mode(db: Database, chat_id: int, fallback: bool = True):
     if fallback:
         return config.CHAT_MODES[config.DEFAULT_CHAT_MODE]
     return None
+
+# Telegram always provides various sizes of single photos.
+def get_original_photo(photo: Tuple[PhotoSize]):
+    largest_photo = photo[0]
+    for photo_data in photo:
+        if largest_photo.file_size < photo_data.file_size:
+            largest_photo = photo_data
+    return largest_photo

@@ -772,7 +772,7 @@ async def gen_image_handle(update: Update, context: CallbackContext):
         else:
             placeholder = await query.edit_message_text(text)
 
-        images = await gen_image_utils.inference(model=model, width=width, height=height, prompt=prompt)
+        result = await gen_image_utils.inference(model=model, width=width, height=height, prompt=prompt)
         try:
             # in case the user deletes the placeholders manually
             await placeholder.delete()
@@ -780,12 +780,7 @@ async def gen_image_handle(update: Update, context: CallbackContext):
         except Exception as e:
             print("failed to delete placeholder")
             print(e)
-        reply_markup = InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton(_("Prompt"), callback_data=ui.add_arg("show_message", "id", cached_msg_id)),
-                InlineKeyboardButton(_("Retry"), callback_data=query.data)
-            ]
-        ])
+        
         # send as a media group
         # media_group = map(lambda image_url: InputMediaPhoto(image_url), images)
         # media_group = list(media_group)
@@ -793,10 +788,95 @@ async def gen_image_handle(update: Update, context: CallbackContext):
         # await update.effective_message.reply_media_group(media=media_group, caption=text, parse_mode=ParseMode.HTML)
 
         # send each image as single message for better share experience
-        for image in images:
+        for image_data in result:
+            image = image_data["image"]
+            seed = image_data["seed"] if "seed" in image_data else None
+            buttons = [
+                InlineKeyboardButton(_("Prompt"), callback_data=ui.add_arg("show_message", "id", cached_msg_id)),
+                InlineKeyboardButton(_("Retry"), callback_data=query.data),
+            ]
+            if seed is not None:
+                upscale_data = {
+                    "prompt": prompt,
+                    "model": model,
+                    "width": width,
+                    "height": height,
+                    "seed": seed,
+                }
+                cached_msg_id = db.cache_chat_message(json.dumps(upscale_data))
+                callback_data = ui.add_arg("upscale", "id", cached_msg_id)
+                buttons.append(InlineKeyboardButton(_("Upscale"), callback_data=callback_data))
+            reply_markup = InlineKeyboardMarkup([
+                buttons
+            ])
             # image can be a url string and bytes
             await context.bot.send_photo(chat_id, image, reply_markup=reply_markup)
         db.inc_user_used_tokens(user_id, used_tokens)
+        db.mark_user_is_generating_image(user_id, False)
+    except Exception as e:
+        db.mark_user_is_generating_image(user_id, False)
+        error_message = _("Server error. Please try again later.")
+        await send_error(update, context, message=error_message, placeholder=placeholder)
+        raise e
+    
+async def upscale_image_handle(update: Update, context: CallbackContext):
+    user = await register_user_if_not_exists(update, context)
+    chat_id = update.effective_chat.id
+    _ = get_text_func(user, chat_id)
+    user_id = user.id
+
+    query = update.callback_query
+    path = query.data
+    await query.answer()
+
+    cached_msg_id = ui.get_arg(path, "id")
+    if cached_msg_id:
+        cached_data = db.get_cached_message(cached_msg_id)
+        if not cached_data:
+            await reply_or_edit_text(update, "⚠️ " + _("Outdated command"))
+            return
+        
+    estimated_cost = config.UPSCALE_COST
+    remaining_tokens = db.get_user_remaining_tokens(user_id)
+    if remaining_tokens < estimated_cost:
+        await send_insufficient_tokens_warning(update, context, num_tokens=estimated_cost)
+        return
+        
+    consent = ui.get_arg(path, "consent")
+    if not consent:
+        text = "ℹ️ " + _("Upscaling images with real-esrgan-4x can be expensive.")
+        callback_data = ui.add_args("upscale", {"id": cached_msg_id, "consent": "ok"})
+        reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton(_("Upscale - {} tokens").format(config.UPSCALE_COST), callback_data=callback_data),]
+        ])
+        await update.effective_message.reply_text(text, reply_markup=reply_markup, reply_to_message_id=update.effective_message.message_id)
+        return
+        
+    try:
+        remaing_time = db.is_user_generating_image(user_id)
+        if remaing_time:
+            await update.effective_message.reply_text(_("⚠️ It is only possible to generate one image at a time. Please wait for {} seconds to retry.").format(int(remaing_time)), parse_mode=ParseMode.HTML)
+            return
+        
+        db.mark_user_is_generating_image(user_id, True)
+        args = json.loads(cached_data)
+        text = _("👨‍🎨 painting ...")
+        placeholder = await query.edit_message_text(text)
+        photo = helper.get_original_photo(update.effective_message.reply_to_message.photo)
+        photo_file = await context.bot.get_file(photo.file_id)
+        buffer = await photo_file.download_as_bytearray()
+        image = await gen_image_utils.upscale(buffer)
+        try:
+            # in case the user deletes the placeholders manually
+            await placeholder.delete()
+            placeholder = None
+        except Exception as e:
+            print("failed to delete placeholder")
+            print(e)
+        
+        # # image can be a url string and bytes
+        await context.bot.send_photo(chat_id, image)
+        db.inc_user_used_tokens(user_id, estimated_cost)
         db.mark_user_is_generating_image(user_id, False)
     except Exception as e:
         db.mark_user_is_generating_image(user_id, False)
@@ -1227,6 +1307,7 @@ def run_bot() -> None:
     application.add_handler(CommandHandler("image", image_message_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(image_message_handle, pattern="^image"))
     application.add_handler(CallbackQueryHandler(gen_image_handle, pattern="^gen_image"))
+    application.add_handler(CallbackQueryHandler(upscale_image_handle, pattern="^upscale"))
     application.add_handler(CallbackQueryHandler(show_message_handle, pattern="^show_message"))
     application.add_handler(CommandHandler("settings", settings_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(settings_handle, pattern="^(settings|about)"))

@@ -9,6 +9,7 @@ DEFAULT_NUM_IMAGES = 1
 
 INFERENCE_ENDPOINT = "https://api.getimg.ai/v1/stable-diffusion/text-to-image"
 XL_INFERENCE_ENDPOINT = "https://api.getimg.ai/v1/stable-diffusion-xl/text-to-image"
+UPSCALE_ENDPOINT = "https://api.getimg.ai/v1/enhancements/upscale"
 
 COMMON_INPUTS = {
     "output_format": "jpeg",
@@ -104,6 +105,32 @@ def calc_credit_cost(width: int, height: int, steps: int, num_images=DEFAULT_NUM
 
     return round(credit_cost * 10) / 10    # round to 1 decimal place
 
+async def _api(endpoint, data):
+    headers = {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "authorization": f"Bearer {config.GETIMG_API_TOKEN}"
+    }
+
+    return await helper.http_post(endpoint, json.dumps(data), headers=headers)
+
+async def upscale(image):
+    encoded_image_bytes = base64.b64encode(image)
+    base64_string = encoded_image_bytes.decode("utf-8")
+    data = {
+        "image": base64_string,
+        "model": "real-esrgan-4x",
+        # Currently only supports scale 4x
+        "scale": 4, 
+        "output_format": "jpeg"
+    }
+    result = await _api(UPSCALE_ENDPOINT, data)
+    image = None
+    if "image" in result:
+        image = base64.b64decode(result["image"])
+        print("upscale cost: {}".format(result["cost"]))
+    return image
+
 async def inference(model, width, height, prompt):
     if model not in MODELS:
         print(f"invalid model: {model}")
@@ -121,19 +148,15 @@ async def inference(model, width, height, prompt):
         "prompt": prompt,
     }
 
-    headers = {
-        "accept": "application/json",
-        "content-type": "application/json",
-        "authorization": f"Bearer {config.GETIMG_API_TOKEN}"
-    }
-
     endpoint = m["endpoint"] if "endpoint" in m else INFERENCE_ENDPOINT
-
-    result = await helper.http_post(endpoint, json.dumps(data), headers=headers)
+    result = await _api(endpoint, data)
     if "image" in result:
         print("cost: {}".format(result["cost"]))
         generated_image_data = base64.b64decode(result["image"])
-        return [generated_image_data]
+        image_data = {"image": generated_image_data}
+        if "seed" in result:
+            image_data["seed"] = result["seed"]
+        return [image_data]
     error = result["error"]
     error_msg = "Error: {}, {}".format(error["code"], error["message"])
     print(error_msg)
