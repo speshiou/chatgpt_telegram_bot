@@ -205,8 +205,7 @@ async def send_openai_error(update: Update, context: CallbackContext, e: Excepti
     # printing stack trace
     traceback.print_exc()
 
-async def send_insufficient_tokens_warning(update: Update, context: CallbackContext, message: str = None, num_tokens: int = None):
-    user = await register_user_if_not_exists(update, context)
+async def send_insufficient_tokens_warning(update: Update, user: User, message: str = None, estimated_cost: int = None):
     chat_id = update.effective_chat.id
     _ = get_text_func(user, chat_id)
 
@@ -216,9 +215,16 @@ async def send_insufficient_tokens_warning(update: Update, context: CallbackCont
 
     # TODO: show different messages for private and group chats
     text = "⚠️ " + _("Insufficient tokens.")
-    if num_tokens is not None:
-        text += " " + _("Require {} tokens to process this message").format(num_tokens)
+    if estimated_cost is not None:
+        text += " " + _("Require {} tokens to process this message").format(estimated_cost)
     await update.effective_message.reply_text(text, reply_markup=reply_markup)
+
+async def check_balance(update: Update, estimated_cost: int, user: User):
+    remaining_tokens = db.get_user_remaining_tokens(user.id)
+    if remaining_tokens < estimated_cost:
+        await send_insufficient_tokens_warning(update, user, estimated_cost=estimated_cost)
+        return False
+    return True
 
 async def common_command_handle(update: Update, context: CallbackContext):
     # check if message is edited
@@ -280,13 +286,11 @@ async def voice_message_handle(update: Update, context: CallbackContext):
         duration = voice.duration
 
         # check balance
-        used_tokens = 0
+        estimated_cost = 0
         if duration > config.WHISPER_FREE_QUOTA:
-            used_tokens = (duration - config.WHISPER_FREE_QUOTA) * config.WHISPER_TOKENS
+            estimated_cost = (duration - config.WHISPER_FREE_QUOTA) * config.WHISPER_TOKENS
 
-        remaining_tokens = db.get_user_remaining_tokens(user.id)
-        if remaining_tokens < used_tokens:
-            await send_insufficient_tokens_warning(update, context, num_tokens=used_tokens)
+        if not await check_balance(update, estimated_cost, user):
             return
         
         placeholder = await update.effective_message.reply_text("🎙 " + _("Decoding voice message ..."))
@@ -308,9 +312,9 @@ async def voice_message_handle(update: Update, context: CallbackContext):
         print(f"size: {file_size}/{config.WHISPER_FILE_SIZE_LIMIT}")
         if file_size < config.WHISPER_FILE_SIZE_LIMIT:
             text = await openai_utils.audio_transcribe(filename)
-            if used_tokens > 0:
-                print(f"voice used tokens: {used_tokens}")
-                db.inc_user_used_tokens(user.id, used_tokens)
+            if estimated_cost > 0:
+                print(f"voice used tokens: {estimated_cost}")
+                db.inc_user_used_tokens(user.id, estimated_cost)
             await message_handle(update, context, text, placeholder=placeholder)
         else:
             await placeholder.edit_text("⚠️ " + _("Voice data size exceeds 20MB limit"))
@@ -440,7 +444,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
     remaining_tokens = db.get_user_remaining_tokens(user_id)
     if remaining_tokens <= 0:
-        await send_insufficient_tokens_warning(update, context)
+        await send_insufficient_tokens_warning(update, user)
         return
 
     if message is None:
@@ -494,8 +498,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
     num_prompt_tokens = openai_utils.num_tokens_from_messages(prompt, model)
     estimated_cost = num_prompt_tokens * prompt_cost_factor
-    if remaining_tokens < estimated_cost:
-        await send_insufficient_tokens_warning(update, context, num_tokens=estimated_cost)
+    if not await check_balance(update, estimated_cost, user):
         return
 
     try:
@@ -618,10 +621,9 @@ async def send_voice_message(update: Update, context: CallbackContext, message: 
         message = message[:limit]
 
     # estimate token amount
-    used_tokens = config.TTS_ESTIMATED_DURATION_BASE * len(message) * config.COQUI_TOKENS
-    print(f"[TTS] estimated used tokens: {used_tokens}")
-    if used_tokens > db.get_user_remaining_tokens(user.id):
-        await send_insufficient_tokens_warning(update, context, num_tokens=used_tokens)
+    estimated_cost = config.TTS_ESTIMATED_DURATION_BASE * len(message) * config.COQUI_TOKENS
+    print(f"[TTS] estimated used tokens: {estimated_cost}")
+    if not await check_balance(update, estimated_cost, user):
         return
 
     if placeholder is None:
@@ -634,7 +636,7 @@ async def send_voice_message(update: Update, context: CallbackContext, message: 
         if output:
             seg = AudioSegment.from_wav(output)
             # recalculate real token amount
-            used_tokens = int(seg.duration_seconds * config.COQUI_TOKENS)
+            estimated_cost = int(seg.duration_seconds * config.COQUI_TOKENS)
             ogg_filename = os.path.splitext(output)[0] + ".ogg"
             # must use OPUS codec to show spectrogram on Telegram
             seg.export(ogg_filename, format='ogg', codec="libopus")
@@ -648,8 +650,8 @@ async def send_voice_message(update: Update, context: CallbackContext, message: 
             cached_msg_id = db.cache_chat_message(full_message)
             reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton(_("Text"), callback_data=ui.add_arg("show_message", "id", cached_msg_id))]])
             await update.effective_message.reply_voice(ogg_filename, reply_markup=reply_markup)
-            db.inc_user_used_tokens(user.id, used_tokens)
-            print(f"[TTS] real used tokens: {used_tokens}")
+            db.inc_user_used_tokens(user.id, estimated_cost)
+            print(f"[TTS] real used tokens: {estimated_cost}")
             # clean up
             if os.path.exists(output):
                 os.remove(output)
@@ -747,15 +749,13 @@ async def gen_image_handle(update: Update, context: CallbackContext):
             await reply_or_edit_text(update, "⚠️ " + _("Outdated command"))
             return
         
-    used_tokens = gen_image_utils.calc_cost(model, width, height)
-    print(f"estimated cost: {used_tokens}")
-    if not used_tokens:
+    estimated_cost = gen_image_utils.calc_cost(model, width, height)
+    print(f"estimated cost: {estimated_cost}")
+    if not estimated_cost:
         await reply_or_edit_text(update, "⚠️ " + _("Outdated command"))
         return
 
-    remaining_tokens = db.get_user_remaining_tokens(user_id)
-    if remaining_tokens < used_tokens:
-        await send_insufficient_tokens_warning(update, context, num_tokens=used_tokens)
+    if not await check_balance(update, estimated_cost, user):
         return
     
     remaing_time = db.is_user_generating_image(user_id)
@@ -811,7 +811,7 @@ async def gen_image_handle(update: Update, context: CallbackContext):
             ])
             # image can be a url string and bytes
             await context.bot.send_photo(chat_id, image, reply_markup=reply_markup)
-        db.inc_user_used_tokens(user_id, used_tokens)
+        db.inc_user_used_tokens(user_id, estimated_cost)
         db.mark_user_is_generating_image(user_id, False)
     except Exception as e:
         db.mark_user_is_generating_image(user_id, False)
@@ -837,9 +837,7 @@ async def upscale_image_handle(update: Update, context: CallbackContext):
             return
         
     estimated_cost = config.UPSCALE_COST
-    remaining_tokens = db.get_user_remaining_tokens(user_id)
-    if remaining_tokens < estimated_cost:
-        await send_insufficient_tokens_warning(update, context, num_tokens=estimated_cost)
+    if not await check_balance(update, estimated_cost, user):
         return
         
     consent = ui.get_arg(path, "consent")
