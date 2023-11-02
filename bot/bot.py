@@ -139,6 +139,7 @@ async def start_handle(update: Update, context: CallbackContext):
             parse_mode=ParseMode.HTML,
             reply_markup=reply_markup,
             )
+        await set_chat_mode(update, context, reason="start")
 
 async def retry_handle(update: Update, context: CallbackContext):
     user = await register_user_if_not_exists(update, context)
