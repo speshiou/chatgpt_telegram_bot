@@ -9,18 +9,17 @@ def _model_name(model, api_type):
         return model.replace(".", "")
     return model
 
-def resolve_model(model, prompt):
+def resolve_model(model, num_prompt_tokens:int):
     original_model = model
-    num_tokens = openai_utils.num_tokens_from_string(prompt, model=model)
     max_tokens = openai_utils.max_tokens(model)
-    if model == openai_utils.MODEL_GPT_35_TURBO and num_tokens > max_tokens:
+    if model == openai_utils.MODEL_GPT_35_TURBO and num_prompt_tokens > max_tokens:
         model = openai_utils.MODEL_GPT_35_TURBO_16K
-    if model == openai_utils.MODEL_GPT_4 and num_tokens > max_tokens:
+    if model == openai_utils.MODEL_GPT_4 and num_prompt_tokens > max_tokens:
         model = openai_utils.MODEL_GPT_4_32K
-    print(f"resolve_model {original_model} > {model}, num_tokens={num_tokens}")
+    print(f"resolve_model {original_model} > {model}, num_tokens={num_prompt_tokens}")
     return model
     
-def build_prompt(system_prompt, dialog_messages, new_message, model, max_tokens = None):
+def build_prompt(system_prompt, dialog_messages, new_message, model, max_tokens: int = None):
     n_dialog_messages_before = len(dialog_messages)
     n_first_dialog_messages_removed = 0
     prompt = None
@@ -34,7 +33,8 @@ def build_prompt(system_prompt, dialog_messages, new_message, model, max_tokens 
             n_first_dialog_messages_removed = n_dialog_messages_before - len(dialog_messages)
         prompt = openai_utils.prompt_from_chat_messages(system_prompt, dialog_messages, new_message, model)
         num_prompt_tokens = openai_utils.num_tokens_from_messages(prompt, model)
-        if len(dialog_messages) == 0:
+        # retain the latest messages
+        if len(dialog_messages) < 1:
             break
     return prompt, num_prompt_tokens, n_first_dialog_messages_removed
 

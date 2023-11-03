@@ -357,7 +357,7 @@ def _build_youtube_prompt(url, _):
         print(e)
     return None
 
-async def message_handle(update: Update, context: CallbackContext, message=None, use_new_dialog_timeout=True, chat_mode_id=None, placeholder: Message=None, cached_msg_id=None, autoupscale=False):
+async def message_handle(update: Update, context: CallbackContext, message=None, use_new_dialog_timeout=True, chat_mode_id=None, placeholder: Message=None, cached_msg_id=None):
     user = await register_user_if_not_exists(update, context)
     chat_id = update.effective_chat.id
     
@@ -441,12 +441,13 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
     context_content = None
     if message is None:
-        context_content, context_src = db.get_chat_context(chat_id)
         message = update.effective_message.text
+        # load long text to the context if any
+        context_content, context_src = db.get_chat_context(chat_id)
         if context_content is not None:
-            autoupscale = True
-            context_prompt = _("content from {}:\n{}").format(context_src, context_content)
-            message = f"{message}\n\n{context_prompt}"
+            system_prompt = "You are an assistant to answer the questions about the content of {}.\n\ncontent:\n{}".format(context_src, context_content)
+            model = chatgpt.resolve_model(model, openai_utils.num_tokens_from_string(system_prompt, model))
+
     message = message.strip()
     # crawl link
     is_url = helper.is_uri(message)
@@ -463,7 +464,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             if message is None:
                 await update.effective_message.reply_text(_("⚠️ Failed to fetch the website content, possibly due to access restrictions."), parse_mode=ParseMode.HTML)
                 return
-        model = chatgpt.resolve_model(model, message)
+        model = chatgpt.resolve_model(model, openai_utils.num_tokens_from_string(message, model))
 
     voice_placeholder = None    
     answer = None
@@ -476,13 +477,11 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     # handle too many tokens
     max_message_count = -1
 
-    if autoupscale:
-        model = chatgpt.resolve_model(model, message)
     max_tokens = openai_utils.max_tokens(model)
     prompt_cost_factor, completion_cost_factor = chatgpt.cost_factors(model)
     remaining_tokens = db.get_user_remaining_tokens(user_id)
     max_affordable_tokens = int(remaining_tokens / prompt_cost_factor)
-
+    # determine if enabling saving mode
     if remaining_tokens < 10000 or chat_mode_id not in config.DEFAULT_CHAT_MODES:
         # enable token saving mode for low balance users and external modes
         max_affordable_tokens = min(max_affordable_tokens, 2000)
@@ -494,6 +493,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     estimated_cost = int(num_prompt_tokens * prompt_cost_factor)
     if not await check_balance(update, estimated_cost, user):
         return
+    
     if is_url:
         db.set_chat_context(chat_id, message, url)
         text = _("Now you can ask me about the content in the link:")
@@ -501,7 +501,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         text += "\n\n"
         text += ui.build_tips([
             _("The cost of the next answers will be more than {} tokens").format(i18n.currency(estimated_cost)),
-            _("You can use /reset to clear the context"),
+            _("To reduce costs, you can use the /reset command to remove the data from the context"),
         ], _, title=_("Notice"))
         reply_markup = InlineKeyboardMarkup([
             [
@@ -608,9 +608,6 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     # TODO: consume tokens even if an exception occurs
     # consume tokens and append the message record to db
     if sent_answer is not None and used_tokens is not None:
-        # clear the context before appending the chat history
-        if context_content is not None:
-            db.set_chat_context(chat_id, None, None)
         if not disable_history:
             # update user data
             new_dialog_message = {"user": message, "bot": sent_answer, "date": datetime.now(), "used_tokens": used_tokens}
@@ -707,7 +704,7 @@ async def summarize_handle(update: Update, context: CallbackContext):
         else:
             prompt_pattern = _("summarize the content from {} containing abstract, list of key points and the conclusion\n\noriginal content:\n{}")
         message = prompt_pattern.format(url, context_content)
-        await message_handle(update, context, message, autoupscale=True)
+        await message_handle(update, context, message)
 
 async def image_message_handle(update: Update, context: CallbackContext):
     if update.edited_message is not None:
