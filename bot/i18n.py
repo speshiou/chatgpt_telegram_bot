@@ -1,6 +1,6 @@
 import gettext
 
-DEFAULT_LOCALE = "en"
+DEFAULT_LOCALE = "en_US"
 
 SUPPORTED_LOCALES = set([
     'es',
@@ -29,3 +29,6 @@ def get_text_func(lang):
         return gettext.gettext
     t = gettext.translation('mybot', localedir='locales', languages=[locale])
     return t.gettext
+
+def currency(number):
+    return "{:,}".format(number)

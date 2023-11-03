@@ -350,17 +350,14 @@ def _build_youtube_prompt(url, _):
             for line in transcript_json:
                 if "duration" in line:
                     del line["duration"]
-
-            prompt_pattern = _("summarize the transcript from {} containing abstract, list of key points and the conclusion\n\ntranscript:\n{}")
-            text = prompt_pattern.format(url, transcript_json)
-            return text
+            return json.dumps(transcript_json, indent=4)
     except _errors.TranscriptsDisabled as e:
         print("Youtube error: transcripts are disabled")
     except Exception as e:
         print(e)
     return None
 
-async def message_handle(update: Update, context: CallbackContext, message=None, use_new_dialog_timeout=True, chat_mode_id=None, placeholder: Message=None, cached_msg_id=None):
+async def message_handle(update: Update, context: CallbackContext, message=None, use_new_dialog_timeout=True, chat_mode_id=None, placeholder: Message=None, cached_msg_id=None, autoupscale=False):
     user = await register_user_if_not_exists(update, context)
     chat_id = update.effective_chat.id
     
@@ -438,15 +435,22 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     system_prompt = chat_mode["prompt"]
     # load model
     model_id = db.get_current_model(chat_id)
-    model = openai_utils.MODEL_GPT_4 if model_id == "gpt4" else openai_utils.MODEL_GPT_35_TURBO
+    model = openai_utils.MODEL_GPT_4 if model_id == "gpt4" else openai_utils.MODEL_GPT_35_TURBO 
     # load chat history to context
     messages = db.get_chat_messages(chat_id) if not disable_history else []
 
+    context_content = None
     if message is None:
+        context_content, context_src = db.get_chat_context(chat_id)
         message = update.effective_message.text
+        if context_content is not None:
+            autoupscale = True
+            context_prompt = _("content from {}:\n{}").format(context_src, context_content)
+            message = f"{message}\n\n{context_prompt}"
     message = message.strip()
-
-    if helper.is_uri(message):
+    # crawl link
+    is_url = helper.is_uri(message)
+    if is_url:
         url = message
         if helper.is_youtube_url(url):
             message = _build_youtube_prompt(url, _)
@@ -455,12 +459,10 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
                 return
         else:
             downloaded = trafilatura.fetch_url(url)
-            result = trafilatura.extract(downloaded, include_comments=False)
-            if result is None:
+            message = trafilatura.extract(downloaded, include_comments=False)
+            if message is None:
                 await update.effective_message.reply_text(_("⚠️ Failed to fetch the website content, possibly due to access restrictions."), parse_mode=ParseMode.HTML)
                 return
-            prompt_pattern = _("summarize the content from {} containing abstract, list of key points and the conclusion\n\noriginal content:\n{}")
-            message = prompt_pattern.format(url, result)
         model = chatgpt.resolve_model(model, message)
 
     voice_placeholder = None    
@@ -474,6 +476,8 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     # handle too many tokens
     max_message_count = -1
 
+    if autoupscale:
+        model = chatgpt.resolve_model(model, message)
     max_tokens = openai_utils.max_tokens(model)
     prompt_cost_factor, completion_cost_factor = chatgpt.cost_factors(model)
     remaining_tokens = db.get_user_remaining_tokens(user_id)
@@ -489,6 +493,23 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         return
     estimated_cost = int(num_prompt_tokens * prompt_cost_factor)
     if not await check_balance(update, estimated_cost, user):
+        return
+    if is_url:
+        db.set_chat_context(chat_id, message, url)
+        text = _("Now you can ask me about the content in the link:")
+        text += "\n" + url
+        text += "\n\n"
+        text += ui.build_tips([
+            _("The cost of the next answers will be more than {} tokens").format(i18n.currency(estimated_cost)),
+            _("You can use /reset to clear the context"),
+        ], _, title=_("Notice"))
+        reply_markup = InlineKeyboardMarkup([
+            [
+                InlineKeyboardButton(_("Summarize"), callback_data="summarize"),
+                InlineKeyboardButton(_("Cancel"), callback_data="reset"),
+            ]
+        ])
+        await update.effective_message.reply_text(text, reply_markup=reply_markup, disable_web_page_preview=True)
         return
     # send warning if some messages were removed from the context
     if n_first_dialog_messages_removed > 0:
@@ -587,6 +608,9 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     # TODO: consume tokens even if an exception occurs
     # consume tokens and append the message record to db
     if sent_answer is not None and used_tokens is not None:
+        # clear the context before appending the chat history
+        if context_content is not None:
+            db.set_chat_context(chat_id, None, None)
         if not disable_history:
             # update user data
             new_dialog_message = {"user": message, "bot": sent_answer, "date": datetime.now(), "used_tokens": used_tokens}
@@ -669,6 +693,21 @@ async def send_voice_message(update: Update, context: CallbackContext, message: 
         text = "⚠️ " + _("Failed to generate the voice message, please try again later.")
         text += " " + _("Reason: {}").format(e)
         await update.effective_message.reply_text(text)
+
+async def summarize_handle(update: Update, context: CallbackContext):
+    user = await register_user_if_not_exists(update, context)
+    chat_id = update.effective_chat.id
+    _ = get_text_func(user, chat_id)
+    user_id = user.id
+    context_content, context_src = db.get_chat_context(chat_id)
+    if helper.is_uri(context_src):
+        url = context_src
+        if helper.is_youtube_url(context_src):
+            prompt_pattern = _("summarize the transcript from {} containing abstract, list of key points and the conclusion\n\ntranscript:\n{}")
+        else:
+            prompt_pattern = _("summarize the content from {} containing abstract, list of key points and the conclusion\n\noriginal content:\n{}")
+        message = prompt_pattern.format(url, context_content)
+        await message_handle(update, context, message, autoupscale=True)
 
 async def image_message_handle(update: Update, context: CallbackContext):
     if update.edited_message is not None:
@@ -1287,6 +1326,7 @@ def run_bot() -> None:
 
     application.add_handler(CommandHandler("start", start_handle, filters=user_filter))
     application.add_handler(CommandHandler("reset", reset_handle, filters=user_filter))
+    application.add_handler(CallbackQueryHandler(reset_handle, pattern="^reset"))
     # application.add_handler(CommandHandler("role", show_chat_modes_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(set_chat_mode_handle, pattern="^set_chat_mode"))
     application.add_handler(CommandHandler("balance", show_balance_handle, filters=user_filter))
@@ -1300,6 +1340,7 @@ def run_bot() -> None:
     application.add_handler(CommandHandler("proofreader", common_command_handle, filters=user_filter))
     application.add_handler(CommandHandler("dictionary", common_command_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(common_command_handle, pattern="^retry"))
+    application.add_handler(CallbackQueryHandler(summarize_handle, pattern="^summarize"))
     application.add_handler(CommandHandler("image", image_message_handle, filters=user_filter))
     application.add_handler(CallbackQueryHandler(image_message_handle, pattern="^image"))
     application.add_handler(CallbackQueryHandler(gen_image_handle, pattern="^gen_image"))

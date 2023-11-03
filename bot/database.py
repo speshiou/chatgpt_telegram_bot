@@ -70,6 +70,8 @@ class Database:
 
         if clear_messages:
             data["messages"] = []
+            data["context"] = None
+            data["context_src"] = None
         else:
             default_data["messages"] = []
 
@@ -102,10 +104,11 @@ class Database:
         self.chat_collection.update_one({"_id": chat_id}, {"$inc": { 'rate_count': 1}})
 
     def set_chat_attribute(self, chat_id: int, field: str, value):
+        self.set_chat_attributes(chat_id, {field: value})
+
+    def set_chat_attributes(self, chat_id: int, fields: dict):
         self.chat_collection.update_one({"_id": chat_id}, {
-            "$set": { 
-                field: value,
-            }
+            "$set": fields
         })
     
     def reset_chat_rate_limit(self, chat_id: int):
@@ -121,6 +124,16 @@ class Database:
     
     def set_current_model(self, chat_id: int, model: str):
         self.set_chat_attribute(chat_id, 'current_model', model)
+
+    def set_chat_context(self, chat_id: int, context: str, context_src: str):
+        self.set_chat_attributes(chat_id, {
+            'context': context,
+            'context_src': context_src,
+            'messages': [],
+        })
+
+    def get_chat_context(self, chat_id: int):
+        return self.get_chat_attributes(chat_id, ['context', 'context_src'])
 
     def get_current_model(self, chat_id: int):
         return self.get_chat_attribute(chat_id, 'current_model') or config.DEFAULT_MODEL
