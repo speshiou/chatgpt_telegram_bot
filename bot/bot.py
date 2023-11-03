@@ -357,7 +357,7 @@ def _build_youtube_prompt(url, _):
         print(e)
     return None
 
-async def message_handle(update: Update, context: CallbackContext, message=None, use_new_dialog_timeout=True, chat_mode_id=None, placeholder: Message=None, cached_msg_id=None):
+async def message_handle(update: Update, context: CallbackContext, message=None, use_new_dialog_timeout=True, chat_mode_id=None, placeholder: Message=None, cached_msg_id=None, upscale=False):
     user = await register_user_if_not_exists(update, context)
     chat_id = update.effective_chat.id
     
@@ -446,7 +446,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         context_content, context_src = db.get_chat_context(chat_id)
         if context_content is not None:
             system_prompt = "You are an assistant to answer the questions about the content of {}.\n\ncontent:\n{}".format(context_src, context_content)
-            model = chatgpt.resolve_model(model, openai_utils.num_tokens_from_string(system_prompt, model))
+            upscale = True
 
     message = message.strip()
     # crawl link
@@ -464,7 +464,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             if message is None:
                 await update.effective_message.reply_text(_("⚠️ Failed to fetch the website content, possibly due to access restrictions."), parse_mode=ParseMode.HTML)
                 return
-        model = chatgpt.resolve_model(model, openai_utils.num_tokens_from_string(message, model))
+        upscale = True
 
     voice_placeholder = None    
     answer = None
@@ -477,6 +477,8 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     # handle too many tokens
     max_message_count = -1
 
+    if upscale:
+        model = chatgpt.resolve_model(model, openai_utils.num_tokens_from_string(system_prompt + " " + message, model))
     max_tokens = openai_utils.max_tokens(model)
     prompt_cost_factor, completion_cost_factor = chatgpt.cost_factors(model)
     remaining_tokens = db.get_user_remaining_tokens(user_id)
@@ -704,7 +706,7 @@ async def summarize_handle(update: Update, context: CallbackContext):
         else:
             prompt_pattern = _("summarize the content from {} containing abstract, list of key points and the conclusion\n\noriginal content:\n{}")
         message = prompt_pattern.format(url, context_content)
-        await message_handle(update, context, message)
+        await message_handle(update, context, message, upscale=True)
 
 async def image_message_handle(update: Update, context: CallbackContext):
     if update.edited_message is not None:
