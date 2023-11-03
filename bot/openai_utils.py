@@ -5,11 +5,13 @@ import config
 MODEL_GPT_35_TURBO = "gpt-3.5-turbo"
 MODEL_GPT_35_TURBO_16K = "gpt-3.5-turbo-16k"
 MODEL_GPT_4 = "gpt-4"
+MODEL_GPT_4_32K = "gpt-4-32k"
 
 SUPPORTED_MODELS = set([
     MODEL_GPT_35_TURBO,
     MODEL_GPT_35_TURBO_16K,
     MODEL_GPT_4,
+    MODEL_GPT_4_32K,
 ])
 
 def print_gpt_models():
@@ -24,6 +26,20 @@ def num_tokens_from_string(string: str, model: str) -> int:
     encoding = tiktoken.encoding_for_model(model)
     num_tokens = len(encoding.encode(string))
     return num_tokens
+
+def max_tokens(model):
+    if model == MODEL_GPT_35_TURBO:
+        return 4096
+    elif model == MODEL_GPT_35_TURBO_16K:
+        return 16384
+    elif model == MODEL_GPT_4:
+        return 8192
+    elif model == MODEL_GPT_4_32K:
+        return 32768
+    else:
+        raise NotImplementedError(
+            f"""max_tokens() is not implemented for model {model}."""
+        )
 
 # sample code from https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
 def num_tokens_from_messages(messages, model="gpt-3.5-turbo-0613"):

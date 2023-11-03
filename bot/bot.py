@@ -442,11 +442,6 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     # load chat history to context
     messages = db.get_chat_messages(chat_id) if not disable_history else []
 
-    remaining_tokens = db.get_user_remaining_tokens(user_id)
-    if remaining_tokens <= 0:
-        await send_insufficient_tokens_warning(update, user)
-        return
-
     if message is None:
         message = update.effective_message.text
     message = message.strip()
@@ -466,6 +461,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
                 return
             prompt_pattern = _("summarize the content from {} containing abstract, list of key points and the conclusion\n\noriginal content:\n{}")
             message = prompt_pattern.format(url, result)
+        model = chatgpt.resolve_model(model, message)
 
     voice_placeholder = None    
     answer = None
@@ -478,14 +474,22 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     # handle too many tokens
     max_message_count = -1
 
+    max_tokens = openai_utils.max_tokens(model)
     prompt_cost_factor, completion_cost_factor = chatgpt.cost_factors(model)
+    remaining_tokens = db.get_user_remaining_tokens(user_id)
+    max_affordable_tokens = int(remaining_tokens / prompt_cost_factor)
 
-    max_tokens = int(remaining_tokens / prompt_cost_factor)
     if remaining_tokens < 10000 or chat_mode_id not in config.DEFAULT_CHAT_MODES:
         # enable token saving mode for low balance users and external modes
-        max_tokens = min(max_tokens, 2000)
+        max_affordable_tokens = min(max_affordable_tokens, 2000)
 
-    prompt, n_first_dialog_messages_removed = chatgpt.build_prompt(system_prompt, messages, message, model, max_tokens)
+    prompt, num_prompt_tokens, n_first_dialog_messages_removed = chatgpt.build_prompt(system_prompt, messages, message, model, max_affordable_tokens)
+    if num_prompt_tokens > max_tokens:
+        await update.effective_message.reply_text(_("⚠️ Sorry, the message is too long for {}. Please reduce the length of the input data.").format(model))
+        return
+    estimated_cost = int(num_prompt_tokens * prompt_cost_factor)
+    if not await check_balance(update, estimated_cost, user):
+        return
     # send warning if some messages were removed from the context
     if n_first_dialog_messages_removed > 0:
         # if n_first_dialog_messages_removed == 1:
@@ -496,11 +500,6 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         print(f"removed {n_first_dialog_messages_removed} messages from context")
         max_message_count = len(messages) + 1 - n_first_dialog_messages_removed
 
-    num_prompt_tokens = openai_utils.num_tokens_from_messages(prompt, model)
-    estimated_cost = num_prompt_tokens * prompt_cost_factor
-    if not await check_balance(update, estimated_cost, user):
-        return
-
     try:
         api_type = config.OPENAI_CHAT_API_TYPE
         # if api_type != config.DEFAULT_OPENAI_API_TYPE and "api_type" in config.CHAT_MODES[chat_mode]:
@@ -509,7 +508,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         stream = chatgpt.send_message(
             prompt,
             model=model,
-            max_tokens=max_tokens,
+            max_tokens=max_affordable_tokens,
             stream=config.STREAM_ENABLED,
             api_type=api_type,
         )
@@ -525,7 +524,6 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             placeholder = await update.effective_message.reply_text("...")
         
         async for buffer in stream:
-            
             finished, answer, used_tokens = buffer
 
             if not finished and len(answer) - len(prev_answer) < stream_len:
@@ -599,7 +597,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             )
         else:
             db.update_chat_last_interaction(chat_id)
-        final_cost = used_tokens * prompt_cost_factor
+        final_cost = int(used_tokens * prompt_cost_factor)
         # IMPORTANT: consume tokens in the end of function call to protect users' credits
         db.inc_user_used_tokens(user_id, final_cost)
 

@@ -117,7 +117,6 @@ MONGODB_URI = f"mongodb://mongo:{MONGODB_PORT}"
 FREE_QUOTA = _env_parse_int('FREE_QUOTA', 10000)
 # default price for gpt-3.5-turbo
 TOKEN_PRICE = _env_parse_float('TOKEN_PRICE', 0.002)
-GPT4_PRICE_FACTOR = 20
 # DALL·E tokens
 DALLE_TOKENS = _env_parse_int('DALLE_TOKENS', 10000)
 # cost for real-esrgan-4x upscaler

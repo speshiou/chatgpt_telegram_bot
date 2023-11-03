@@ -9,20 +9,23 @@ def _model_name(model, api_type):
         return model.replace(".", "")
     return model
 
-def _max_tokens(model):
-    if model == openai_utils.MODEL_GPT_35_TURBO:
-        return 4096
-    elif model == openai_utils.MODEL_GPT_35_TURBO_16K:
-        return 16384
-    elif model == openai_utils.MODEL_GPT_4:
-        return 8000
+def resolve_model(model, prompt):
+    original_model = model
+    num_tokens = openai_utils.num_tokens_from_string(prompt, model=model)
+    max_tokens = openai_utils.max_tokens(model)
+    if model == openai_utils.MODEL_GPT_35_TURBO and num_tokens > max_tokens:
+        model = openai_utils.MODEL_GPT_35_TURBO_16K
+    if model == openai_utils.MODEL_GPT_4 and num_tokens > max_tokens:
+        model = openai_utils.MODEL_GPT_4_32K
+    print(f"resolve_model {original_model} > {model}, num_tokens={num_tokens}")
+    return model
     
 def build_prompt(system_prompt, dialog_messages, new_message, model, max_tokens = None):
     n_dialog_messages_before = len(dialog_messages)
     n_first_dialog_messages_removed = 0
     prompt = None
     num_prompt_tokens = None
-    max_tokens = _max_tokens(model) if max_tokens is None else min(max_tokens, _max_tokens(model))
+    max_tokens = openai_utils.max_tokens(model) if max_tokens is None else min(max_tokens, openai_utils.max_tokens(model))
 
     while num_prompt_tokens is None or num_prompt_tokens >= max_tokens:
         if prompt is not None:
@@ -33,15 +36,19 @@ def build_prompt(system_prompt, dialog_messages, new_message, model, max_tokens 
         num_prompt_tokens = openai_utils.num_tokens_from_messages(prompt, model)
         if len(dialog_messages) == 0:
             break
-    return prompt, n_first_dialog_messages_removed
+    return prompt, num_prompt_tokens, n_first_dialog_messages_removed
 
 def cost_factors(model):
     if model == openai_utils.MODEL_GPT_4:
-        return config.GPT4_PRICE_FACTOR, config.GPT4_PRICE_FACTOR
+        return 20, 20
+    elif model == openai_utils.MODEL_GPT_35_TURBO_16K:
+        return 1.1, 1.1
+    elif model == openai_utils.MODEL_GPT_4_32K:
+        return 22, 22
     return 1, 1
 
 async def send_message(prompt, model=openai_utils.MODEL_GPT_35_TURBO, max_tokens=None, stream=False, api_type=None):
-    max_tokens = _max_tokens(model) if max_tokens is None else min(_max_tokens(model), max_tokens)
+    max_tokens = openai_utils.max_tokens(model) if max_tokens is None else min(openai_utils.max_tokens(model), max_tokens)
 
     answer = None
     finish_reason = None
