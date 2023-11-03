@@ -68,6 +68,18 @@ MODELS = {
             "scheduler": "dpmsolver++",
         }
     },
+    "unreal": {
+        "name": _("Unreal (2.5D)"),
+        "model_id": "dream-shaper-v8",
+        "tips": TIPS,
+        "size_options": SIZE_OPTIONS,
+        "inputs": {
+            "negative_prompt": "disfigured, kitsch, ugly, oversaturated, grain, low-res, Deformed, blurry, bad anatomy, disfigured, poorly drawn face, mutation, mutated, extra limb, ugly, poorly drawn hands, missing limb, blurry, floating limbs, disconnected limbs, malformed hands, blur, out of focus, long neck, long body, ugly, disgusting, poorly drawn, childish, mutilated, mangled, old, surreal, calligraphy, sign, writing, watermark, text, body out of frame, extra legs, extra arms, extra feet, out of frame, poorly drawn feet, cross-eye, blurry, bad anatomy",
+            "steps": 20,
+            "guidance": 7,
+            "scheduler": "dpmsolver++",
+        }
+    },
     "dark": {
         "name": _("Anime"),
         "model_id": "dark-sushi-mix-v2-25",
@@ -76,7 +88,7 @@ MODELS = {
         "inputs": {
             "negative_prompt": "paintings, sketches, fingers, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, (outdoor:1.6), backlight,(ugly:1.331), (duplicate:1.331), (morbid:1.21), (mutilated:1.21), (tranny:1.331), mutated hands, (poorly drawn hands:1.5), blurry, (bad anatomy:1.21), (bad proportions:1.331), extra limbs, (disfigured:1.331), (more than 2 nipples:1.331), (missing arms:1.331), (extra legs:1.331), (fused fingers:1.61051), (too many fingers:1.61051), (unclear eyes:1.331), lowers, bad hands, missing fingers, extra digit, (futa:1.1),bad hands, missing fingers, bad-hands-5",
             "steps": 20,
-            "scale": 8,
+            "guidance": 8,
             "scheduler": "dpmsolver++",
         }
     },
