@@ -432,19 +432,18 @@ def about(_):
     text += "\n\n"
     text += _("<b>What can I do for you?</b>\n")
     text += _("✉️ Writing\n")
-    text += _("🗂 Summarize\n")
     text += _("🌎 Translate\n")
     text += _("🤔 Provide ideas and solve problems\n")
     text += _("💻 Programming and debugging\n")
     text += "\n"
     text += _("<b>More than ChatGPT</b>\n")
-    text += _("🎙 Support voice messages (100 tokens/s when exceeding 10s)\n")
+    text += _("🧙‍♀️ Create custom versions of ChatGPT\n")
+    text += _("🎙 Support voice messages\n")
     text += _("✍️ Proofreading (/proofreader)\n")
     text += _("📔 Dictionary (/dictionary)\n")
     text += _("🌐 Summarize the content of websites") + "\n"
-    text += _("🎬 Summarize Youtube videos that are 20 minutes long") + "\n"
+    text += _("🎬 Summarize Youtube videos (up to 20 minutes long)") + "\n"
     text += _("👨‍🎨 Generate images (/image)\n")
-    text += _("🧙‍♀️ Create custom roles\n")
     text += _("👥 Group chat - add @{} to a group chat, then use /chatgpt to start.\n").format(config.TELEGRAM_BOT_NAME)
     text += "\n\n"
     text += _("""By using this chatbot, you agree to our <a href="{}">terms of service</a> and <a href="{}">privacy policy</a>.""").format("https://tgchat.co/terms-of-service", "https://tgchat.co/privacy-policy")

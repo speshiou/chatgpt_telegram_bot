@@ -3,7 +3,7 @@ import base64
 import helper
 import config
 
-BASE_TOKENS = 1200
+BASE_TOKENS = 1000
 
 DEFAULT_NUM_IMAGES = 1
 

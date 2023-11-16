@@ -1089,9 +1089,6 @@ async def show_balance_handle(update: Update, context: CallbackContext):
         [
             _("The longer conversation would spend more tokens"),
             _("/reset to clear history manually"),
-            _("Most GPT-3.5 users spend about 200,000 tokens per month"),
-            _("Most GPT-4 users spend about 2,000,000 tokens per month"),
-            _("Around 500 images can be generated from one million tokens."),
         ], _
     )
     # text += f"You spent <b>{n_spent_dollars:.03f}$</b>\n"
@@ -1103,19 +1100,19 @@ async def show_balance_handle(update: Update, context: CallbackContext):
             "tokens_amount": price_to_tokens(2),
         },
         {
-            "payment_amount": 5.0 * 0.9,
-            "tokens_amount": price_to_tokens(5),
-            "caption": "-10%",
-        },
-        {
             "payment_amount": 7.99,
             "tokens_amount": price_to_tokens(10),
             "caption": "-20%",
         },
         {
-            "payment_amount": 11.99,
+            "payment_amount": 13.99,
             "tokens_amount": price_to_tokens(20),
-            "caption": "-40%",
+            "caption": "-30%",
+        },
+        {
+            "payment_amount": 24.99,
+            "tokens_amount": price_to_tokens(50),
+            "caption": "-50%",
         },
     ]
 
