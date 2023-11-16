@@ -216,7 +216,7 @@ async def send_insufficient_tokens_warning(update: Update, user: User, message: 
     # TODO: show different messages for private and group chats
     text = "⚠️ " + _("Insufficient tokens.")
     if estimated_cost is not None:
-        text += " " + _("Require {} tokens to process this message").format(estimated_cost)
+        text += " " + _("Require {} tokens to process this message").format(i18n.currency(estimated_cost))
     await update.effective_message.reply_text(text, reply_markup=reply_markup)
 
 async def check_balance(update: Update, estimated_cost: int, user: User):
@@ -479,7 +479,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
     if upscale:
         model = chatgpt.resolve_model(model, openai_utils.num_tokens_from_string(system_prompt + " " + message, model))
-    max_tokens = openai_utils.max_tokens(model)
+
     prompt_cost_factor, completion_cost_factor = chatgpt.cost_factors(model)
     remaining_tokens = db.get_user_remaining_tokens(user_id)
     max_affordable_tokens = int(remaining_tokens / prompt_cost_factor)
@@ -489,7 +489,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         max_affordable_tokens = min(max_affordable_tokens, 2000)
 
     prompt, num_prompt_tokens, n_first_dialog_messages_removed = chatgpt.build_prompt(system_prompt, messages, message, model, max_affordable_tokens)
-    if num_prompt_tokens > max_tokens:
+    if num_prompt_tokens > openai_utils.max_context_tokens(model):
         await update.effective_message.reply_text(_("⚠️ Sorry, the message is too long for {}. Please reduce the length of the input data.").format(model))
         return
     estimated_cost = int(num_prompt_tokens * prompt_cost_factor)
