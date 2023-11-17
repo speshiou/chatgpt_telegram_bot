@@ -38,7 +38,7 @@ def build_prompt(system_prompt, dialog_messages, new_message, model, max_tokens:
 
 def cost_factors(model):
     if model == openai_utils.MODEL_GPT_4:
-        return 20, 20
+        return 15, 15
     # elif model == openai_utils.MODEL_GPT_4_32K:
     #     return 20, 20
     return 1, 1
