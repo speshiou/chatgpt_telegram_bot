@@ -155,15 +155,17 @@ async def create_request(prompt, model, max_tokens=None, stream=False, api_type=
         **args,
     )
     
-async def create_image(prompt):
+async def create_image(prompt, num_images: int = 1):
     response = await openai.Image.acreate(
+        model="dall-e-3",
         prompt=prompt,
-        n=1,
         size="1024x1024",
+        quality="standard",
+        n=num_images,
         api_type=config.DEFAULT_OPENAI_API_TYPE,
         api_key=config.OPENAI_API_KEY,
     )
-    return response['data'][0]['url']
+    return response['data']
 
 async def audio_transcribe(filename):
     audio_file= open(filename, "rb")

@@ -13,7 +13,7 @@ MODELS = {
     **sinkinai_utils.MODELS,
     **replicate_utils.MODELS,
     "dalle": {
-        "name": "DALL·E (OpenAI)",
+        "name": "DALL·E 3 (OpenAI)",
         "tips": [
             _("The price is for one image"),
             _("Any languages"),
@@ -47,8 +47,8 @@ def _build_image_data(image_urls):
 async def inference(model, prompt, width, height):
     result = None
     if model == "dalle":
-        image_url = await openai_utils.create_image(prompt)
-        result = _build_image_data([image_url])
+        images = await openai_utils.create_image(prompt)
+        result = _build_image_data([images[0]["url"]])
     elif model in sinkinai_utils.MODELS:
         images = await sinkinai_utils.inference(model=model, width=width, height=height, prompt=prompt)
         result = _build_image_data(images)
