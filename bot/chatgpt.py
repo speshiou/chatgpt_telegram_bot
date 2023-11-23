@@ -38,10 +38,10 @@ def build_prompt(system_prompt, dialog_messages, new_message, model, max_tokens:
 
 def cost_factors(model):
     if model == openai_utils.MODEL_GPT_4:
-        return 15, 15
+        return 10, 15
     # elif model == openai_utils.MODEL_GPT_4_32K:
     #     return 20, 20
-    return 1, 1
+    return 0.5, 1
 
 async def send_message(prompt, model=openai_utils.MODEL_GPT_35_TURBO, max_tokens=None, stream=False, api_type=None):
     num_prompt_tokens = openai_utils.num_tokens_from_messages(prompt, model)
@@ -73,7 +73,6 @@ async def send_message(prompt, model=openai_utils.MODEL_GPT_35_TURBO, max_tokens
 
     num_completion_tokens = openai_utils.num_tokens_from_string(answer, model) if answer is not None else 0
     num_total_tokens = num_prompt_tokens + num_completion_tokens
-    used_tokens = num_total_tokens 
 
     if answer is None:
         print(f"Invalid answer, num_prompt_tokens={num_prompt_tokens}, num_completion_tokens={num_completion_tokens}, finish_reason={finish_reason}")
@@ -81,5 +80,5 @@ async def send_message(prompt, model=openai_utils.MODEL_GPT_35_TURBO, max_tokens
 
     # TODO: handle finish_reason == "length"
 
-    yield True, answer, used_tokens
+    yield True, answer, num_completion_tokens
         

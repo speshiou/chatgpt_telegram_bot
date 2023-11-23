@@ -469,7 +469,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     voice_placeholder = None    
     answer = None
     sent_answer = None
-    used_tokens = None
+    num_completion_tokens = None
     # handle long message that exceeds telegram's limit
     n_message_chunks = 0
     current_message_chunk_index = 0
@@ -547,7 +547,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             placeholder = await update.effective_message.reply_text("...")
         
         async for buffer in stream:
-            finished, answer, used_tokens = buffer
+            finished, answer, num_completion_tokens = buffer
 
             if not finished and len(answer) - len(prev_answer) < stream_len:
                 # reduce edit message requests
@@ -609,10 +609,10 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
     
     # TODO: consume tokens even if an exception occurs
     # consume tokens and append the message record to db
-    if sent_answer is not None and used_tokens is not None:
+    if sent_answer is not None and num_completion_tokens is not None:
         if not disable_history:
             # update user data
-            new_dialog_message = {"user": message, "bot": sent_answer, "date": datetime.now(), "used_tokens": used_tokens}
+            new_dialog_message = {"user": message, "bot": sent_answer, "date": datetime.now(), "num_context_tokens": num_prompt_tokens, "num_completion_tokens": num_completion_tokens}
             db.push_chat_messages(
                 chat_id,
                 new_dialog_message,
@@ -620,7 +620,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             )
         else:
             db.update_chat_last_interaction(chat_id)
-        final_cost = int(used_tokens * prompt_cost_factor)
+        final_cost = int(num_prompt_tokens * prompt_cost_factor + num_completion_tokens * completion_cost_factor)
         # IMPORTANT: consume tokens in the end of function call to protect users' credits
         db.inc_user_used_tokens(user_id, final_cost)
 
